@@ -1,9 +1,9 @@
-package se.partee71.reseapoteket.data
+package se.kodhast.reseapoteket.data
 
 import kotlinx.coroutines.flow.MutableStateFlow
-import se.partee71.reseapoteket.core.schema.Schema
-import se.partee71.reseapoteket.data.common.HouseholdScope
-import se.partee71.reseapoteket.data.common.HouseholdVersion
+import se.kodhast.reseapoteket.core.schema.Schema
+import se.kodhast.reseapoteket.data.common.HouseholdScope
+import se.kodhast.reseapoteket.data.common.HouseholdVersion
 
 /** Ett aktivt hushåll för tester, med styrbar version. */
 class TestHouseholdScope(

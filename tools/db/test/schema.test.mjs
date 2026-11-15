@@ -5,7 +5,7 @@ import { CURRENT_VERSION, FIRST_VERSION, versionOf } from '../lib/schema.mjs';
 import { STEPS } from '../lib/migrate.mjs';
 import { readRepoFile } from './helpers/repo.mjs';
 
-const schemaDir = 'core/src/main/kotlin/se/partee71/reseapoteket/core/schema';
+const schemaDir = 'core/src/main/kotlin/se/kodhast/reseapoteket/core/schema';
 const schemaKt = readRepoFile(`${schemaDir}/Schema.kt`);
 const migratorKt = readRepoFile(`${schemaDir}/SchemaMigrator.kt`);
 const constant = (name) => Number(schemaKt.match(new RegExp(`const val ${name} = (\\d+)`))[1]);

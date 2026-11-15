@@ -1,4 +1,4 @@
-package se.partee71.reseapoteket.data
+package se.kodhast.reseapoteket.data
 
 import kotlin.time.Clock
 import kotlin.time.Instant

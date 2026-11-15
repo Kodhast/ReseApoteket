@@ -6,7 +6,7 @@ description: "ReseApotekets beräkningsmotor — hur mycket av varje medicin, ko
 # Beräkningsmotorn (`:core`)
 
 `PackingEngine` räknar fram packförslaget. Den är **rena funktioner** i `:core`
-(`se.partee71.reseapoteket.core.engine`): inga coroutines, ingen klocka, ingen Android,
+(`se.kodhast.reseapoteket.core.engine`): inga coroutines, ingen klocka, ingen Android,
 ingen Firestore. Allt den behöver skickas in. Det gör den trivial att testa och gör att
 samma formel kan användas i packlistan och i förhandsvisningarna.
 

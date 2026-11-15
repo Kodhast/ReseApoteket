@@ -1,0 +1,101 @@
+package se.kodhast.reseapoteket.ui.settings
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import se.kodhast.reseapoteket.R
+import se.kodhast.reseapoteket.core.model.Household
+import se.kodhast.reseapoteket.core.schema.HouseholdCodec
+import se.kodhast.reseapoteket.data.common.AppErrors
+import se.kodhast.reseapoteket.data.common.DataError
+import se.kodhast.reseapoteket.data.common.suspendRunCatching
+import se.kodhast.reseapoteket.data.repository.HouseholdRepository
+import se.kodhast.ui.common.EditorEvents
+import se.kodhast.ui.common.EditorLoader
+import se.kodhast.ui.common.EditorState
+import se.kodhast.ui.common.EditorUiState
+import se.kodhast.ui.common.Validator
+import se.kodhast.ui.components.AppTextField
+import se.kodhast.ui.components.EntityEditScreen
+
+/** SET-2: hushållet måste ha ett namn. */
+object HouseholdValidator : Validator<Household> {
+    const val NAME = "name"
+
+    override fun validate(value: Household): Map<String, Int> = if (value.name.isBlank()) mapOf(NAME to R.string.name_required) else emptyMap()
+}
+
+sealed interface HouseholdEditEvent {
+    data class Name(val name: String) : HouseholdEditEvent
+
+    data object Save : HouseholdEditEvent
+
+    data object Retry : HouseholdEditEvent
+}
+
+/** Det aktiva hushållets namn (SET-2) – marginaldagarna ändras direkt i Inställningar. */
+@HiltViewModel
+class HouseholdEditViewModel @Inject constructor(private val households: HouseholdRepository) : ViewModel() {
+
+    val editor: EditorState<Household> = EditorState(Household(id = ""), HouseholdValidator, AppErrors, loading = true)
+    val state = editor.state
+    private val loader = EditorLoader(editor, viewModelScope, { suspendRunCatching({ DataError.Unknown }) { households.current.first() } })
+
+    fun onEvent(event: HouseholdEditEvent) {
+        when (event) {
+            is HouseholdEditEvent.Name -> editor.update(HouseholdValidator.NAME) { it.copy(name = event.name) }
+            HouseholdEditEvent.Save -> viewModelScope.launch { editor.save(::write) }
+            HouseholdEditEvent.Retry -> loader.retry()
+        }
+    }
+
+    /**
+     * Bara namnet skrivs – marginaldagar som ändrats under tiden står kvar. Har ett annat hushåll
+     * valts under tiden finns det här inte längre att spara.
+     */
+    private suspend fun write(household: Household): Result<Unit> {
+        val fresh = suspendRunCatching({ DataError.Unknown }) { households.current.first() }.getOrElse { return Result.failure(it) }
+            ?.takeIf { it.id == household.id } ?: return Result.failure(DataError.NotFound)
+        return households.update(fresh.copy(name = household.name.trim()), setOf(HouseholdCodec.NAME))
+    }
+}
+
+@Composable
+fun HouseholdEditScreen(onClose: () -> Unit, viewModel: HouseholdEditViewModel) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    HouseholdEditContent(state, viewModel.editor, viewModel::onEvent, onClose)
+}
+
+@Composable
+fun HouseholdEditContent(
+    state: EditorUiState<Household>,
+    events: EditorEvents,
+    onEvent: (HouseholdEditEvent) -> Unit,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    EntityEditScreen(
+        title = stringResource(R.string.household_edit),
+        state = state,
+        events = events,
+        onSave = { onEvent(HouseholdEditEvent.Save) },
+        onClose = onClose,
+        modifier = modifier,
+        onRetry = { onEvent(HouseholdEditEvent.Retry) }
+    ) {
+        AppTextField(
+            state.value.name,
+            { onEvent(HouseholdEditEvent.Name(it)) },
+            stringResource(R.string.name),
+            error = state.errorFor(HouseholdValidator.NAME)?.let { stringResource(it) }
+        )
+    }
+}

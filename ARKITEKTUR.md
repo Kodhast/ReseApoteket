@@ -136,7 +136,7 @@ logik. Kontrolleras av en hook direkt vid filändring, av `UiConsistencyTest` (K
 ```
 ReseApoteket/
 ├── core/                         ren Kotlin/JVM – inga Android- eller Firebase-beroenden
-│   └── se.partee71.reseapoteket.core
+│   └── se.kodhast.reseapoteket.core
 │       ├── model/                Person, Regimen, DoseSchedule, FamilyItem, QuantityRule, Trip, PackingItem …
 │       ├── engine/               PackingEngine, ReasonFormatter, DoseScheduleFormatter, QuantityRuleFormatter, UnitNames, Texts,
 │       │                         ReminderPlanner (vilka påminnelser som kommer och när)
@@ -144,7 +144,7 @@ ReseApoteket/
 │       └── schema/               DocCodec + fälthjälpare, codecs per modell, Schema, SchemaMigrator,
 │                                 ExportFormat (samma JSON som tools/db export)
 ├── app/                          Android-appen
-│   └── se.partee71.reseapoteket
+│   └── se.kodhast.reseapoteket
 │       ├── data/
 │       │   ├── common/           DataError, AppErrors (DataError → UiError), suspendRunCatching, EntityCollection, CollectionFactory,
 │       │   │                     HouseholdScope, SyncStatus, läs- och skrivregler (DocumentRules)
@@ -180,12 +180,12 @@ Vad som är delat och var det bor: skill `shared-ui-components` (enda källan).
 
 **Komponentbiblioteket android-ui** ([ParTee71/android-ui](https://github.com/ParTee71/android-ui),
 delat med Dagboken, sedan #126): tema-API:t (`AppTheme`, `ExtendedColors`, `Tone`, `AppShapes`,
-`AppTypography`, `Spacing`) i `se.partee71.ui:ui-theme`, kort, knappar, fält, val, pills, snackbars,
-tomt läge och läsfel i `se.partee71.ui:ui-components`, och sedan #129 ramarnas tillstånd (`UiError`/`ErrorMapper`,
-`ListUiState`, `DetailUiState`, `EditorState`, `EditorLoader`, `shownAfter`) i `se.partee71.ui:ui-common`; sedan #131
+`AppTypography`, `Spacing`) i `se.kodhast.ui:ui-theme`, kort, knappar, fält, val, pills, snackbars,
+tomt läge och läsfel i `se.kodhast.ui:ui-components`, och sedan #129 ramarnas tillstånd (`UiError`/`ErrorMapper`,
+`ListUiState`, `DetailUiState`, `EditorState`, `EditorLoader`, `shownAfter`) i `se.kodhast.ui:ui-common`; sedan #131
 (0.4.0) också listrader, ark, meny, dialoger, datumfält, emojival, verktygsraden, de tre ramarna (`EntityListScreen`,
 `EntityEditScreen`, `EntityDetailScreen`) och `ArchiveActions` i `ui-components`, och ramarnas kontraktstester i
-`se.partee71.ui:ui-testing` (bara i testerna). Appen har kvar sina färger, typsnitt och former och skickar in dem i
+`se.kodhast.ui:ui-testing` (bara i testerna). Appen har kvar sina färger, typsnitt och former och skickar in dem i
 `AppTheme` via `ReseApoteketTheme`; det som bara appen har (personavatar, dosering, mängdregel, packprogress,
 `PERSON_EMOJIS` m.m.) bor i `ui/components`. Biblioteket hämtas från GitHub Packages (se
 [Byggkonfiguration](#byggkonfiguration)); vilka rader som kommer därifrån står i skill
@@ -282,7 +282,7 @@ households/{hid}/trips/{tid}/packingItems/{iid}
 
 Material 3 Expressive och Navigation 3 är nya; här står de artefakter, versioner och
 API-namn som faktiskt kompilerats och renderats i projektet. Beviset är
-`app/src/test/kotlin/se/partee71/reseapoteket/VerifiedApisTest.kt`, som anropar varje API
+`app/src/test/kotlin/se/kodhast/reseapoteket/VerifiedApisTest.kt`, som anropar varje API
 nedan – faller det efter en versionsuppdatering har ett API bytt namn. Skills länkar hit.
 Använd inget API som inte står här – lägg till det här och i `VerifiedApisTest` i samma PR
 som det börjar användas.
@@ -334,7 +334,7 @@ Beslutad och uppmätt i #11.
 | Robolectric / Roborazzi / Konsist | 4.17 / 1.76.0 / 0.17.3 | Robolectric-SDK och skärmmått i `app/src/test/resources/robolectric.properties` |
 | PMD (CPD) | 7.28.0 | se `cpdCheck` nedan |
 | WorkManager | 2.12.0 | påminnelserna (#78); inget Hilt-work – workern hämtar sina beroenden via en `@EntryPoint` |
-| android-ui | 0.9.2 | `se.partee71.ui:ui-theme` + `ui-components` + `ui-common` (och `ui-testing` i testerna) från GitHub Packages (`maven.pkg.github.com/ParTee71/android-ui`, bara gruppen `se.partee71.ui`), inloggning krävs även för läsning: `GPR_USER`/`GPR_TOKEN` i sessionen, Actions-secreten `GPR_TOKEN` i CI (#126) |
+| android-ui | 0.9.2 | `se.kodhast.ui:ui-theme` + `ui-components` + `ui-common` (och `ui-testing` i testerna) från GitHub Packages (`maven.pkg.github.com/ParTee71/android-ui`, bara gruppen `se.kodhast.ui`), inloggning krävs även för läsning: `GPR_USER`/`GPR_TOKEN` i sessionen, Actions-secreten `GPR_TOKEN` i CI (#126) |
 
 **Gemensam byggkonfiguration** står på ett ställe: rotens `build.gradle.kts` (`subprojects {}`):
 Java 17, Kotlins `jvmTarget`, testtimeout (4 min per testtask, inom PR-budgeten) och testloggning

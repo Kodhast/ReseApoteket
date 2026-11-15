@@ -1,4 +1,4 @@
-package se.partee71.reseapoteket.data
+package se.kodhast.reseapoteket.data
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -12,19 +12,19 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.junit.Before
 import org.junit.Test
-import se.partee71.reseapoteket.core.model.DoseSchedule
-import se.partee71.reseapoteket.core.model.Person
-import se.partee71.reseapoteket.core.model.Regimen
-import se.partee71.reseapoteket.core.model.Trip
-import se.partee71.reseapoteket.core.model.TripStatus
-import se.partee71.reseapoteket.core.schema.Doc
-import se.partee71.reseapoteket.core.schema.RegimenCodec
-import se.partee71.reseapoteket.core.schema.Schema
-import se.partee71.reseapoteket.core.schema.TripCodec
-import se.partee71.reseapoteket.data.common.CollectionFactory
-import se.partee71.reseapoteket.data.common.DataError
-import se.partee71.reseapoteket.data.common.dataError
-import se.partee71.reseapoteket.data.firestore.Paths
+import se.kodhast.reseapoteket.core.model.DoseSchedule
+import se.kodhast.reseapoteket.core.model.Person
+import se.kodhast.reseapoteket.core.model.Regimen
+import se.kodhast.reseapoteket.core.model.Trip
+import se.kodhast.reseapoteket.core.model.TripStatus
+import se.kodhast.reseapoteket.core.schema.Doc
+import se.kodhast.reseapoteket.core.schema.RegimenCodec
+import se.kodhast.reseapoteket.core.schema.Schema
+import se.kodhast.reseapoteket.core.schema.TripCodec
+import se.kodhast.reseapoteket.data.common.CollectionFactory
+import se.kodhast.reseapoteket.data.common.DataError
+import se.kodhast.reseapoteket.data.common.dataError
+import se.kodhast.reseapoteket.data.firestore.Paths
 
 /**
  * Kontraktet för `EntityCollection` (skill firestore-data-layer). Körs mot `FakeCollection` i

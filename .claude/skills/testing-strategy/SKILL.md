@@ -61,7 +61,7 @@ hjälparna och testar bara det som är unikt för funktionen:
 | `HouseholdFixture` (riktig `HouseholdSession` + fejkad Firestore + `FakeHouseholdDirectory`, `EnsureHouseholdUseCase`) | `app/src/test/.../testing/` | egen uppställning av hushåll och session per test |
 | `FakeAuthRepository` | `app/src/test/.../ui/auth/` | Google-inloggning i ViewModel-tester |
 | `captureLightAndDark(name) { … }`, `rule.captureLightAndDark(name, settle) { … }` och `rule.captureScreenLightAndDark(name, open) { … }` | `app/src/test/.../testing/Screenshots.kt` | egna Roborazzi-anrop; regelvarianten behåller en visad snackbar mellan bilderna, skärmvarianten fotograferar dialoger, menyer och sheets |
-| `runListScreenContract(contracts, item, itemText, emptyTitle, addLabel) { state, onAdd, onRetry -> … }` | android-ui `ui-testing` (`se.partee71.ui.testing`); `contracts` i `app/src/test/.../ui/Contracts.kt` | att testa tomt/fel/laddar/lägg till per skärm |
+| `runListScreenContract(contracts, item, itemText, emptyTitle, addLabel) { state, onAdd, onRetry -> … }` | android-ui `ui-testing` (`se.kodhast.ui.testing`); `contracts` i `app/src/test/.../ui/Contracts.kt` | att testa tomt/fel/laddar/lägg till per skärm |
 | `runEditScreenContract(contracts, editor, makeInvalid, makeValid, invalidMessage) { state, events, onSave, onClose -> … }` | android-ui `ui-testing` | att testa spara-aktivering/släng-dialog (pilen och systemets bakåt)/sparfel per skärm |
 | `runDetailScreenContract(contracts, value, valueText) { state, onRetry, onEdit, onBack -> … }` | android-ui `ui-testing` | att testa laddar/läsfel/finns inte/Redigera/tillbaka per skärm |
 | `test/fixtures/household.json` | `tools/db/test/` | egna seeds per Nodetest |

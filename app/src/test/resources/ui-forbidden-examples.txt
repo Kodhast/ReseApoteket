@@ -3,9 +3,9 @@
 # bygget alltid tolkar filerna likadant. Lägg till ett exempel här när ett mönster ändras.
 # Allt körs med tom allowlist utom sektionen allowlist.
 #
-# ok            = rader som är tillåtna i feature-kod (app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt)
+# ok            = rader som är tillåtna i feature-kod (app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt)
 # stopp         = rader som ska stoppas i feature-kod
-# komponent-ok  = rader som är tillåtna i en delad komponent (app/src/main/kotlin/se/partee71/reseapoteket/ui/components/X.kt)
+# komponent-ok  = rader som är tillåtna i en delad komponent (app/src/main/kotlin/se/kodhast/reseapoteket/ui/components/X.kt)
 # scope         = <sökväg><TAB><scope, kommaseparerade; tomt = inga>
 # allowlist     = <allowlist-rad><TAB><kodrad i TripRow.kt><TAB><ok|stopp>
 # allowlist-fel = allowlist-rader som ska avvisas (saknar symbol eller motivering)
@@ -86,25 +86,25 @@ style = MaterialTheme.typography.titleLarge
 
 [scope]
 README.md	
-app/src/main/kotlin/se/partee71/reseapoteket/ui/persons/notes.md	
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/persons/notes.md	
 app/src/test/kotlin/X.kt	
-app/src/main/kotlin/se/partee71/reseapoteket/data/firestore/FirestoreCollection.kt	expressive,dispatchers
-app/src/main/kotlin/se/partee71/reseapoteket/ui/theme/Theme.kt	firestore,dispatchers,events
-app/src/main/kotlin/se/partee71/reseapoteket/ui/common/EditorState.kt	firestore,expressive,dispatchers,events
-app/src/main/kotlin/se/partee71/reseapoteket/ui/components/screens/EntityListScreen.kt	firestore,dispatchers,events
-app/src/main/kotlin/se/partee71/reseapoteket/ui/persons/PersonsScreen.kt	feature,firestore,expressive,dispatchers,events
-app/src/main/kotlin/se/partee71/reseapoteket/ui/AppRoot.kt	feature,firestore,expressive,dispatchers,events
-app/src/main/kotlin/se/partee71/reseapoteket/di/AppModule.kt	firestore,expressive
-app/src/main/kotlin/se/partee71/reseapoteket/data/repository/PersonRepository.kt	firestore,expressive,dispatchers
+app/src/main/kotlin/se/kodhast/reseapoteket/data/firestore/FirestoreCollection.kt	expressive,dispatchers
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/theme/Theme.kt	firestore,dispatchers,events
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/common/EditorState.kt	firestore,expressive,dispatchers,events
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/components/screens/EntityListScreen.kt	firestore,dispatchers,events
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/persons/PersonsScreen.kt	feature,firestore,expressive,dispatchers,events
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/AppRoot.kt	feature,firestore,expressive,dispatchers,events
+app/src/main/kotlin/se/kodhast/reseapoteket/di/AppModule.kt	firestore,expressive
+app/src/main/kotlin/se/kodhast/reseapoteket/data/repository/PersonRepository.kt	firestore,expressive,dispatchers
 
 [allowlist]
-app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt:Card( – test	Card(modifier) { }	ok
-app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt:Card( – test	Card(colors = CardDefaults.cardColors(Color.Red)) { }	stopp
-app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt:Card( – test	Button(onClick = {})	stopp
-app/src/main/kotlin/se/partee71/reseapoteket/ui/persons/PersonRow.kt:Card( – annan fil	Card(modifier) { }	stopp
-app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt:Color.Red – test	tint = Color.Red	ok
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt:Card( – test	Card(modifier) { }	ok
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt:Card( – test	Card(colors = CardDefaults.cardColors(Color.Red)) { }	stopp
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt:Card( – test	Button(onClick = {})	stopp
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/persons/PersonRow.kt:Card( – annan fil	Card(modifier) { }	stopp
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt:Color.Red – test	tint = Color.Red	ok
 
 [allowlist-fel]
-app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt – saknar symbol
-app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt:Card(
-app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt:Card( – 
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt – saknar symbol
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt:Card(
+app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt:Card( – 

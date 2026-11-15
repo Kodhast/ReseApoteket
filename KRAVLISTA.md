@@ -3,7 +3,7 @@
 > Räknar ut hur mycket av familjens mediciner, kosttillskott och apoteksvaror som ska
 > packas inför en resa, och låter familjen pricka av det som plockats fram.
 >
-> Paket: `se.partee71.reseapoteket` · Språk: svenska · Status: byggskelett (0.1.0) – inloggning, hushåll, backup, databasåtkomst, navigering med fyra flikar, tema och komponentkatalog finns; personer, recept, familjeartiklar, resor, packlistan och inställningarna finns sedan #21–#27.
+> Paket: `se.kodhast.reseapoteket` · Språk: svenska · Status: byggskelett (0.1.0) – inloggning, hushåll, backup, databasåtkomst, navigering med fyra flikar, tema och komponentkatalog finns; personer, recept, familjeartiklar, resor, packlistan och inställningarna finns sedan #21–#27.
 
 Så här används listan: skill [`requirements-kravlista`](.claude/skills/requirements-kravlista/SKILL.md).
 Krav märkta *(planerad)* är beslutade men inte byggda; markeringen tas bort i PR:en som

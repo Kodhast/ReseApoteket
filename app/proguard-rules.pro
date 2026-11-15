@@ -10,3 +10,9 @@
     public static int w(...);
     public static int e(...);
 }
+
+# Köade jobb från före paketbytet (#156) bär det gamla klassnamnet. Klassen refereras inte från koden,
+# och WorkManagers egen regel är bara -keepnames, så utan den här raden tar R8 bort den.
+-keep class se.partee71.reseapoteket.reminders.ReminderWorker {
+    public <init>(android.content.Context, androidx.work.WorkerParameters);
+}

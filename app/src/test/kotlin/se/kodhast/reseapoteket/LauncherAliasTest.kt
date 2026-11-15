@@ -3,7 +3,10 @@ package se.kodhast.reseapoteket
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.work.ListenableWorker
+import androidx.work.testing.TestListenableWorkerBuilder
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,9 +48,12 @@ class LauncherAliasTest {
 
     @Test
     fun `jobb köade före bytet hittar en worker som gör samma sak`() {
-        // WorkManager skapar jobbet ur det sparade klassnamnet (PÅM-6).
-        val legacy = Class.forName("se.partee71.reseapoteket.reminders.ReminderWorker")
-        assertEquals(true, se.kodhast.reseapoteket.reminders.ReminderWorker::class.java.isAssignableFrom(legacy))
+        // WorkManager skapar jobbet ur det sparade klassnamnet (PÅM-6). I release håller keep-regeln
+        // i proguard-rules.pro klassen kvar.
+        @Suppress("UNCHECKED_CAST")
+        val legacy = Class.forName("se.partee71.reseapoteket.reminders.ReminderWorker") as Class<ListenableWorker>
+        val worker = TestListenableWorkerBuilder.from(context, legacy).build()
+        assertIs<se.kodhast.reseapoteket.reminders.ReminderWorker>(worker)
     }
 
     @Test

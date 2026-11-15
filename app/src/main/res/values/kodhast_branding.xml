@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Färgerna på Kodhästs ordmärke på startskärmen (NFR-22), i appens färger: texten i
+     onSurfaceVariant och prickarna i primary (ui/theme/AppColors). Ersätter android-ui:s standard. -->
+<resources>
+    <color name="kodhast_branding_text">#FF6B5A50</color>
+    <color name="kodhast_branding_dots">#FFBF4A2A</color>
+</resources>

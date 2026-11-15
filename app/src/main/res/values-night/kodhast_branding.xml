@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mörkt läge: onSurfaceVariant och primary ur ui/theme/AppColors.dark (NFR-22). -->
+<resources>
+    <color name="kodhast_branding_text">#FFCDBBB1</color>
+    <color name="kodhast_branding_dots">#FFFFB59C</color>
+</resources>

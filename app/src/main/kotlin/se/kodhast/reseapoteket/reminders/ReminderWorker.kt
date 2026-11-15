@@ -15,7 +15,7 @@ import kotlinx.coroutines.CancellationException
  * Bakgrundsjobbet bakom påminnelserna (PÅM-6): går igenom dem och schemalägger nästa
  * genomgång, eller visar en uppskjuten påminnelse igen ("Senare").
  */
-class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+open class ReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)

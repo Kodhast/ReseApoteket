@@ -42,4 +42,20 @@ class LauncherAliasTest {
         assertEquals("se.kodhast.reseapoteket.MainActivity", info.targetActivity)
         assertEquals(true, info.exported)
     }
+
+    @Test
+    fun `jobb köade före bytet hittar en worker som gör samma sak`() {
+        // WorkManager skapar jobbet ur det sparade klassnamnet (PÅM-6).
+        val legacy = Class.forName("se.partee71.reseapoteket.reminders.ReminderWorker")
+        assertEquals(true, se.kodhast.reseapoteket.reminders.ReminderWorker::class.java.isAssignableFrom(legacy))
+    }
+
+    @Test
+    fun `Senare i en notis från före bytet når en icke-exporterad mottagare`() {
+        val name = "se.partee71.reseapoteket.reminders.ReminderSnoozeReceiver"
+        val info = context.packageManager.getReceiverInfo(ComponentName(context.packageName, name), 0)
+        assertEquals(false, info.exported)
+        val legacy = Class.forName(name)
+        assertEquals(true, se.kodhast.reseapoteket.reminders.ReminderSnoozeReceiver::class.java.isAssignableFrom(legacy))
+    }
 }

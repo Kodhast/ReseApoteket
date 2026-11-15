@@ -44,7 +44,7 @@ Kraven med ID:n står i [KRAVLISTA.md](KRAVLISTA.md); här är översikten.
 2. Klona repot och öppna det. Utan `app/google-services.json` bygger appen ändå (debug får
    en stubbad Firebase-konfiguration mot demo-projektet), men inloggning fungerar inte – se
    [Firebase-setup](#firebase-setup).
-3. Komponentbiblioteket [android-ui](https://github.com/ParTee71/android-ui) hämtas från GitHub
+3. Komponentbiblioteket [android-ui](https://github.com/Kodhast/android-ui) hämtas från GitHub
    Packages, som kräver inloggning även för läsning: sätt `GPR_USER` (GitHub-användaren) och
    `GPR_TOKEN` (classic token med bara `read:packages`) i miljön. CI läser med Actions-secreten `GPR_TOKEN`.
 4. Byggkommandon och vilka tester som finns: [CLAUDE.md → Bygg & test](CLAUDE.md#bygg--test).
@@ -141,7 +141,7 @@ chatten (skill [`data-privacy-security`](.claude/skills/data-privacy-security/SK
 
 1. **Projekt:** skapa Firebase-projektet `reseapoteket` (Spark-planen räcker). Aktivera
    **Authentication → Google** och **Firestore** i production mode, region `europe-north2` (Stockholm).
-2. **Android-app:** lägg till appen med paketet `se.kodhast.reseapoteket` och SHA-1 för både
+2. **Android-app:** lägg till appen med paketet (applicationId) `se.partee71.reseapoteket` och SHA-1 för både
    debug- och release-nyckeln. Ladda ner `google-services.json` till `app/` (git-ignorerad) och
    lägg innehållet som GitHub-secret `GOOGLE_SERVICES_JSON` (release-bygget skriver filen).
    Utan filen bygger appen ändå, men inloggning fungerar inte.
@@ -229,4 +229,4 @@ Versionen och raden nedan höjs och skrivs i funktions-PR:en; releasen görs via
 | 0.5.4 | Intern: coroutine-dispatchers injiceras från `di/DispatchersModule`, och bygget och hooken stoppar `Dispatchers.` utanför `di/`; listor och kartor i skärmtillstånden är oföränderliga och tillstånden märkta `@Immutable`, så att Compose hoppar över oförändrade delar, och listans rader har `contentType`; engångshändelser (formulärets klar och sparfel, konfettin, delningen av exporten) är fält i skärmtillståndet som skärmen kvitterar i stället för `Channel`, och bygget och hooken stoppar `Channel(` i `ui/`; appen riktar sig mot Android 16 (targetSdk 36); effekter anropar alltid den senaste callbacken, och en rad som arkiveras eller en chiprad som byter radbrytning behåller sitt tillstånd; Material 3 är uppgraderat från alfa till 1.5.0-beta01; temat och elva komponenter kommer från det gemensamma komponentbiblioteket android-ui 0.1.0 i stället för egna kopior (#126); fler komponenter (kort, fält, val, pills, stegare, tomt läge, läsfel, snackbars, tidsfält) och ramarnas tillstånd (list-, detalj- och formulärtillstånd, felen som `UiError`) kommer från android-ui 0.2.0, och `ApotekCard` heter `AppCard` (#129). Ingen synlig ändring. |
 | 0.6.0 | Listrader, paneler, meny, dialoger, datumfält, emojival, verktygsraden och skärmramarna (lista, redigering, detalj) kommer från komponentbiblioteket android-ui 0.4.0 i stället för egna kopior (#131), sedan höjt till android-ui 0.5.0 (#133). Synligt: panelernas knapprad ("Klar", "Lägg till") står fast i botten ovanför tangentbordet (NFR-21); i formulären hamnar fältet man skriver i ovanför tangentbordet (NFR-2); den hopfällbara gruppen Dolda har en högre rubrik som läses som knapp och en fjädrande pil (NFR-1); emojivalet markerar den valda med samma ring som färgvalet (PER-2). |
 | 0.6.1 | Komponentbiblioteket android-ui höjt till 0.9.2 (#141), med bibliotekets rättningar: Ångra får sina 5 sekunder från att meddelandet syns (NFR-3); formulärets meny visas först när uppgifterna är lästa (NFR-2); "Försök igen" under en pågående läsning visar inte läsfel; samma utseende som förut. Inställningar → Data & backup säger att en krypterad backup tas vid behov i stället för varje vecka, och backupen kan inte laddas upp som artifact om repot är publikt (#140, BCK-2, SET-5). |
-| 0.6.2 | Nytt kodpaket `se.kodhast.reseapoteket` och android-ui 1.0.0 från Kodhast. Inget nytt för användaren: appens id är detsamma, så appen uppdateras ovanpå den gamla och ikonen ligger kvar. **Öppna appen en gång efter uppdateringen**, för först då köas påminnelserna om (#156). |
+| 0.6.2 | Nytt kodpaket `se.kodhast.reseapoteket` och android-ui 1.0.0 från Kodhast. Inget nytt för användaren: appens id är detsamma, så appen uppdateras ovanpå den gamla och ikonen ligger kvar. Påminnelser och "Senare" från före uppdateringen fungerar som förut (#156). |

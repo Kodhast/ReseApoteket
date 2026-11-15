@@ -7,7 +7,7 @@ import androidx.core.app.NotificationManagerCompat
 import kotlin.time.Clock
 
 /** "Senare" i en påminnelse: notisen försvinner och kommer igen om en timme (PÅM-7). */
-class ReminderSnoozeReceiver : BroadcastReceiver() {
+open class ReminderSnoozeReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val key = intent.getStringExtra(EXTRA_KEY) ?: return

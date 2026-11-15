@@ -89,6 +89,7 @@ import se.kodhast.ui.components.ListArchive
 import se.kodhast.ui.components.ListGroup
 import se.kodhast.ui.components.ListSubgroup
 import se.kodhast.ui.components.LocalTopBarStatus
+import se.kodhast.ui.components.MakerMark
 import se.kodhast.ui.components.PausableRow
 import se.kodhast.ui.components.QuantityStepper
 import se.kodhast.ui.components.SectionHeader
@@ -326,6 +327,7 @@ private fun Overlays() {
     EmptyState(R.drawable.ic_family_items, "Inga familjeartiklar än", "Solkräm, plåster, febertermometer – saker hela familjen delar.") {
         AppButton("Lägg till", {}, Modifier.fillMaxWidth(), icon = R.drawable.ic_add)
     }
+    AppCard { MakerMark() }
     Box(Modifier.fillMaxWidth().height(120.dp)) {
         AppButton("Allt packat!", { celebrate = !celebrate }, Modifier.align(Alignment.Center), variant = ButtonVariant.Text)
         Confetti(Modifier.fillMaxSize(), play = celebrate)

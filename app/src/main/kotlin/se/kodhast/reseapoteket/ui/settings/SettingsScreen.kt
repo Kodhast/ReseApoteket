@@ -347,7 +347,7 @@ fun SettingsContent(
                 ItemRow(
                     stringResource(R.string.app_name),
                     subtitle = stringResource(R.string.settings_version_format, versionName),
-                    below = { MakerMark(Modifier.padding(top = Spacing.xs)) }
+                    below = { MakerMark() }
                 )
                 medicinesUpdated?.let {
                     AppDivider()

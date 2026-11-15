@@ -36,7 +36,7 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Resenärer på en resa | `AvatarStack` | överlappande `PersonAvatar` (Small) med ring; TalkBack läser namnen |
 | Pausbar rad (recept, kosttillskott, familjeartikel) | `PausableRow` *(android-ui)* | `ItemRow` + typ som `InfoPill` (`pillTone = Tone.Blue`); pausad nedtonad med "Pausat" |
 | Kryssrad | `CheckRow` *(android-ui)* | `ItemRow` + formmorfande kryss; med `onClick` är krysset en egen knapp (läses med namn och mängd) och raden öppnar detaljer; `accent` = personens färg |
-| Sektionsrubrik med räknare | `SectionHeader` *(android-ui)* | `InfoPill` för räknaren |
+| Sektionsrubrik med räknare | `SectionHeader` *(android-ui)* | `InfoPill` för räknaren; utan ikonruta står Kodhästs två prickar före titeln (`AppBrandStyle.sectionDots`, NFR-22) |
 | Gruppetikett över kort | `GroupLabel` *(android-ui)* | versal liten text, läses som rubrik |
 | Formulärfält med etikett (val, väljare, dosering) | `LabeledGroup` *(android-ui)* | `GroupLabel` ovanför innehållet, valfri `helper` under och fältfel (`error`, `FieldError`) |
 | Fel under ett fält eller i en panel | `FieldError` *(android-ui)* | Felfärg, läses som fel; ett skrivfel i ett bottom sheet visas via `AppBottomSheet(error)` |
@@ -56,8 +56,9 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Dosering | `DoseScheduleRow` | `AppFilterChip` + `QuantityStepper`; valideringsfel (`error`) under fälten |
 | Mängdregel | `QuantityRuleRow` | `AppFilterChip` + `QuantityStepper`; valideringsfel (`error`) under fälten |
 | Packprogress | `SuitcaseProgress` | Expressive vågig progress, `compact`-parameter; allt packat → "Allt packat! 🧳" |
-| Laddning | `AppLoading` *(android-ui)* | Expressive laddningsindikator |
-| Tomt tillstånd | `EmptyState` *(android-ui)* | ikon + text + `AppButton` |
+| Laddning | `AppLoading` *(android-ui)* | två hoppande prickar i `primary` (`AppBrandStyle.dotLoading`, NFR-22), stilla utan systemets animeringar; läses "Laddar" |
+| Tomt tillstånd | `EmptyState` *(android-ui)* | ikon + text + `AppButton`; fullstort utan fel visar hästen (`BrandMark`) i ikonrutan (`AppBrandStyle.emptyStateMark`, NFR-22) |
+| Kodhästs signatur | `MakerMark` *(android-ui)* | `BrandMark` + "En kodhäst-app" i `caption`/`onSurfaceVariant`; under versionen i Om (SET-6) |
 | Bekräftelse | `ConfirmDialog` *(android-ui)* | M3 dialog, `destructive`-parameter; "Släng ändringar?" är `DiscardChangesDialog` och radering `DeleteConfirmDialog` (båda i biblioteket, används av ramarna) |
 | Bottom sheet | `AppBottomSheet` *(android-ui)* | M3 modal sheet; scrollar när innehållet är högre än skärmen; arkets knapprad ("Klar", "Lägg till") läggs i `footer` och står fast i botten ovanför tangentbordet (NFR-21) |
 | Meddelande | `AppSnackbarHost` *(android-ui)* | M3 snackbar; ramarna har var sin för skärmens åtgärder, `AppNavHost` en för appens synkmeddelanden (NFR-6) – ett pågående meddelande ersätts aldrig av ett annat |

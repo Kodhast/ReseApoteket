@@ -88,9 +88,15 @@ class AppBackStack internal constructor(current: TopLevelKey, stacks: Map<TopLev
     companion object {
         private val json = Json
 
-        internal fun restore(saved: String): AppBackStack {
+        /**
+         * Nycklarna sparas med klassnamn, så ett läge från före paketbytet (#156) eller från en
+         * äldre version går inte att läsa: då startar appen på Resor i stället för att krascha.
+         */
+        internal fun restore(saved: String): AppBackStack = try {
             val state = json.decodeFromString(Saved.serializer(), saved)
-            return AppBackStack(state.current, TOP_LEVEL.zip(state.stacks).toMap())
+            AppBackStack(state.current, TOP_LEVEL.zip(state.stacks).toMap())
+        } catch (_: IllegalArgumentException) { // SerializationException ärver av den
+            AppBackStack()
         }
 
         /** Sparas som JSON, så att flikarnas stackar överlever rotation och processdöd. */

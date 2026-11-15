@@ -33,6 +33,18 @@ class TripLinkTest {
     }
 
     @Test
+    fun `en notis som skapades före paketbytet (#156) öppnar resan via det gamla aliasnamnet`() {
+        val legacy = Intent().setClassName(context, TripLink.LEGACY_ALIAS).putExtra(TripLink.EXTRA_TRIP_ID, "gran-canaria")
+        assertEquals("gran-canaria", TripLink.tripId(legacy))
+        TripLink.consume(legacy)
+        assertNull(TripLink.tripId(legacy))
+        // Det gamla namnet är ingen genväg förbi giltighetskontrollen.
+        assertNull(TripLink.tripId(Intent().setClassName(context, TripLink.LEGACY_ALIAS).putExtra(TripLink.EXTRA_TRIP_ID, "../t1")))
+        // Det gamla MainActivity-namnet är startikonens alias, inte notisens: det ger ingen resa.
+        assertNull(TripLink.tripId(Intent().setClassName(context, "se.partee71.reseapoteket.MainActivity").putExtra(TripLink.EXTRA_TRIP_ID, "gran-canaria")))
+    }
+
+    @Test
     fun `ogiltiga ID ignoreras`() {
         listOf("", "a/b", "../t1", "x".repeat(2000)).forEach { id ->
             assertNull(TripLink.tripId(TripLink.intent(context, id)), id)
@@ -53,6 +65,13 @@ class TripLinkTest {
     @Test
     fun `aliaset finns i manifestet, pekar på MainActivity och är inte exporterat`() {
         val info = context.packageManager.getActivityInfo(android.content.ComponentName(context, TripLink.ALIAS), PackageManager.GET_META_DATA)
+        assertEquals(MainActivity::class.java.name, info.targetActivity)
+        assertEquals(false, info.exported)
+    }
+
+    @Test
+    fun `det gamla aliasnamnet finns i manifestet, pekar på MainActivity och är inte exporterat`() {
+        val info = context.packageManager.getActivityInfo(android.content.ComponentName(context, TripLink.LEGACY_ALIAS), PackageManager.GET_META_DATA)
         assertEquals(MainActivity::class.java.name, info.targetActivity)
         assertEquals(false, info.exported)
     }

@@ -43,7 +43,7 @@ bygger kravet. Arkitekturbesluten bakom TP-kraven står i [ARKITEKTUR.md](ARKITE
 
 | ID | Krav |
 |----|------|
-| NAV-1 | Toppnivå med fyra flikar – **Resor**, **Personer**, **Familjeartiklar**, **Inställningar** – i en flytande verktygsrad. Appen startar på Resor. |
+| NAV-1 | Toppnivå med fyra flikar – **Resor**, **Personer**, **Familjeartiklar**, **Inställningar** – i en flytande verktygsrad. Appen startar på Resor, också när ett sparat läge inte går att läsa (till exempel från före paketbytet, #156). |
 | NAV-2 | Underskärmar döljer verktygsraden; fliktillstånd bevaras vid byte. Tillbaka i en annan fliks rot går till Resor; tillbaka i Resor lämnar appen. Ett dubbeltryck öppnar en skärm en gång, och en skärm som stänger sig två gånger stänger aldrig skärmen under. |
 | NAV-3 | Alla skärmbyten använder samma rörelse. |
 

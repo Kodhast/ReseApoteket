@@ -74,6 +74,24 @@ class AppBackStackTest {
     }
 
     @Test
+    fun `ett läge sparat före paketbytet (#156) ger startskärmen och ingen krasch`() {
+        // Nycklarna sparas med klassnamn (polymorfisk serialisering); så här såg JSON ut med se.partee71.
+        val old = "se.partee71.reseapoteket.navigation"
+        val saved = """{"current":{"type":"$old.PersonsKey"},"stacks":[[{"type":"$old.TripsKey"},{"type":"$old.PackingListKey","tripId":"resa-1"}],""" +
+            """[{"type":"$old.PersonsKey"}],[{"type":"$old.FamilyItemsKey"}],[{"type":"$old.SettingsKey"}]]}"""
+
+        val restored = AppBackStack.restore(saved)
+
+        assertEquals(listOf<AppKey>(TripsKey), restored.entries)
+        assertEquals(TripsKey, restored.currentTab)
+    }
+
+    @Test
+    fun `ett oläsligt sparat läge ger startskärmen`() {
+        assertEquals(listOf<AppKey>(TripsKey), AppBackStack.restore("inte json").entries)
+    }
+
+    @Test
     fun `ett dubbeltryck öppnar skärmen en gång (NAV-2)`() {
         val stack = AppBackStack()
         stack.push(TripEditKey())

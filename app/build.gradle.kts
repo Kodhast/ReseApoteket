@@ -32,10 +32,12 @@ private fun signingValue(key: String) = localProps.getProperty("signing.$key") ?
 private fun String.toScreamingSnake() = replace(Regex("([a-z])([A-Z])"), "$1_$2").uppercase()
 
 android {
-    namespace = "se.partee71.reseapoteket"
+    namespace = "se.kodhast.reseapoteket"
     compileSdk = 37
 
     defaultConfig {
+        // Appens id står kvar efter bytet till se.kodhast.reseapoteket: telefonerna uppdaterar samma
+        // app, och Firebase-inloggningen är knuten till id:t (#156).
         applicationId = "se.partee71.reseapoteket"
         minSdk = 30
         targetSdk = 36

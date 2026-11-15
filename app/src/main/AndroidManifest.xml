@@ -19,12 +19,19 @@
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true" />
+
+        <!-- Startikonen bär MainActivitys namn från före bytet till se.kodhast.reseapoteket, så att
+             hemskärmens genväg ligger kvar efter uppdateringen (#156). -->
+        <activity-alias
+            android:name="se.partee71.reseapoteket.MainActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
 
         <!-- Påminnelsens länk till en resa (PÅM-7): bara appens egna notiser når aliaset, och bara
              via det läser MainActivity resan (reminders/TripLink). -->
@@ -33,9 +40,20 @@
             android:exported="false"
             android:targetActivity=".MainActivity" />
 
+        <!-- Samma länk under namnet från före paketbytet, för en notis som redan ligger framme när
+             appen uppdateras (#156). -->
+        <activity-alias
+            android:name="se.partee71.reseapoteket.OpenTripFromReminder"
+            android:exported="false"
+            android:targetActivity=".MainActivity" />
+
         <!-- "Senare" i en påminnelse (PÅM-7) – bara appens egna notiser når den. -->
         <receiver
             android:name=".reminders.ReminderSnoozeReceiver"
+            android:exported="false" />
+        <!-- "Senare" i en notis från före paketbytet pekar på det gamla namnet (#156). -->
+        <receiver
+            android:name="se.partee71.reseapoteket.reminders.ReminderSnoozeReceiver"
             android:exported="false" />
 
         <!-- "Exportera som JSON" (SET-5): delningsmenyn får läsa exportfilen, och bara den. -->

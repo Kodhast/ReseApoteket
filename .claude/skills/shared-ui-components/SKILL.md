@@ -15,7 +15,7 @@ agenter länkar hit – de kopierar dem inte. Komponenttabellen och ramtabellen 
 komponent, komponentnamnet i backticks först i kolumn två.
 
 > Rader märkta *(android-ui)* är komponenter ur det gemensamma biblioteket
-> [android-ui](https://github.com/ParTee71/android-ui) (`se.partee71.ui.components`, sedan #126; fler komponenter och tillståndsmodulen `ui-common` sedan #129; listrader, ark, meny, dialoger, datumfält, emojival och de tre ramarna med `ArchiveActions` sedan #131, android-ui 0.4.0) –
+> [android-ui](https://github.com/Kodhast/android-ui) (`se.kodhast.ui.components`, sedan #126; fler komponenter och tillståndsmodulen `ui-common` sedan #129; listrader, ark, meny, dialoger, datumfält, emojival och de tre ramarna med `ArchiveActions` sedan #131, android-ui 0.4.0) –
 > appen har ingen egen kopia, och en ändring görs i biblioteket. Temat (`AppTheme`, `Spacing`,
 > `AppShapes`, `AppTypography`, `ExtendedColors`, `Tone`) kommer också därifrån (skill `ui-style`).
 > `UiConsistencyTest` kontrollerar att de finns i biblioteket och i `ComponentGallery`.

@@ -9,9 +9,9 @@
   },
   "hint": "Använd den delade komponenten/ramen/byggstenen (skill shared-ui-components). Behövs en variant: utöka den delade delen med en parameter.",
   "examples": {
-    "ok": { "file": "app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt", "expect": "ok" },
-    "stopp": { "file": "app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt", "expect": "stopp" },
-    "komponent-ok": { "file": "app/src/main/kotlin/se/partee71/reseapoteket/ui/components/X.kt", "expect": "ok" },
-    "allowlist": { "file": "app/src/main/kotlin/se/partee71/reseapoteket/ui/trips/TripRow.kt" }
+    "ok": { "file": "app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt", "expect": "ok" },
+    "stopp": { "file": "app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt", "expect": "stopp" },
+    "komponent-ok": { "file": "app/src/main/kotlin/se/kodhast/reseapoteket/ui/components/X.kt", "expect": "ok" },
+    "allowlist": { "file": "app/src/main/kotlin/se/kodhast/reseapoteket/ui/trips/TripRow.kt" }
   }
 }

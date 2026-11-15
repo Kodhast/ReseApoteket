@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { COLLECTIONS } from '../lib/collections.mjs';
 import { readRepoFile as read } from './helpers/repo.mjs';
-const pathsKt = read('app/src/main/kotlin/se/partee71/reseapoteket/data/firestore/Paths.kt');
+const pathsKt = read('app/src/main/kotlin/se/kodhast/reseapoteket/data/firestore/Paths.kt');
 
 /** Platshållare ({hid}, $personId …) jämförs bara till sin position. */
 const normalize = (p) => p.replace(/\$\{?\w+\}?|\{\w+\}/g, '{}');

@@ -192,7 +192,7 @@ avsnittet Mockup här och `ui-style`; beräkningar → `packing-engine`.
 ## Issues (android:refine-issue)
 
 - **Repo:** owner `ParTee71`, repo `ReseApoteket`; dubblettsökning med
-  `mcp__github__search_issues` (`repo:ParTee71/ReseApoteket <ord>`).
+  `mcp__github__search_issues` (`repo:Kodhast/ReseApoteket <ord>`).
 - **Extra undersökningspunkter:** berörs en formel → skill `packing-engine` och BER-kraven; loggas,
   lagras eller exporteras receptdata (hälsodata) → skill `data-privacy-security`.
 - **Datakedjan i DoD:** modell med default, codec, `firestore.rules`, `tools/db/lib/collections.mjs`

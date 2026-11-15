@@ -13,7 +13,7 @@
     <string name="update_required_message">Ert hushåll har sparats med en nyare version av ReseApoteket. Installera den senaste versionen för att fortsätta.</string>
     <string name="update_required_note">Ingenting av hushållets data ändras förrän appen är uppdaterad.</string>
     <string name="update_required_action">Hämta senaste versionen</string>
-    <string name="releases_url" translatable="false">https://github.com/ParTee71/ReseApoteket/releases/latest</string>
+    <string name="releases_url" translatable="false">https://github.com/Kodhast/ReseApoteket/releases/latest</string>
 
     <!-- Felmeddelanden – enda stället (NFR-5, DataError.toMessage) -->
     <string name="error_offline">Ingen anslutning just nu. Det du sparar skickas när nätet är tillbaka.</string>
@@ -344,7 +344,7 @@
     <string name="settings_export_busy">Exporterar …</string>
     <string name="settings_export_chooser">Exportera hushållet</string>
     <string name="settings_source">Källkod</string>
-    <string name="settings_source_url" translatable="false">https://github.com/ParTee71/ReseApoteket</string>
-    <string name="settings_source_note" translatable="false">github.com/ParTee71/ReseApoteket</string>
+    <string name="settings_source_url" translatable="false">https://github.com/Kodhast/ReseApoteket</string>
+    <string name="settings_source_note" translatable="false">github.com/Kodhast/ReseApoteket</string>
     <string name="household_edit">Hushåll</string>
 </resources>

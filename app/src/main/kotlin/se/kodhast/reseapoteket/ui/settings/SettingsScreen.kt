@@ -74,6 +74,7 @@ import se.kodhast.ui.components.FieldError
 import se.kodhast.ui.components.GroupLabel
 import se.kodhast.ui.components.ItemRow
 import se.kodhast.ui.components.LocalBottomClearance
+import se.kodhast.ui.components.MakerMark
 import se.kodhast.ui.components.QuantityStepper
 import se.kodhast.ui.components.SwitchRow
 import se.kodhast.ui.theme.Spacing
@@ -343,7 +344,11 @@ fun SettingsContent(
             }
             GroupLabel(stringResource(R.string.settings_about))
             AppCard {
-                ItemRow(stringResource(R.string.app_name), subtitle = stringResource(R.string.settings_version_format, versionName))
+                ItemRow(
+                    stringResource(R.string.app_name),
+                    subtitle = stringResource(R.string.settings_version_format, versionName),
+                    below = { MakerMark(Modifier.padding(top = Spacing.xs)) }
+                )
                 medicinesUpdated?.let {
                     AppDivider()
                     ItemRow(stringResource(R.string.settings_medicines), subtitle = stringResource(R.string.settings_medicines_note, DateFormat.display(it)))

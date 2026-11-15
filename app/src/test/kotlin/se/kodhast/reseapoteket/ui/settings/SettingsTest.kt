@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -18,6 +19,7 @@ import app.cash.turbine.test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Instant
 import kotlinx.coroutines.CompletableDeferred
@@ -227,6 +229,15 @@ class SettingsTest {
         scrollTo("Komponenter")
         rule.onNodeWithText("Komponenter").performClick()
         assertEquals(1, opened)
+    }
+
+    @Test
+    fun `signaturen En kodhäst-app står under versionen i Om (SET-6)`() {
+        show(state)
+        scrollTo("En kodhäst-app")
+        val version = rule.onNodeWithText("Version 0.1.0", useUnmergedTree = true).assertIsDisplayed().getUnclippedBoundsInRoot()
+        val signature = rule.onNodeWithText("En kodhäst-app", useUnmergedTree = true).assertIsDisplayed().getUnclippedBoundsInRoot()
+        assertTrue(signature.top >= version.bottom)
     }
 
     @Test

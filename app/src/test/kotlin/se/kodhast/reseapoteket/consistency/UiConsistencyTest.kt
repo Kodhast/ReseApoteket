@@ -172,7 +172,8 @@ class UiConsistencyTest {
             file.entries().asSequence()
                 .map { it.name }
                 .filter { it.startsWith("$dir/") && it.endsWith("Kt.class") && it.count { c -> c == '/' } == dir.count { c -> c == '/' } + 1 }
-                .map { Class.forName(it.removeSuffix(".class").replace('/', '.')) }
+                // Utan initiering: en fil med en Path på toppnivå (BrandMark) kräver Android för att initieras.
+                .map { Class.forName(it.removeSuffix(".class").replace('/', '.'), false, javaClass.classLoader) }
                 // En parameter av value-klass (Color, Dp) ger ett manglat namn: AppCard-xyz.
                 .flatMap { cls -> cls.methods.filter { java.lang.reflect.Modifier.isStatic(it.modifiers) }.map { it.name.substringBefore('-') } }
                 .toSet()

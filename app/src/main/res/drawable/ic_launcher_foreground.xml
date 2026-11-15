@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Appikonen (förslag A, "Resväskan"): resväska med apotekskors, inom den adaptiva ikonens
-     säkra zon. Korset är ett hål (evenOdd) så att bakgrunden syns igenom. Används också som
+<!-- Appikonen (förslag A, "Resväskan"): resväska med apotekskors och Kodhästs två prickar uppe
+     till vänster (NFR-19), allt inom den adaptiva ikonens säkra zon (radie 33 kring 54 · 54).
+     Korset är ett hål (evenOdd) så att bakgrunden syns igenom. Används också som
      enfärgad temaikon (Android 13+): systemet läser bara formen och färgar den själv. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -12,7 +13,7 @@
         android:pivotY="56"
         android:scaleX="0.82"
         android:scaleY="0.82"
-        android:translateY="-2">
+        android:translateX="2">
         <path
             android:pathData="M44,41 V33 A5,5 0 0 1 49,28 H59 A5,5 0 0 1 64,33 V41"
             android:strokeColor="@color/ic_launcher_symbol"
@@ -26,4 +27,7 @@
             android:fillColor="@color/ic_launcher_symbol"
             android:pathData="M35.5,83 A3.5,3.5 0 1 0 42.5,83 A3.5,3.5 0 1 0 35.5,83 Z M65.5,83 A3.5,3.5 0 1 0 72.5,83 A3.5,3.5 0 1 0 65.5,83 Z" />
     </group>
+    <path
+        android:fillColor="@color/ic_launcher_symbol"
+        android:pathData="M31,35 A2.5,2.5 0 1 0 36,35 A2.5,2.5 0 1 0 31,35 Z M39,35 A2.5,2.5 0 1 0 44,35 A2.5,2.5 0 1 0 39,35 Z" />
 </vector>

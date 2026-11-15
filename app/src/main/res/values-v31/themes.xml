@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: startskärmen visar Kodhästs ordmärke under ikonen (NFR-22). -->
+    <style name="Theme.ReseApoteket" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowSplashScreenBrandingImage">@drawable/kodhast_branding</item>
+    </style>
+</resources>

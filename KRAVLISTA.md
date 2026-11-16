@@ -230,7 +230,7 @@ Struktur och fält står bara i ARKITEKTUR.md → "Datamodell"; här står det s
 | NFR-17 | Release-APK:n heter `ReseApoteket-<version>-<ÅÅÅÅMMDD-HHMM>.apk` – appens namn, versionen och byggtiden i UTC (`release.yml`). |
 | NFR-18 | Textfältens tangentbord börjar med stor bokstav (första ordet i varje mening); sifferfält visar siffertangentbordet. |
 | NFR-19 | Appikonen är en resväska med apotekskors i krämvitt på terrakotta, med Kodhästs två prickar uppe till vänster (NFR-22) – en adaptiv ikon som också fungerar som enfärgad temaikon (Android 13+); allt ligger inom ikonens säkra zon. |
-| NFR-22 | **Kodhäst-igenkänningen** (avsändaren Kodhäst, i appens egna färger och typsnitt; ingen Kodhäst-färg): startskärmen visar ordmärket "kodhäst" under ikonen (Android 12+, ljust och mörkt); fullstora tomma lägen utan fel – även inloggningen och "Uppdatera appen" – visar hästen i ikonrutan; laddning visas som två hoppande prickar (stilla när systemets animeringar är avstängda) med samma text för skärmläsare ("Laddar"); en sektionsrubrik utan ikonruta får två prickar före titeln. Signaturen står i Om (SET-6) och prickarna i appikonen (NFR-19). |
+| NFR-22 | **Kodhäst-igenkänningen** (avsändaren Kodhäst, i appens egna färger och typsnitt; ingen Kodhäst-färg): startskärmen visar ordmärket "kodhäst" under ikonen (Android 12+, ljust och mörkt); fullstora tomma lägen utan fel – även "Uppdatera appen" – visar hästen i ikonrutan; inloggningen visar appens resväska; laddning visas som två hoppande prickar (stilla när systemets animeringar är avstängda) med samma text för skärmläsare ("Laddar"); en sektionsrubrik utan ikonruta får två prickar före titeln. Signaturen står i Om (SET-6) och prickarna i appikonen (NFR-19). |
 
 ---
 

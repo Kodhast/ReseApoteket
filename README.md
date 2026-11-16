@@ -233,3 +233,4 @@ Versionen och raden nedan höjs och skrivs i funktions-PR:en; releasen görs via
 | 0.7.0 | Kodhäst-igenkänningen (#155, NFR-22): signaturen "En kodhäst-app" under versionen i Inställningar, två prickar i appikonen, ordmärket på startskärmen (Android 12+), hästen i tomma lägen och på inloggningen, och två hoppande prickar som laddning – i appens egna färger. android-ui 1.1.0. |
 | 0.7.1 | Inloggningen visar resväskan igen i stället för Kodhästs häst (NFR-22). |
 | 0.8.0 | **Djup och tryckkänsla** (NFR-23, android-ui 1.4.1): knappar, kort, valda chips och flikar, kryss, stegare, växlar, fältet i fokus, meddelanden, menyer och dialoger får en hårfin kant, ljuskant, svagt skimmer och mjuk koppartonad skugga (i mörkt bär den ljusa kanten djupet), och knappar sjunker in när de trycks. Färgerna är desamma. |
+| 0.8.1 | Uppdaterad läkemedelslista (16 nov 2026). Listskriptet hittar Läkemedelsverkets fil även när sidan inte längre länkar till den (#167). |

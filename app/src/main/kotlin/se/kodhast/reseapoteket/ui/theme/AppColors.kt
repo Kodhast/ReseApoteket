@@ -4,6 +4,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
+import se.kodhast.ui.theme.AppDepth
 import se.kodhast.ui.theme.ExtendedColors
 import se.kodhast.ui.theme.Tone
 import se.kodhast.ui.theme.ToneColors
@@ -121,6 +122,25 @@ object AppColors {
             Tone.Blue to ToneColors(Color(0xFFE2EFF6), Color(0xFF1F4C66))
         ),
         accents = PERSON_HEX.map(::parse)
+    )
+
+    /**
+     * Djupet (android-ui `AppDepth`, NFR-23): i ljust skuggor och korthörn tonade mot mörk koppar, i mörkt en ljus
+     * kant och ljuskant som bär djupet medan skuggan knappt syns.
+     */
+    val lightDepth = AppDepth(
+        highlight = Color.White.copy(alpha = 0.30f),
+        sheen = Color.White.copy(alpha = 0.12f),
+        shadow = Color(0xFF7A2E18).copy(alpha = 0.34f),
+        cardEdge = Color(0xFF7A2E18).copy(alpha = 0.07f),
+        cardShadow = Color(0xFF7A2E18).copy(alpha = 0.18f)
+    )
+    val darkDepth = AppDepth(
+        highlight = Color.White.copy(alpha = 0.40f),
+        sheen = Color.White.copy(alpha = 0.14f),
+        shadow = Color.Black.copy(alpha = 0.55f),
+        cardEdge = Color.White.copy(alpha = 0.07f),
+        cardShadow = Color.Black.copy(alpha = 0.55f)
     )
 
     val darkExtended = ExtendedColors(

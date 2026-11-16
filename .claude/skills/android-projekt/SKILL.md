@@ -137,7 +137,7 @@ Processen (när, hur, visa och vänta) står i pluginen; det här är ReseApotek
 
 Stegen står i pluginen; det här är ReseApotekets delar.
 
-- **Repo:** owner `ParTee71`, repo `ReseApoteket`, basbranch `master`. Issues och PR:er läses och
+- **Repo:** owner `Kodhast`, repo `ReseApoteket`, basbranch `master`. Issues och PR:er läses och
   skrivs med GitHub MCP.
 - **Databasen i tester:** tester i `tools/db` körs bara mot Firebase-emulatorn, aldrig mot den
   riktiga databasen (skill `data-safety-backup`).
@@ -191,7 +191,7 @@ avsnittet Mockup här och `ui-style`; beräkningar → `packing-engine`.
 
 ## Issues (android:refine-issue)
 
-- **Repo:** owner `ParTee71`, repo `ReseApoteket`; dubblettsökning med
+- **Repo:** owner `Kodhast`, repo `ReseApoteket`; dubblettsökning med
   `mcp__github__search_issues` (`repo:Kodhast/ReseApoteket <ord>`).
 - **Extra undersökningspunkter:** berörs en formel → skill `packing-engine` och BER-kraven; loggas,
   lagras eller exporteras receptdata (hälsodata) → skill `data-privacy-security`.
@@ -220,7 +220,7 @@ avsnittet Mockup här och `ui-style`; beräkningar → `packing-engine`.
 
 - **Versionsfilen** är `version.properties` (`versionCode`, `versionName`) i roten, utanför
   CI-filtren; README:s rad står under "Versionshistorik". Båda höjs i funktions-PR:en.
-- **Workflow:** `release.yml` (owner `ParTee71`, repo `ReseApoteket`), jobben:
+- **Workflow:** `release.yml` (owner `Kodhast`, repo `ReseApoteket`), jobben:
   - `gate` (sekunder): commiten ligger på `master`, versionen är `versionName` i
     `version.properties`, taggen finns inte, secrets finns och `ci-ok` är grönt på commiten –
     master-pushen har kört alla tester, `cpdCheck`, rules-tester och dokumentkontroller, och de

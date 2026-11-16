@@ -2,6 +2,7 @@ package se.kodhast.reseapoteket.ui.auth
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import kotlin.test.assertEquals
@@ -31,6 +32,12 @@ class AuthScreensTest {
         rule.onNodeWithText("Logga in med Google").performClick()
 
         assertIs<AuthEvent.SignIn>(events.single())
+    }
+
+    @Test
+    fun `inloggningen visar resväskan, inte Kodhästs häst (NFR-22)`() {
+        rule.setContent { ReseApoteketTheme { AppRootContent(AuthUiState(AuthGate.SignedOut), {}) } }
+        rule.onNodeWithTag("empty-state-mark", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test

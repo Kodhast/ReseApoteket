@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -18,12 +19,12 @@ import se.kodhast.reseapoteket.ui.common.toMessage
 import se.kodhast.ui.components.AppButton
 import se.kodhast.ui.components.AppSnackbarHost
 import se.kodhast.ui.components.EmptyState
+import se.kodhast.ui.components.LocalAppBrandStyle
 import se.kodhast.ui.theme.Spacing
 
 /** Inloggningen (AUTH-1–3). Fel visas som snackbar ovanför knappen; avbrott visas inte alls. */
 @Composable
 fun SignInScreen(state: AuthUiState, onEvent: (AuthEvent) -> Unit, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
     val resources = LocalResources.current
     val snackbar = remember { SnackbarHostState() }
     val error = state.error
@@ -34,6 +35,15 @@ fun SignInScreen(state: AuthUiState, onEvent: (AuthEvent) -> Unit, modifier: Mod
             event(AuthEvent.ErrorShown)
         }
     }
+    // Inloggningen visar appens resväska, inte Kodhästs häst (NFR-22).
+    CompositionLocalProvider(LocalAppBrandStyle provides LocalAppBrandStyle.current.copy(emptyStateMark = false)) {
+        SignInContent(state, onEvent, snackbar, modifier)
+    }
+}
+
+@Composable
+private fun SignInContent(state: AuthUiState, onEvent: (AuthEvent) -> Unit, snackbar: SnackbarHostState, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     EmptyState(
         icon = R.drawable.ic_luggage,
         title = stringResource(R.string.app_name),

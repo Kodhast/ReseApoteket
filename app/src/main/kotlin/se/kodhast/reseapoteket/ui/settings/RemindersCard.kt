@@ -1,32 +1,23 @@
 package se.kodhast.reseapoteket.ui.settings
 
-import android.Manifest
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import kotlinx.datetime.LocalDateTime
 import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.engine.ReminderKind
 import se.kodhast.reseapoteket.core.engine.ReminderSetting
 import se.kodhast.reseapoteket.core.engine.ReminderSettings
-import se.kodhast.reseapoteket.reminders.canPostNotifications
 import se.kodhast.reseapoteket.ui.components.PackingPreview
 import se.kodhast.reseapoteket.ui.components.PersonChip
 import se.kodhast.reseapoteket.ui.theme.AppColors
@@ -38,10 +29,12 @@ import se.kodhast.ui.components.AppDivider
 import se.kodhast.ui.components.ChipRow
 import se.kodhast.ui.components.ItemRow
 import se.kodhast.ui.components.LabeledGroup
+import se.kodhast.ui.components.NoticeBanner
 import se.kodhast.ui.components.QuantityStepper
 import se.kodhast.ui.components.SwitchRow
 import se.kodhast.ui.components.TimeField
 import se.kodhast.ui.theme.AppTheme
+import se.kodhast.ui.theme.Spacing
 
 @StringRes
 private fun ReminderKind.title(): Int = when (this) {
@@ -71,7 +64,7 @@ private fun summary(kind: ReminderKind, setting: ReminderSetting): String {
 /**
  * Kortet Påminnelser i Inställningar (PÅM-1, PÅM-7): vilka personer telefonen påminner för och de
  * fyra påminnelserna. Tryck på en rad öppnar dess inställningar; behörigheten att visa notiser
- * frågas först när användaren slår på något. [notificationsAllowed] styr rutan "Notiser är avstängda".
+ * frågas först när användaren slår på något. [notificationsAllowed] styr bannern "Notiser är avstängda" ovanför kortet.
  */
 @Composable
 fun RemindersCard(
@@ -79,22 +72,39 @@ fun RemindersCard(
     onEvent: (RemindersEvent) -> Unit,
     notificationsAllowed: Boolean,
     onAskPermission: () -> Unit,
-    onOpenNotificationSettings: () -> Unit
+    onOpenNotificationSettings: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var editing by rememberSaveable { mutableStateOf<ReminderKind?>(null) }
     val change = { kind: ReminderKind, setting: ReminderSetting ->
         if (setting.enabled) onAskPermission()
         onEvent(RemindersEvent.Change(kind, setting))
     }
-    AppCard {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.m)) {
+        // Ovanför kortet; hela bannern öppnar systemets notisinställningar (PÅM-7).
         if (!notificationsAllowed) {
-            ItemRow(
-                title = stringResource(R.string.reminders_blocked),
-                subtitle = stringResource(R.string.reminders_blocked_note),
-                trailing = { AppButton(stringResource(R.string.reminders_enable), onOpenNotificationSettings, compact = true) }
+            NoticeBanner(
+                stringResource(R.string.reminders_blocked),
+                R.drawable.ic_notifications_off,
+                onOpenNotificationSettings,
+                onClickLabel = stringResource(R.string.reminders_enable),
+                detail = stringResource(R.string.reminders_blocked_note)
             )
-            AppDivider()
         }
+        RemindersRows(state, onEvent, onAskPermission, change = change, onEdit = { editing = it })
+    }
+    editing?.let { kind -> ReminderSheet(kind, state, { change(kind, it) }, onClose = { editing = null }) }
+}
+
+@Composable
+private fun RemindersRows(
+    state: RemindersUiState,
+    onEvent: (RemindersEvent) -> Unit,
+    onAskPermission: () -> Unit,
+    change: (ReminderKind, ReminderSetting) -> Unit,
+    onEdit: (ReminderKind) -> Unit
+) {
+    AppCard {
         ItemRow(
             title = stringResource(R.string.reminders_persons),
             subtitle = stringResource(R.string.reminders_persons_note),
@@ -118,12 +128,11 @@ fun RemindersCard(
                 setting.enabled,
                 { change(kind, setting.copy(enabled = it)) },
                 subtitle = summary(kind, setting),
-                onClick = { editing = kind },
+                onClick = { onEdit(kind) },
                 onClickLabel = stringResource(R.string.reminder_open_settings)
             )
         }
     }
-    editing?.let { kind -> ReminderSheet(kind, state, { change(kind, it) }, onClose = { editing = null }) }
 }
 
 /** En påminnelses inställningar: på/av, dagar före (där det går), tid och när nästa kommer. */
@@ -156,30 +165,3 @@ private fun ReminderSheet(kind: ReminderKind, state: RemindersUiState, onChange:
 
 @Composable
 private fun nextAt(at: LocalDateTime): String = stringResource(R.string.reminder_next_at, DateFormat.display(at.date), DateFormat.time(at.time))
-
-/**
- * Om appen får visa notiser, kontrollerat varje gång skärmen visas, och hur man ber om det:
- * [NotificationAccess.ask] frågar (Android 13+) om det inte redan är tillåtet, [NotificationAccess.openSettings]
- * öppnar appens notisinställningar.
- */
-class NotificationAccess(val allowed: Boolean, val ask: () -> Unit, val openSettings: () -> Unit)
-
-@Composable
-fun rememberNotificationAccess(): NotificationAccess {
-    val context = LocalContext.current
-    var allowed by remember { mutableStateOf(context.canPostNotifications()) }
-    LifecycleResumeEffect(context) {
-        allowed = context.canPostNotifications()
-        onPauseOrDispose {}
-    }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { allowed = context.canPostNotifications() }
-    return NotificationAccess(
-        allowed = allowed,
-        ask = { if (!allowed && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) launcher.launch(Manifest.permission.POST_NOTIFICATIONS) },
-        openSettings = { context.openNotificationSettings() }
-    )
-}
-
-private fun Context.openNotificationSettings() {
-    startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-}

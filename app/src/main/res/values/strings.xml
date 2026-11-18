@@ -105,7 +105,7 @@
     <string name="reminder_next_trip">%1$s · %2$s reser</string>
     <string name="reminder_open_settings">Ändra påminnelsen</string>
     <string name="reminders_blocked">Notiser är avstängda</string>
-    <string name="reminders_blocked_note">Slå på dem för att få påminnelserna.</string>
+    <string name="reminders_blocked_note">Påminnelserna kan inte visas. Tryck för att slå på notiser för ReseApoteket.</string>
     <string name="reminders_enable">Slå på</string>
     <string name="reminder_channel">Påminnelser inför resan</string>
     <string name="reminder_channel_note">Ingen packlista än, dags att packa, dagen före och resedagen.</string>
@@ -308,7 +308,6 @@
     <string name="settings_about">Om</string>
     <string name="settings_medicines">Läkemedelslista</string>
     <string name="settings_medicines_note">Läkemedelsverket, %1$s · CC BY 4.0</string>
-    <string name="settings_version_format">Version %s</string>
     <string name="settings_components">Komponenter</string>
     <string name="settings_components_note">Bara i debug-bygget</string>
     <string name="settings_household">Hushåll</string>
@@ -319,10 +318,6 @@
     <string name="settings_move_checked_last">Flytta avprickade sist</string>
     <string name="settings_move_checked_last_note">Packade rader hamnar sist hos varje person</string>
     <string name="settings_account">Konto</string>
-    <string name="settings_signed_in">Inloggad med Google</string>
-    <string name="sign_out">Logga ut</string>
-    <string name="sign_out_title">Logga ut?</string>
-    <string name="sign_out_message">Hushållets data finns kvar i molnet. Du loggar in igen med samma Google-konto.</string>
     <string name="settings_data">Data &amp; backup</string>
     <string name="settings_sync_title">Sparas i molnet</string>
     <string name="settings_sync_note">Allt synkas med Firestore och fungerar offline. En krypterad backup kan tas vid behov.</string>

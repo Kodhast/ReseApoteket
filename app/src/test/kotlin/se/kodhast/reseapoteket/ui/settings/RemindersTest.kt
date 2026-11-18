@@ -7,6 +7,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
@@ -160,11 +164,14 @@ class RemindersTest {
     }
 
     @Test
-    fun `avstängda notiser visas med Slå på som öppnar inställningarna`() {
+    fun `avstängda notiser visas som banner som öppnar inställningarna`() {
         var opened = 0
         show(state, allowed = false, onSettings = { opened++ })
-        rule.onNodeWithText("Notiser är avstängda").assertIsDisplayed()
-        rule.onNodeWithText("Slå på").performClick()
+        rule.onNodeWithText("Påminnelserna kan inte visas. Tryck för att slå på notiser för ReseApoteket.", useUnmergedTree = true).assertExists()
+        rule.onNodeWithText("Notiser är avstängda")
+            .assertIsDisplayed()
+            .assert(SemanticsMatcher("TalkBack läser Slå på") { it.config.getOrNull(SemanticsActions.OnClick)?.label == "Slå på" })
+            .performClick()
         assertEquals(1, opened)
     }
 

@@ -1,17 +1,13 @@
 package se.kodhast.reseapoteket.reminders
 
-import android.Manifest
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.os.Build
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,13 +15,7 @@ import kotlinx.datetime.daysUntil
 import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.engine.Reminder
 import se.kodhast.reseapoteket.core.engine.ReminderKind
-
-/** Om appen får visa notiser – annars visas rutan "Notiser är avstängda" i Inställningar (PÅM-7). */
-fun Context.canPostNotifications(): Boolean = NotificationManagerCompat.from(this).areNotificationsEnabled() &&
-    (
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-        )
+import se.kodhast.ui.components.canPostNotifications
 
 /**
  * Rubrik och text för en påminnelse (PÅM-2–5): resans namn och antal, och för resedagen antalet som

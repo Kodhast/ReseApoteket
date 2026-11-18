@@ -62,6 +62,10 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Laddning | `AppLoading` *(android-ui)* | två hoppande prickar i `primary` (`AppBrandStyle.dotLoading`, NFR-22), stilla utan systemets animeringar; läses "Laddar" |
 | Tomt tillstånd | `EmptyState` *(android-ui)* | ikon + text + `AppButton`; fullstort utan fel visar hästen (`BrandMark`) i ikonrutan (`AppBrandStyle.emptyStateMark`, NFR-22) |
 | Kodhästs signatur | `MakerMark` *(android-ui)* | `BrandMark` + "En kodhäst-app" i `caption`/`onSurfaceVariant`; under versionen i Om (SET-6) |
+| Kontot i Inställningar | `AccountRow` *(android-ui)* | `AccountAvatar` (foto eller initialer) + namn och e-post; utan e-post "Inloggad med Google" (SET-4) |
+| Logga ut | `SignOutRow` *(android-ui)* | rad med utloggningsikonen; frågar "Logga ut?" med appens namn, knappen i appens färg (inget raderas), likadan i alla appar (SET-4) |
+| Om-kortet | `AboutCard` *(android-ui)* | appens namn, "Version …" och `MakerMark`; appens egna rader (läkemedelslistan, källkoden, Komponenter) i `extra` (SET-6) |
+| Meddelande överst som leder vidare | `NoticeBanner` *(android-ui)* | `AppCard` i primärtonen med ikon, text, rad under och pil; hela kortet är knappen – "Notiser är avstängda" ovanför Påminnelser (PÅM-7) |
 | Bekräftelse | `ConfirmDialog` *(android-ui)* | M3 dialog, `destructive`-parameter; "Släng ändringar?" är `DiscardChangesDialog` och radering `DeleteConfirmDialog` (båda i biblioteket, används av ramarna) |
 | Bottom sheet | `AppBottomSheet` *(android-ui)* | M3 modal sheet; scrollar när innehållet är högre än skärmen; arkets knapprad ("Klar", "Lägg till") läggs i `footer` och står fast i botten ovanför tangentbordet (NFR-21) |
 | Meddelande | `AppSnackbarHost` *(android-ui)* | M3 snackbar; ramarna har var sin för skärmens åtgärder, `AppNavHost` en för appens synkmeddelanden (NFR-6) – ett pågående meddelande ersätts aldrig av ett annat |
@@ -113,6 +117,7 @@ android-ui `ui-testing` (`runListScreenContract`, `runEditScreenContract`, `runD
 | Visa först efter en fördröjning (indikatorer som inte ska blinka) | `Flow<Boolean>.shownAfter(delay)` *(android-ui, `ui-common`)* |
 | Navigation | `AppKey`, `TOP_LEVEL` och `AddChoice` i `navigation/`; `AppBackStack` = `TabBackStack<AppKey>`, ramen `AppNavHost` och `AppTransitions` *(android-ui, `ui-navigation`)* – appens `AppNavHost` ger bara flikarna och plusmenyn; en påminnelse öppnar med `openInTab(TripsKey, PackingListKey(id))` |
 | Inloggningens ram | `AuthViewModel` (`ui/auth/`) räknar fram `AuthGate` *(android-ui, `ui-common`)*; `AppRoot` ger `AuthGateHost`, `SignInScreen` och `UpdateRequiredScreen` *(android-ui)* appens texter och resväskan (NFR-22) – helskärmar, därför inte i `ComponentGallery` |
+| Notisbehörighet | `rememberNotificationAccess()` och `Context.canPostNotifications()` *(android-ui)* – Inställningarnas banner och `ReminderNotifier` |
 | Synkläget i ramen | `SyncUiState` *(android-ui, `ui-common`)*, byggt i `SyncViewModel` |
 | Feltyp | `DataError` (`Offline`, `PermissionDenied`, `Cancelled`, `UpdateRequired`, `SignInRejected`, `NoHousehold`, `NotFound`, `Unknown`) i `data/common/` |
 | Fel till text | `DataError.toMessage()` i `ui/common/` (appens texter); till ramarna som `UiError` via `AppErrors` (`ErrorMapper`) i `data/common/` – en gång; `NotFound` (raderat) är inte `retryable` och visas utan "Försök igen"; som meddelande via `ErrorSnackbar` (`template` sätter felet i ett sammanhang). `UiError` jämförs på identitet: samma fel två gånger visas två gånger |

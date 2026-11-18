@@ -48,6 +48,13 @@
       }
     },
     {
+      "path": "households/hushall-test/familyItems/tandkram",
+      "data": {
+        "name": "Tandkräm", "category": "HYGIENE", "unit": "TUB", "notes": "", "active": true, "travelDay": true, "travelDayTime": null, "sortOrder": 1, "archived": false,
+        "rule": { "type": "FIXED", "quantity": 1 }
+      }
+    },
+    {
       "path": "households/hushall-test/trips/gran-canaria",
       "data": {
         "name": "Gran Canaria", "startDate": "2026-12-20", "days": 7, "travellerIds": ["erik", "anna"],

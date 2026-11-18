@@ -57,6 +57,7 @@ import se.kodhast.reseapoteket.data.repository.PersonRepository
 import se.kodhast.reseapoteket.data.repository.RegimenRepository
 import se.kodhast.reseapoteket.data.repository.TripRepository
 import se.kodhast.reseapoteket.domain.TripPacking
+import se.kodhast.reseapoteket.ui.common.ListSession
 import se.kodhast.reseapoteket.ui.common.TravelDayChange
 import se.kodhast.ui.common.EditorState
 import se.kodhast.ui.common.ListEvent
@@ -182,7 +183,7 @@ class PackingListViewModel @AssistedInject constructor(
     settings: SettingsStore,
     private val tripPacking: TripPacking,
     private val clock: Clock,
-    private val session: PackingListSession
+    private val session: ListSession
 ) : ViewModel() {
 
     @AssistedFactory
@@ -196,10 +197,10 @@ class PackingListViewModel @AssistedInject constructor(
      * Svep döljer en rad och kan ångras – samma mekanik som arkivering i listorna (NFR-3). "Visa dolda"
      * är dess växel, med läget i [session] så att valet står kvar under appsessionen (PAK-4).
      */
-    val hiding = ArchiveActions(viewModelScope, AppErrors, ::setHidden, R.string.hidden_format, session.showHidden)
+    val hiding = ArchiveActions(viewModelScope, AppErrors, ::setHidden, R.string.hidden_format, session.packingShowHidden)
 
     /** Hopfällda sektioner under appsessionen; `null` är "Dolda" (PAK-1). */
-    val collapsed: StateFlow<Set<PackingGroup?>> = session.collapsed.asStateFlow()
+    val collapsed: StateFlow<Set<PackingGroup?>> = session.packingCollapsed.asStateFlow()
 
     /** Resan som den senast lästs – [Read.trip] `null` om den inte finns; `null` innan den lästs eller vid läsfel. */
     private val tripRead: StateFlow<Read?> = trips.observe(tripId).map { Read(it) }.withFallback(null).stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -232,7 +233,7 @@ class PackingListViewModel @AssistedInject constructor(
         }.stateIn(viewModelScope, SharingStarted.Eagerly, ListUiState.Loading)
 
     /** Listan som den visas: dolda rader bara när "Visa dolda" är valt (PAK-4). */
-    val shown: StateFlow<ListUiState<PackingRow>> = combine(state, session.showHidden) { list, showHidden ->
+    val shown: StateFlow<ListUiState<PackingRow>> = combine(state, session.packingShowHidden) { list, showHidden ->
         if (showHidden || list !is ListUiState.Content) list else ListUiState.Content(list.items.filterNot { it.item.hidden }.toImmutableList())
     }.stateIn(viewModelScope, SharingStarted.Eagerly, ListUiState.Loading)
 
@@ -370,7 +371,7 @@ class PackingListViewModel @AssistedInject constructor(
 
             PackingListEvent.CloseAdd -> openSheet(::closeAdd)
 
-            is PackingListEvent.ToggleGroup -> session.collapsed.update { if (event.group in it) it - event.group else it + event.group }
+            is PackingListEvent.ToggleGroup -> session.packingCollapsed.update { if (event.group in it) it - event.group else it + event.group }
 
             // Ett gammalt fel står inte kvar medan raden ändras.
             is PackingListEvent.AddName -> editNew(ManualItemValidator.NAME) { it.copy(name = event.name) }
@@ -447,7 +448,7 @@ class PackingListViewModel @AssistedInject constructor(
         }
     }
 
-    private fun expand(group: PackingGroup) = session.collapsed.update { it - group }
+    private fun expand(group: PackingGroup) = session.packingCollapsed.update { it - group }
 
     /** Pricka av med tidpunkt (PAK-2). */
     private fun check(id: String, checked: Boolean) {

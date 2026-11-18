@@ -76,6 +76,17 @@ class CodecsTest {
     )
 
     @Test
+    fun `FamilyItemCodec - Hygien överlever rundturen, borttagna och okända kategorier läses som Övrigt (FAM-1)`() {
+        val hygiene = FamilyItem("f1", "Tandkräm", category = FamilyItemCategory.HYGIENE)
+        assertEquals("HYGIENE", FamilyItemCodec.encode(hygiene)["category"])
+        assertEquals(hygiene, FamilyItemCodec.decode("f1", FamilyItemCodec.encode(hygiene)))
+        for (old in listOf("PLASTER", "TOOL", "SOMETHING_NEW")) {
+            val doc = FamilyItemCodec.encode(FamilyItem("f1", "Plåster")) + ("category" to old)
+            assertEquals(FamilyItemCategory.OTHER, FamilyItemCodec.decode("f1", doc).category, old)
+        }
+    }
+
+    @Test
     fun `TripCodec`() = assertCodecContract(
         TripCodec,
         Trip(

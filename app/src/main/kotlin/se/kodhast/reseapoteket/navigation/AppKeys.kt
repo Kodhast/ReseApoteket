@@ -2,6 +2,7 @@ package se.kodhast.reseapoteket.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import se.kodhast.reseapoteket.core.model.FamilyItemCategory
 import se.kodhast.reseapoteket.core.model.RegimenKind
 import se.kodhast.reseapoteket.ui.familyitems.FamilyItemExample
 
@@ -32,9 +33,12 @@ data class PersonEditKey(val personId: String? = null) : AppKey
 @Serializable
 data class RegimenEditKey(val personId: String, val kind: RegimenKind, val regimenId: String? = null) : AppKey
 
-/** En familjeartikel; [itemId] = `null` för en ny, som kan börja från ett [example] (FAM-4). */
+/**
+ * En familjeartikel; [itemId] = `null` för en ny, som kan börja från ett [example] (FAM-4) eller i en
+ * [category] (kategorins plus, FAM-1).
+ */
 @Serializable
-data class FamilyItemEditKey(val itemId: String? = null, val example: FamilyItemExample? = null) : AppKey
+data class FamilyItemEditKey(val itemId: String? = null, val example: FamilyItemExample? = null, val category: FamilyItemCategory? = null) : AppKey
 
 @Serializable
 data class TripEditKey(val tripId: String? = null) : AppKey

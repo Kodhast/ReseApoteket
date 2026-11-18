@@ -15,6 +15,7 @@ import se.kodhast.reseapoteket.data.repository.DefaultPersonRepository
 import se.kodhast.reseapoteket.data.repository.DefaultRegimenRepository
 import se.kodhast.reseapoteket.data.repository.DefaultTripRepository
 import se.kodhast.reseapoteket.testing.MainDispatcherRule
+import se.kodhast.reseapoteket.ui.common.ListSession
 import se.kodhast.reseapoteket.ui.familyitems.FamilyItemsViewModel
 import se.kodhast.reseapoteket.ui.persons.PersonsViewModel
 import se.kodhast.reseapoteket.ui.trips.TripsViewModel
@@ -42,7 +43,7 @@ class TabViewModelsTest {
     @Test
     fun `Resor och Familjeartiklar är tomma utan dokument`() = runTest {
         TripsViewModel(DefaultTripRepository(collections), DefaultPersonRepository(collections), DefaultPackingRepository(collections)).state.test { assertEquals(ListUiState.Empty, expectMostRecentItem()) }
-        FamilyItemsViewModel(DefaultFamilyItemRepository(collections)).state.test { assertEquals(ListUiState.Empty, expectMostRecentItem()) }
+        FamilyItemsViewModel(DefaultFamilyItemRepository(collections), ListSession()).state.test { assertEquals(ListUiState.Empty, expectMostRecentItem()) }
     }
 
     @Test
@@ -52,7 +53,7 @@ class TabViewModelsTest {
         TripsViewModel(DefaultTripRepository(collections), DefaultPersonRepository(collections), DefaultPackingRepository(collections)).state.test {
             assertEquals(listOf("Kreta"), (expectMostRecentItem() as ListUiState.Content).items.map { it.trip.name })
         }
-        FamilyItemsViewModel(DefaultFamilyItemRepository(collections)).state.test {
+        FamilyItemsViewModel(DefaultFamilyItemRepository(collections), ListSession()).state.test {
             assertEquals(listOf("Solkräm"), (expectMostRecentItem() as ListUiState.Content).items.map { it.name })
         }
     }

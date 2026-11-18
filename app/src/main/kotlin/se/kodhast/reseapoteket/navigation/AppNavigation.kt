@@ -103,6 +103,7 @@ fun appEntries(backStack: AppBackStack, tabOwner: ViewModelStoreOwner): (AppKey)
         entry<FamilyItemsKey> {
             FamilyItemsScreen(
                 onAddExample = { backStack.push(FamilyItemEditKey(example = it)) },
+                onAdd = { backStack.push(FamilyItemEditKey(category = it)) },
                 onOpen = { backStack.push(FamilyItemEditKey(it)) },
                 viewModel = hiltViewModel(tabOwner)
             )
@@ -145,7 +146,7 @@ fun appEntries(backStack: AppBackStack, tabOwner: ViewModelStoreOwner): (AppKey)
             val exampleName = key.example?.let { stringResource(it.label) }.orEmpty()
             FamilyItemEditScreen(
                 onClose = { backStack.popIfTop(key) },
-                viewModel = hiltViewModel<FamilyItemEditViewModel, FamilyItemEditViewModel.Factory> { it.create(key.itemId, key.example, exampleName) }
+                viewModel = hiltViewModel<FamilyItemEditViewModel, FamilyItemEditViewModel.Factory> { it.create(key.itemId, key.example, exampleName, key.category) }
             )
         }
         entry<TripEditKey> { key ->

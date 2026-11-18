@@ -45,6 +45,7 @@ import se.kodhast.reseapoteket.domain.TripPacking
 import se.kodhast.reseapoteket.testing.FakeDataStore
 import se.kodhast.reseapoteket.testing.MainDispatcherRule
 import se.kodhast.reseapoteket.testing.StubHouseholds
+import se.kodhast.reseapoteket.ui.common.ListSession
 import se.kodhast.reseapoteket.ui.common.TravelDayChange
 import se.kodhast.ui.common.ListUiState
 import se.kodhast.ui.components.ArchiveEvent
@@ -64,7 +65,7 @@ class PackingListViewModelTest {
     private val packing = DefaultPackingRepository(collections)
     private val tripPacking = TripPacking(trips, persons, regimens, familyItems, StubHouseholds(MutableStateFlow(Household("h1", marginDays = 2))), packing)
     private val settings = SettingsStore(FakeDataStore())
-    private val session = PackingListSession()
+    private val session = ListSession()
     private val kreta = Trip("t1", "Kreta", LocalDate(2026, 10, 2), 7, listOf("anna", "erik"))
 
     private fun viewModel() = PackingListViewModel("t1", trips, persons, regimens, packing, settings, tripPacking, FixedClock(), session)
@@ -418,7 +419,7 @@ class PackingListViewModelTest {
         again.onEvent(PackingListEvent.ToggleGroup(PackingGroup.MEDICINE))
         assertEquals(setOf<PackingGroup?>(null), again.collapsed.value)
 
-        val restarted = PackingListViewModel("t1", trips, persons, regimens, packing, settings, tripPacking, FixedClock(), PackingListSession())
+        val restarted = PackingListViewModel("t1", trips, persons, regimens, packing, settings, tripPacking, FixedClock(), ListSession())
         assertEquals(emptySet(), restarted.collapsed.value, "omstart – allt utfällt")
         assertFalse(restarted.hiding.showingArchived.value, "omstart – dolda gömda")
     }

@@ -300,9 +300,9 @@ private fun Fields() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Progress() {
-    AppCard { SuitcaseProgress(packed = 9, total = 14) }
-    AppCard(tone = Tone.Green) { SuitcaseProgress(packed = 14, total = 14) }
-    SuitcaseProgress(packed = 4, total = 10, compact = true)
+    AppCard { PackedProgress(packed = 9, total = 14) }
+    AppCard { PackedProgress(packed = 14, total = 14) }
+    PackedProgress(packed = 4, total = 10, compact = true)
     Box(Modifier.fillMaxWidth().height(96.dp)) { AppLoading() }
     var tab by remember { mutableIntStateOf(0) }
     AppFloatingToolbar(
@@ -423,7 +423,7 @@ private fun Frames(onBack: () -> Unit) {
             add = AddAction("", {}),
             key = { it.second },
             onBack = {},
-            header = { AppCard { SuitcaseProgress(packed = 2, total = 5) } },
+            header = { AppCard { PackedProgress(packed = 2, total = 5) } },
             group = { (who, _) ->
                 when (who) {
                     "" -> ListGroup("Övrigt", count = "1 / 3", columns = 2)

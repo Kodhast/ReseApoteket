@@ -58,7 +58,7 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Antal ± | `QuantityStepper` *(android-ui)* | M3 ikonknappar i en pill, `label` för TalkBack |
 | Dosering | `DoseScheduleRow` | `AppFilterChip` + `QuantityStepper`; valideringsfel (`error`) under fälten |
 | Mängdregel | `QuantityRuleRow` | `AppFilterChip` + `QuantityStepper`; valideringsfel (`error`) under fälten |
-| Packprogress | `SuitcaseProgress` | Expressive vågig progress, `compact`-parameter; allt packat → "Allt packat! 🧳" |
+| Packprogress | `PackedProgress` | bibliotekets `AppProgress` (android-ui) med packlistans texter: "9 av 14 packat" ovanför ett slätt spår i primärfärgen, allt packat → "14 av 14 · allt packat" i grönt (`ExtendedColors.progressDone`), kortet byter inte färg; `compact` = kort spår och "4 / 10" i resans rad (PAK-5) |
 | Laddning | `AppLoading` *(android-ui)* | två hoppande prickar i `primary` (`AppBrandStyle.dotLoading`, NFR-22), stilla utan systemets animeringar; läses "Laddar" |
 | Tomt tillstånd | `EmptyState` *(android-ui)* | ikon + text + `AppButton`; fullstort utan fel visar hästen (`BrandMark`) i ikonrutan (`AppBrandStyle.emptyStateMark`, NFR-22) |
 | Kodhästs signatur | `MakerMark` *(android-ui)* | `BrandMark` + "En kodhäst-app" i `caption`/`onSurfaceVariant`; under versionen i Om (SET-6) |

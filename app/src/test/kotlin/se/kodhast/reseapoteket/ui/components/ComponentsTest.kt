@@ -21,7 +21,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.testing.captureLightAndDark
-import se.kodhast.reseapoteket.ui.theme.Green
 import se.kodhast.ui.components.AppButton
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppLoading
@@ -30,7 +29,6 @@ import se.kodhast.ui.components.ButtonVariant
 import se.kodhast.ui.components.EmptyState
 import se.kodhast.ui.components.R as UiR
 import se.kodhast.ui.theme.Spacing
-import se.kodhast.ui.theme.Tone
 
 /** Beteende och skärmdumpar (ljust + mörkt) för de delade komponenterna. */
 @RunWith(RobolectricTestRunner::class)
@@ -59,17 +57,17 @@ class ComponentsTest {
         Box(Modifier.background(MaterialTheme.colorScheme.background).padding(Spacing.xxl)) { AppLoading() }
     }
 
-    /** Vågen i `LinearWavyProgressIndicator` rör sig hela tiden – därför regelns testklocka. */
     @Test
-    fun `SuitcaseProgress - varianter`() = rule.captureLightAndDark("SuitcaseProgress_varianter") {
+    fun `PackedProgress - varianter`() = rule.captureLightAndDark("PackedProgress_varianter") {
         Column(
             Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background).padding(Spacing.l),
             verticalArrangement = Arrangement.spacedBy(Spacing.m)
         ) {
-            AppCard { SuitcaseProgress(9, 14) }
-            AppCard(tone = Tone.Green) { SuitcaseProgress(14, 14) }
-            SuitcaseProgress(4, 10, compact = true)
-            SuitcaseProgress(0, 0, compact = true)
+            AppCard { PackedProgress(9, 14) }
+            AppCard { PackedProgress(14, 14) }
+            PackedProgress(4, 10, compact = true)
+            PackedProgress(14, 14, compact = true)
+            PackedProgress(0, 0, compact = true)
         }
     }
 

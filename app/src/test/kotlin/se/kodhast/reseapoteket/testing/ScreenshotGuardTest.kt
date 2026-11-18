@@ -29,6 +29,6 @@ class ScreenshotGuardTest {
         val STANDALONE = Regex("""(?<![.\w])captureLightAndDark\(""")
 
         /** Komponenter vars animation aldrig tar slut. */
-        val ANIMATED = Regex("""\b(AppLoading|LoadingIndicator|\w*WavyProgressIndicator|SuitcaseProgress|ComponentGallery)\(|loading = true""")
+        val ANIMATED = Regex("""\b(AppLoading|LoadingIndicator|\w*WavyProgressIndicator|ComponentGallery)\(|loading = true""")
     }
 }

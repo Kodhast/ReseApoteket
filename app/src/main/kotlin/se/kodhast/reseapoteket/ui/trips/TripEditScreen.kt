@@ -39,9 +39,9 @@ import se.kodhast.reseapoteket.data.repository.PersonRepository
 import se.kodhast.reseapoteket.data.repository.TripRepository
 import se.kodhast.reseapoteket.domain.PackingUpdate
 import se.kodhast.reseapoteket.domain.TripPacking
-import se.kodhast.reseapoteket.ui.components.PackingPreview
 import se.kodhast.reseapoteket.ui.components.PersonChip
 import se.kodhast.reseapoteket.ui.theme.AppColors
+import se.kodhast.reseapoteket.ui.theme.Blue
 import se.kodhast.ui.common.DateFormat
 import se.kodhast.ui.common.EditorEvents
 import se.kodhast.ui.common.EditorLoader
@@ -55,6 +55,8 @@ import se.kodhast.ui.components.DateField
 import se.kodhast.ui.components.EntityEditScreen
 import se.kodhast.ui.components.LabeledGroup
 import se.kodhast.ui.components.QuantityStepper
+import se.kodhast.ui.components.ValueTile
+import se.kodhast.ui.theme.Tone
 
 /** RES-2: 1–60 dagar och minst en som åker med; ett tomt namn blir "Resa <datum>" när det finns ett startdatum. */
 object TripValidator : Validator<Trip> {
@@ -300,7 +302,7 @@ fun TripEditContent(
                 }
             }
         }
-        preview?.let { PackingPreview(it.context, it.quantity, reason = it.reason) }
+        preview?.let { ValueTile(it.context, it.quantity, supporting = it.reason, tone = Tone.Blue) }
     }
     if (askRecount) {
         ConfirmDialog(

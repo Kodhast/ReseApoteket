@@ -125,12 +125,10 @@ fun PersonEditContent(
         onSave = { onEvent(PersonEditEvent.Save) },
         onClose = onClose,
         modifier = modifier,
-        onRetry = { onEvent(PersonEditEvent.Retry) }
+        onRetry = { onEvent(PersonEditEvent.Retry) },
+        header = { PersonAvatar(state.value.emoji, AppColors.person(state.value.colorHex), size = AvatarSize.Large) }
     ) {
         val person = state.value
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            PersonAvatar(person.emoji, AppColors.person(person.colorHex), size = AvatarSize.Large)
-        }
         AppTextField(
             person.name,
             { onEvent(PersonEditEvent.Name(it)) },
@@ -138,7 +136,7 @@ fun PersonEditContent(
             error = state.errorFor(PersonValidator.NAME)?.let { stringResource(it) }
         )
         LabeledGroup(stringResource(R.string.person_emoji)) {
-            EmojiPicker(person.emoji, { onEvent(PersonEditEvent.Emoji(it)) }, PERSON_EMOJIS)
+            EmojiPicker(PERSON_EMOJIS, person.emoji, { onEvent(PersonEditEvent.Emoji(it)) })
         }
         LabeledGroup(stringResource(R.string.person_color)) {
             ColorSwatchPicker(AppColors.PERSON_HEX, person.colorHex, { onEvent(PersonEditEvent.PersonColor(it)) }, AppColors::person, { personColorLabel(it) }, PersonColorMarker)

@@ -8,9 +8,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.model.QuantityRule
-import se.kodhast.ui.components.AppFilterChip
-import se.kodhast.ui.components.ChipRow
+import se.kodhast.ui.components.ChoiceChips
 import se.kodhast.ui.components.FieldError
+import se.kodhast.ui.components.QuantityStepper
+import se.kodhast.ui.components.UnknownValueNotice
 import se.kodhast.ui.theme.Spacing
 
 /**
@@ -28,34 +29,25 @@ fun QuantityRuleRow(
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.m)) {
         if (rule is QuantityRule.Unknown) {
-            UnknownVariant()
+            UnknownValueNotice()
             return@Column
         }
-        ChipRow {
-            RuleKind.entries.forEach { kind ->
-                AppFilterChip(stringResource(kind.label), selected = kind.matches(rule), onClick = { onChange(kind.switch(rule)) })
-            }
-        }
+        ChoiceChips(
+            options = RuleKind.entries,
+            selected = RuleKind.entries.first { it.matches(rule) },
+            onSelect = { onChange(it.switch(rule)) },
+            label = { stringResource(it.label) }
+        )
         when (rule) {
             is QuantityRule.Fixed ->
-                LabeledStepper(rule.quantity, { onChange(rule.copy(quantity = it)) }, unitName(rule.quantity), 1..999)
+                QuantityStepper(rule.quantity, { onChange(rule.copy(quantity = it)) }, unitName(rule.quantity), range = 1..999, showLabel = true)
 
             is QuantityRule.PerTraveller ->
-                LabeledStepper(
-                    rule.quantity,
-                    { onChange(rule.copy(quantity = it)) },
-                    stringResource(R.string.rule_per_traveller_label, unitName(rule.quantity)),
-                    1..999
-                )
+                QuantityStepper(rule.quantity, { onChange(rule.copy(quantity = it)) }, stringResource(R.string.rule_per_traveller_label, unitName(rule.quantity)), range = 1..999, showLabel = true)
 
             is QuantityRule.PerDays -> {
-                LabeledStepper(rule.quantity, { onChange(rule.copy(quantity = it)) }, unitName(rule.quantity), 1..999)
-                LabeledStepper(
-                    rule.perDays,
-                    { onChange(rule.copy(perDays = it)) },
-                    stringResource(R.string.rule_per_days_label, unitName(1)),
-                    1..365
-                )
+                QuantityStepper(rule.quantity, { onChange(rule.copy(quantity = it)) }, unitName(rule.quantity), range = 1..999, showLabel = true)
+                QuantityStepper(rule.perDays, { onChange(rule.copy(perDays = it)) }, stringResource(R.string.rule_per_days_label, unitName(1)), range = 1..365, showLabel = true)
             }
 
             is QuantityRule.Unknown -> Unit

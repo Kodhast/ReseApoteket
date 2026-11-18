@@ -39,7 +39,6 @@
     <string name="keep_editing">Fortsätt redigera</string>
     <string name="packed_progress">%1$d av %2$d packat</string>
     <string name="packed_all">%1$d av %1$d · allt packat</string>
-    <string name="unknown_variant">Det här kan inte visas i den här versionen. Uppdatera appen för att ändra.</string>
 
     <!-- Dosering (DoseScheduleRow) -->
     <string name="dose_daily">Dagligen</string>
@@ -50,13 +49,6 @@
     <string name="dose_units_per_dose">%s per dos</string>
     <string name="dose_interval_days">dagar mellan doserna</string>
     <string name="dose_as_needed_quantity">%s att ta med</string>
-    <string name="day_mon">mån</string>
-    <string name="day_tue">tis</string>
-    <string name="day_wed">ons</string>
-    <string name="day_thu">tor</string>
-    <string name="day_fri">fre</string>
-    <string name="day_sat">lör</string>
-    <string name="day_sun">sön</string>
 
     <!-- Mängdregel (QuantityRuleRow) -->
     <string name="rule_fixed">Fast antal</string>

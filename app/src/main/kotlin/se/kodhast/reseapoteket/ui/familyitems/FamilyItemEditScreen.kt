@@ -35,9 +35,9 @@ import se.kodhast.reseapoteket.data.repository.PersonRepository
 import se.kodhast.reseapoteket.data.repository.activeCount
 import se.kodhast.reseapoteket.data.repository.householdSettings
 import se.kodhast.reseapoteket.ui.common.TravelDayChange
-import se.kodhast.reseapoteket.ui.components.PackingPreview
 import se.kodhast.reseapoteket.ui.components.QuantityRuleRow
 import se.kodhast.reseapoteket.ui.components.TravelDayField
+import se.kodhast.reseapoteket.ui.theme.Blue
 import se.kodhast.ui.common.EditorEvents
 import se.kodhast.ui.common.EditorLoader
 import se.kodhast.ui.common.EditorState
@@ -47,7 +47,10 @@ import se.kodhast.ui.components.AppTextField
 import se.kodhast.ui.components.ChoiceChips
 import se.kodhast.ui.components.EntityEditScreen
 import se.kodhast.ui.components.LabeledGroup
+import se.kodhast.ui.components.NoteCard
 import se.kodhast.ui.components.SwitchRow
+import se.kodhast.ui.components.ValueTile
+import se.kodhast.ui.theme.Tone
 
 /** FAM-2, FAM-3: namnet är obligatoriskt och mängdregeln ska gå att räkna på. */
 object FamilyItemValidator : Validator<FamilyItem> {
@@ -222,9 +225,9 @@ fun FamilyItemEditContent(
                 error = state.errorFor(FamilyItemValidator.RULE)?.let { stringResource(it) }
             )
         }
-        preview?.let { PackingPreview(it.context, it.quantity, reason = it.reason) }
+        preview?.let { ValueTile(it.context, it.quantity, supporting = it.reason, tone = Tone.Blue) }
         TravelDayField(item.travelDay, item.travelDayTime, { onEvent(FamilyItemEditEvent.TravelDay(it)) })
-        AppTextField(item.notes, { onEvent(FamilyItemEditEvent.Notes(it)) }, stringResource(R.string.notes), singleLine = false)
+        NoteCard(item.notes.ifEmpty { null }, { onEvent(FamilyItemEditEvent.Notes(it.orEmpty())) }, initiallyExpanded = item.notes.isNotBlank())
         SwitchRow(
             stringResource(R.string.active),
             item.active,

@@ -64,7 +64,7 @@ private fun Persons() {
         }
     }
     GroupLabel("Personens emoji")
-    EmojiPicker(emoji, { emoji = it }, PERSON_EMOJIS)
+    EmojiPicker(PERSON_EMOJIS, emoji, { emoji = it })
     GroupLabel("Personens färg")
     ColorSwatchPicker(AppColors.PERSON_HEX, color, { color = it }, AppColors::person, { personColorLabel(it) }, PersonColorMarker)
 }
@@ -81,7 +81,6 @@ private fun Packing() {
         unitName = { if (it == 1) "tablett" else "tabletter" },
         error = "Välj minst en veckodag".takeIf { (schedule as? DoseSchedule.Weekdays)?.days?.isEmpty() == true }
     )
-    PackingPreview("För en 7-dagarsresa", "18 tabletter · 2 kartor", reason = "2 × 1 tablett/dag × (7 + 2) dagar")
     QuantityRuleRow(rule, { rule = it }, unitName = { if (it == 1) "tub" else "tuber" })
     TravelDayField(travelDay, travelTime, {
         travelDay = it.on

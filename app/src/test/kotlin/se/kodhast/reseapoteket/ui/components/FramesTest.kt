@@ -40,6 +40,7 @@ import se.kodhast.reseapoteket.testing.captureScreenLightAndDark
 import se.kodhast.reseapoteket.testing.clickWithoutRipple
 import se.kodhast.reseapoteket.ui.contracts
 import se.kodhast.reseapoteket.ui.theme.AppColors
+import se.kodhast.reseapoteket.ui.theme.Blue
 import se.kodhast.reseapoteket.ui.theme.Green
 import se.kodhast.reseapoteket.ui.theme.ReseApoteketTheme
 import se.kodhast.ui.common.DetailUiState
@@ -66,6 +67,7 @@ import se.kodhast.ui.components.ListGroup
 import se.kodhast.ui.components.ListSubgroup
 import se.kodhast.ui.components.LoadErrorState
 import se.kodhast.ui.components.SectionHeader
+import se.kodhast.ui.components.ValueTile
 import se.kodhast.ui.testing.runEditScreenContract
 import se.kodhast.ui.testing.runListScreenContract
 import se.kodhast.ui.theme.Tone
@@ -433,7 +435,7 @@ class FramesTest {
         captureLightAndDark("EntityEditScreen_giltig") {
             EntityEditScreen("Ny familjeartikel", EditorUiState("Solkräm", isValid = true, isDirty = true), EditorEvents.None, {}, {}, onArchive = {}) {
                 AppTextField("Solkräm", {}, "Namn")
-                PackingPreview("För 4 personer i 10 dagar", "2 tuber", reason = "ceil((10 + 2) / 7) × 1 tub")
+                ValueTile("För 4 personer i 10 dagar", "2 tuber", supporting = "ceil((10 + 2) / 7) × 1 tub", tone = Tone.Blue)
             }
         }
     }

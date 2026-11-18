@@ -381,6 +381,8 @@ class PackingListViewModelTest {
         vm.onEvent(PackingListEvent.ToggleGroup(PackingGroup.SUPPLEMENT))
         vm.onEvent(PackingListEvent.Add(PackingSection.MEDICINE))
         vm.onEvent(PackingListEvent.AddName("Nässpray"))
+        vm.onEvent(PackingListEvent.AddSave)
+        assertEquals(setOf<PackingGroup?>(PackingGroup.MEDICINE, PackingGroup.SUPPLEMENT), vm.collapsed.value, "ingen person – inget sparat, inget fälls ut")
         vm.onEvent(PackingListEvent.AddPerson("erik"))
         vm.onEvent(PackingListEvent.AddSave)
         assertEquals(PackingSection.MEDICINE, vm.row("Nässpray").item.section)

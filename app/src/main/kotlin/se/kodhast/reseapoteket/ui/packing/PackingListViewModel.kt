@@ -325,6 +325,8 @@ class PackingListViewModel @AssistedInject constructor(
         viewModelScope.launch {
             addEditor.state.collect { add ->
                 if (add.done) {
+                    // En ihopfälld sektion fälls ut, så att den nya raden syns.
+                    expand(PackingList.group(add.value))
                     addEditor.onDoneHandled()
                     closeAdd()
                 }
@@ -406,8 +408,6 @@ class PackingListViewModel @AssistedInject constructor(
     private fun addSave() {
         _sheetError.value = null
         changedHere = true
-        // En ihopfälld sektion fälls ut, så att den nya raden syns.
-        expand(PackingList.group(addEditor.state.value.value))
         viewModelScope.launch {
             addEditor.save { item -> collection.upsertPlaced(item.copy(name = item.name.trim()), isNew = true) { copy(sortOrder = it) } }
         }

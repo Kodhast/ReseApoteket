@@ -161,11 +161,9 @@ private fun RegimenSection(config: RegimenKindConfig, regimens: List<Regimen>, o
             icon = config.icon,
             count = regimens.size.toString(),
             tone = config.tone,
-            trailing = { AppIconButton(R.drawable.ic_add, stringResource(config.add), onAdd, variant = IconButtonVariant.Tonal, tone = config.tone) }
+            trailing = { AppIconButton(R.drawable.ic_add, stringResource(config.add), onAdd, variant = IconButtonVariant.Tonal, tone = config.tone) },
+            emptyText = stringResource(config.none).takeIf { regimens.isEmpty() }
         ) {
-            if (regimens.isEmpty()) {
-                Text(stringResource(config.none), style = AppTheme.typography.itemSubtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
             regimens.forEachIndexed { index, regimen ->
                 if (index > 0) AppDivider()
                 RegimenRow(regimen, onClick = { onOpen(regimen) })

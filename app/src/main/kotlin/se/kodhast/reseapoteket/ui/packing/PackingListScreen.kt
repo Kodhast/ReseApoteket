@@ -51,6 +51,7 @@ import se.kodhast.ui.components.ItemRow
 import se.kodhast.ui.components.ListArchive
 import se.kodhast.ui.components.ListGroup
 import se.kodhast.ui.components.ListSubgroup
+import se.kodhast.ui.components.PillRow
 import se.kodhast.ui.components.SwipeToHide
 import se.kodhast.ui.components.collectAsListArchive
 import se.kodhast.ui.theme.Spacing
@@ -257,7 +258,7 @@ private fun labels(row: PackingRow): (@Composable () -> Unit)? {
     val changed = PackingList.isChanged(item)
     if (!changed && row.schedule == null && !item.travelDay) return null
     return {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
+        PillRow {
             when {
                 changed -> InfoPill(stringResource(R.string.packing_changed))
                 row.schedule != null -> InfoPill(row.schedule, tone = Tone.Blue)

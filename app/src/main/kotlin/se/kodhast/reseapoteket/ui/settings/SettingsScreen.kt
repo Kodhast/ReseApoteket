@@ -3,14 +3,6 @@ package se.kodhast.reseapoteket.ui.settings
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,17 +57,14 @@ import se.kodhast.ui.components.AccountRow
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
 import se.kodhast.ui.components.AppSegmentedChoice
-import se.kodhast.ui.components.AppTopBar
-import se.kodhast.ui.components.FieldError
 import se.kodhast.ui.components.GroupLabel
 import se.kodhast.ui.components.ItemRow
-import se.kodhast.ui.components.LocalBottomClearance
 import se.kodhast.ui.components.QuantityStepper
+import se.kodhast.ui.components.SettingsCard
+import se.kodhast.ui.components.SettingsPage
 import se.kodhast.ui.components.SignOutRow
 import se.kodhast.ui.components.SwitchRow
-import se.kodhast.ui.components.TopBarSize
 import se.kodhast.ui.components.rememberNotificationAccess
-import se.kodhast.ui.theme.Spacing
 
 /** Kortet där en åtgärd gjordes – ett fel visas där (NFR-5). */
 enum class SettingsSection { Household, Account, Data }
@@ -262,118 +251,109 @@ fun SettingsContent(
 ) {
     val uriHandler = LocalUriHandler.current
     val sourceUrl = stringResource(R.string.settings_source_url)
-    Column(modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        AppTopBar(stringResource(R.string.tab_settings), size = TopBarSize.Small, onBack = onBack)
-        Column(Modifier.padding(horizontal = Spacing.l), verticalArrangement = Arrangement.spacedBy(Spacing.m)) {
-            GroupLabel(stringResource(R.string.settings_account))
-            SettingsCard(state.error, SettingsSection.Account) {
-                state.account?.let { account ->
-                    AccountRow(account.name, account.email, account.photoUrl)
-                    AppDivider()
-                }
-                SignOutRow(stringResource(R.string.app_name), onSignOut = { onEvent(SettingsEvent.SignOut) })
+    SettingsPage(stringResource(R.string.tab_settings), modifier, onBack) {
+        GroupLabel(stringResource(R.string.settings_account))
+        SettingsCard(error = state.errorIn(SettingsSection.Account)) {
+            state.account?.let { account ->
+                AccountRow(account.name, account.email, account.photoUrl)
+                AppDivider()
             }
-            state.household?.let { household ->
-                GroupLabel(stringResource(R.string.settings_household))
-                SettingsCard(state.error, SettingsSection.Household) {
-                    ItemRow(
-                        title = household.name.ifBlank { stringResource(R.string.settings_household) },
-                        subtitle = stringResource(R.string.settings_household_name),
-                        onClick = onEditHousehold,
-                        navigates = true
-                    )
-                    AppDivider()
-                    ItemRow(
-                        title = stringResource(R.string.settings_margin_days),
-                        subtitle = stringResource(R.string.settings_margin_days_note),
-                        below = {
-                            QuantityStepper(
-                                household.marginDays,
-                                { onEvent(SettingsEvent.SetMarginDays(it)) },
-                                stringResource(R.string.settings_margin_days),
-                                range = HouseholdSettings.MARGIN_DAYS_RANGE
-                            )
-                        }
-                    )
-                }
-            }
-            GroupLabel(stringResource(R.string.settings_packing))
-            AppCard {
-                SwitchRow(
-                    stringResource(R.string.settings_move_checked_last),
-                    state.moveCheckedLast,
-                    { onEvent(SettingsEvent.SetMoveCheckedLast(it)) },
-                    subtitle = stringResource(R.string.settings_move_checked_last_note)
-                )
-            }
-            reminders?.let {
-                GroupLabel(stringResource(R.string.reminders_title))
-                it()
-            }
-            GroupLabel(stringResource(R.string.settings_appearance))
-            AppCard {
+            SignOutRow(stringResource(R.string.app_name), onSignOut = { onEvent(SettingsEvent.SignOut) })
+        }
+        state.household?.let { household ->
+            GroupLabel(stringResource(R.string.settings_household))
+            SettingsCard(error = state.errorIn(SettingsSection.Household)) {
                 ItemRow(
-                    title = stringResource(R.string.settings_theme),
+                    title = household.name.ifBlank { stringResource(R.string.settings_household) },
+                    subtitle = stringResource(R.string.settings_household_name),
+                    onClick = onEditHousehold,
+                    navigates = true
+                )
+                AppDivider()
+                ItemRow(
+                    title = stringResource(R.string.settings_margin_days),
+                    subtitle = stringResource(R.string.settings_margin_days_note),
                     below = {
-                        AppSegmentedChoice(
-                            options = THEME_OPTIONS.map { stringResource(it.second) },
-                            selectedIndex = THEME_OPTIONS.indexOfFirst { it.first == state.themeMode },
-                            onSelect = { onEvent(SettingsEvent.SetTheme(THEME_OPTIONS[it].first)) }
+                        QuantityStepper(
+                            household.marginDays,
+                            { onEvent(SettingsEvent.SetMarginDays(it)) },
+                            stringResource(R.string.settings_margin_days),
+                            range = HouseholdSettings.MARGIN_DAYS_RANGE
                         )
                     }
                 )
             }
-            GroupLabel(stringResource(R.string.settings_data))
-            SettingsCard(state.error, SettingsSection.Data) {
-                ItemRow(
-                    title = stringResource(R.string.settings_sync_title),
-                    subtitle = stringResource(R.string.settings_sync_note)
-                )
-                ItemRow(
-                    title = stringResource(R.string.settings_data_version),
-                    subtitle = stringResource(R.string.settings_data_format, state.household?.schemaVersion ?: Schema.FIRST_VERSION, versionName)
-                )
-                AppDivider()
-                ItemRow(
-                    title = stringResource(R.string.settings_export),
-                    subtitle = stringResource(if (state.exporting) R.string.settings_export_busy else R.string.settings_export_note),
-                    onClick = { onEvent(SettingsEvent.Export) }.takeUnless { state.exporting },
-                    navigates = true
-                )
-            }
-            GroupLabel(stringResource(R.string.settings_about))
-            AboutCard(stringResource(R.string.app_name), versionName) {
-                medicinesUpdated?.let {
-                    AppDivider()
-                    ItemRow(stringResource(R.string.settings_medicines), subtitle = stringResource(R.string.settings_medicines_note, DateFormat.display(it)))
-                }
-                AppDivider()
-                ItemRow(
-                    title = stringResource(R.string.settings_source),
-                    subtitle = stringResource(R.string.settings_source_note),
-                    onClick = { uriHandler.openUri(sourceUrl) },
-                    navigates = true
-                )
-                if (onOpenGallery != null) {
-                    AppDivider()
-                    ItemRow(
-                        title = stringResource(R.string.settings_components),
-                        subtitle = stringResource(R.string.settings_components_note),
-                        onClick = onOpenGallery,
-                        navigates = true
+        }
+        GroupLabel(stringResource(R.string.settings_packing))
+        AppCard {
+            SwitchRow(
+                stringResource(R.string.settings_move_checked_last),
+                state.moveCheckedLast,
+                { onEvent(SettingsEvent.SetMoveCheckedLast(it)) },
+                subtitle = stringResource(R.string.settings_move_checked_last_note)
+            )
+        }
+        reminders?.let {
+            GroupLabel(stringResource(R.string.reminders_title))
+            it()
+        }
+        GroupLabel(stringResource(R.string.settings_appearance))
+        AppCard {
+            ItemRow(
+                title = stringResource(R.string.settings_theme),
+                below = {
+                    AppSegmentedChoice(
+                        options = THEME_OPTIONS.map { stringResource(it.second) },
+                        selectedIndex = THEME_OPTIONS.indexOfFirst { it.first == state.themeMode },
+                        onSelect = { onEvent(SettingsEvent.SetTheme(THEME_OPTIONS[it].first)) }
                     )
                 }
+            )
+        }
+        GroupLabel(stringResource(R.string.settings_data))
+        SettingsCard(error = state.errorIn(SettingsSection.Data)) {
+            ItemRow(
+                title = stringResource(R.string.settings_sync_title),
+                subtitle = stringResource(R.string.settings_sync_note)
+            )
+            ItemRow(
+                title = stringResource(R.string.settings_data_version),
+                subtitle = stringResource(R.string.settings_data_format, state.household?.schemaVersion ?: Schema.FIRST_VERSION, versionName)
+            )
+            AppDivider()
+            ItemRow(
+                title = stringResource(R.string.settings_export),
+                subtitle = stringResource(if (state.exporting) R.string.settings_export_busy else R.string.settings_export_note),
+                onClick = { onEvent(SettingsEvent.Export) }.takeUnless { state.exporting },
+                navigates = true
+            )
+        }
+        GroupLabel(stringResource(R.string.settings_about))
+        AboutCard(stringResource(R.string.app_name), versionName) {
+            medicinesUpdated?.let {
+                AppDivider()
+                ItemRow(stringResource(R.string.settings_medicines), subtitle = stringResource(R.string.settings_medicines_note, DateFormat.display(it)))
             }
-            Spacer(Modifier.height(LocalBottomClearance.current))
+            AppDivider()
+            ItemRow(
+                title = stringResource(R.string.settings_source),
+                subtitle = stringResource(R.string.settings_source_note),
+                onClick = { uriHandler.openUri(sourceUrl) },
+                navigates = true
+            )
+            if (onOpenGallery != null) {
+                AppDivider()
+                ItemRow(
+                    title = stringResource(R.string.settings_components),
+                    subtitle = stringResource(R.string.settings_components_note),
+                    onClick = onOpenGallery,
+                    navigates = true
+                )
+            }
         }
     }
 }
 
-/** Ett kort; ett fel från en åtgärd i just det kortet visas sist i det. */
+/** Felet från en åtgärd i just det här kortet, som [SettingsCard] visar sist i kortet; annars `null`. */
 @Composable
-private fun SettingsCard(error: SettingsError?, section: SettingsSection, content: @Composable () -> Unit) {
-    AppCard {
-        content()
-        error?.takeIf { it.section == section }?.let { FieldError(stringResource(it.error.toMessage()), Modifier.padding(Spacing.s)) }
-    }
-}
+private fun SettingsUiState.errorIn(section: SettingsSection): String? = error?.takeIf { it.section == section }?.let { stringResource(it.error.toMessage()) }

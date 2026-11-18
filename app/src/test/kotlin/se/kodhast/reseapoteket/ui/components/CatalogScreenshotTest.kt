@@ -308,7 +308,7 @@ class CatalogScreenshotTest {
             }
         }
         captureLightAndDark("FieldError_sparfel") { Sheet { FieldError("Ingen anslutning just nu. Det du sparar skickas när nätet är tillbaka.") } }
-        captureLightAndDark("EmojiPicker_val") { Sheet { EmojiPicker("🦉", {}, PERSON_EMOJIS) } }
+        captureLightAndDark("EmojiPicker_val") { Sheet { EmojiPicker(PERSON_EMOJIS, "🦉", {}) } }
         captureLightAndDark("ColorSwatchPicker_val") { Sheet { ColorSwatchPicker(AppColors.PERSON_HEX, AppColors.PERSON_HEX[3], {}, AppColors::person, { personColorLabel(it) }, PersonColorMarker) } }
         captureLightAndDark("AppSegmentedChoice_tema") { Sheet { AppSegmentedChoice(listOf("Ljust", "Mörkt", "System"), 2, {}) } }
         captureLightAndDark("QuantityStepper_varde") {
@@ -340,12 +340,6 @@ class CatalogScreenshotTest {
                 QuantityRuleRow(QuantityRule.PerDays(1, 7), {}, { if (it == 1) "tub" else "tuber" })
                 QuantityRuleRow(QuantityRule.PerTraveller(1), {}, { "st" })
                 QuantityRuleRow(QuantityRule.Unknown(), {}, { "st" })
-            }
-        }
-        captureLightAndDark("PackingPreview_standard") {
-            Sheet {
-                PackingPreview("För en 7-dagarsresa", "18 tabletter · 2 kartor", reason = "2 × 1 tablett/dag × (7 + 2) dagar")
-                PackingPreview("För 4 personer i 10 dagar", "2 tuber")
             }
         }
     }

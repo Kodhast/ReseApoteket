@@ -5,11 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
 import kotlin.test.assertEquals
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.datetime.DayOfWeek
@@ -124,6 +128,25 @@ class RegimenScreensTest {
         rule.onNodeWithText("Flytande").performClick()
         rule.onNodeWithText("ml").performScrollTo().performClick()
         assertEquals(listOf(RegimenEditEvent.Form(MedicineForm.LIQUID), RegimenEditEvent.DoseUnit(ItemUnit.ML)), events)
+    }
+
+    @Test
+    fun `anteckningen är ett hopfällt kort och tom text lagras som tom sträng, inte null (REC-1)`() {
+        val events = mutableListOf<RegimenEditEvent>()
+        val empty = levaxin.copy(notes = "")
+        rule.setContent { ReseApoteketTheme { RegimenEditContent(config, false, EditorUiState(empty), preview(empty), EditorEvents.None, { events += it }, {}) } }
+        rule.onNodeWithText("Lägg till en anteckning").performScrollTo().performClick()
+        rule.onNode(hasSetTextAction() and hasText("Anteckning")).performTextInput("Tas med mat")
+        assertEquals(listOf<RegimenEditEvent>(RegimenEditEvent.Notes("Tas med mat")), events)
+    }
+
+    @Test
+    fun `en befintlig anteckning visas utfälld och töms till en tom sträng (REC-1)`() {
+        val events = mutableListOf<RegimenEditEvent>()
+        val noted = levaxin.copy(notes = "Tas med mat")
+        rule.setContent { ReseApoteketTheme { RegimenEditContent(config, false, EditorUiState(noted), preview(noted), EditorEvents.None, { events += it }, {}) } }
+        rule.onNode(hasSetTextAction() and hasText("Tas med mat")).performScrollTo().performTextClearance()
+        assertEquals(listOf<RegimenEditEvent>(RegimenEditEvent.Notes("")), events)
     }
 
     @Test

@@ -3,24 +3,17 @@ package se.kodhast.reseapoteket.ui.components
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.error
-import androidx.compose.ui.semantics.semantics
 import kotlinx.datetime.DayOfWeek
 import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.model.DoseSchedule
-import se.kodhast.ui.components.AppFilterChip
-import se.kodhast.ui.components.AppTextField
-import se.kodhast.ui.components.ChipRow
+import se.kodhast.ui.common.DateFormat
+import se.kodhast.ui.components.ChoiceChips
 import se.kodhast.ui.components.FieldError
 import se.kodhast.ui.components.QuantityStepper
-import se.kodhast.ui.theme.AppTheme
+import se.kodhast.ui.components.UnknownValueNotice
 import se.kodhast.ui.theme.Spacing
 
 /**
@@ -39,45 +32,38 @@ fun DoseScheduleRow(
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.m)) {
         if (schedule is DoseSchedule.Unknown) {
-            UnknownVariant()
+            UnknownValueNotice()
             return@Column
         }
-        ChipRow {
-            DOSE_KINDS.forEach { kind ->
-                AppFilterChip(stringResource(kind.label), selected = kind.matches(schedule), onClick = { onChange(kind.switch(schedule)) })
-            }
-        }
+        ChoiceChips(
+            options = DOSE_KINDS,
+            selected = DOSE_KINDS.first { it.matches(schedule) },
+            onSelect = { onChange(it.switch(schedule)) },
+            label = { stringResource(it.label) }
+        )
         when (schedule) {
             is DoseSchedule.Daily -> {
-                LabeledStepper(schedule.dosesPerDay, { onChange(schedule.copy(dosesPerDay = it)) }, stringResource(R.string.dose_doses_per_day), 1..24)
+                QuantityStepper(schedule.dosesPerDay, { onChange(schedule.copy(dosesPerDay = it)) }, stringResource(R.string.dose_doses_per_day), range = 1..24, showLabel = true)
                 UnitsPerDose(schedule.unitsPerDose, unitName) { onChange(schedule.copy(unitsPerDose = it)) }
             }
 
             is DoseSchedule.Weekdays -> {
-                ChipRow {
-                    DayOfWeek.entries.forEach { day ->
-                        AppFilterChip(
-                            stringResource(day.shortName()),
-                            selected = day in schedule.days,
-                            onClick = { onChange(schedule.copy(days = if (day in schedule.days) schedule.days - day else schedule.days + day)) }
-                        )
-                    }
-                }
+                ChoiceChips(
+                    options = DayOfWeek.entries,
+                    selected = schedule.days,
+                    onToggle = { day -> onChange(schedule.copy(days = if (day in schedule.days) schedule.days - day else schedule.days + day)) },
+                    label = { DateFormat.weekdayShort(it) }
+                )
                 UnitsPerDose(schedule.unitsPerDose, unitName) { onChange(schedule.copy(unitsPerDose = it)) }
             }
 
             is DoseSchedule.IntervalDays -> {
-                LabeledStepper(schedule.intervalDays, { onChange(schedule.copy(intervalDays = it)) }, stringResource(R.string.dose_interval_days), 2..365)
+                QuantityStepper(schedule.intervalDays, { onChange(schedule.copy(intervalDays = it)) }, stringResource(R.string.dose_interval_days), range = 2..365, showLabel = true)
                 UnitsPerDose(schedule.unitsPerDose, unitName) { onChange(schedule.copy(unitsPerDose = it)) }
             }
 
             is DoseSchedule.AsNeeded ->
-                LabeledStepper(
-                    schedule.quantity,
-                    { onChange(schedule.copy(quantity = it)) },
-                    stringResource(R.string.dose_as_needed_quantity, unitName(schedule.quantity)),
-                    1..999
-                )
+                QuantityStepper(schedule.quantity, { onChange(schedule.copy(quantity = it)) }, stringResource(R.string.dose_as_needed_quantity, unitName(schedule.quantity)), range = 1..999, showLabel = true)
 
             is DoseSchedule.Unknown -> Unit
         }
@@ -86,22 +72,7 @@ fun DoseScheduleRow(
 }
 
 @Composable
-private fun UnitsPerDose(value: Int, unitName: (Int) -> String, onChange: (Int) -> Unit) = LabeledStepper(value, onChange, stringResource(R.string.dose_units_per_dose, unitName(value)), 1..99)
-
-/** En [QuantityStepper] med sin etikett bredvid – delas av [DoseScheduleRow] och [QuantityRuleRow]. */
-@Composable
-internal fun LabeledStepper(value: Int, onChange: (Int) -> Unit, label: String, range: IntRange) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.m)) {
-        QuantityStepper(value, onChange, label, range = range)
-        Text(label, style = AppTheme.typography.itemTitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-/** Meddelandet för en typ som den här appversionen inte känner till. */
-@Composable
-internal fun UnknownVariant() {
-    Text(stringResource(R.string.unknown_variant), style = AppTheme.typography.body, color = MaterialTheme.colorScheme.onSurfaceVariant)
-}
+private fun UnitsPerDose(value: Int, unitName: (Int) -> String, onChange: (Int) -> Unit) = QuantityStepper(value, onChange, stringResource(R.string.dose_units_per_dose, unitName(value)), range = 1..99, showLabel = true)
 
 /** Doseringstypens namn ("Dagligen", "Vid behov") – samma etikett som i väljaren; `null` för en okänd typ. */
 @StringRes
@@ -142,14 +113,3 @@ private enum class DoseKind(@param:StringRes val label: Int) {
 }
 
 private val DOSE_KINDS = DoseKind.entries
-
-@StringRes
-private fun DayOfWeek.shortName(): Int = when (this) {
-    DayOfWeek.MONDAY -> R.string.day_mon
-    DayOfWeek.TUESDAY -> R.string.day_tue
-    DayOfWeek.WEDNESDAY -> R.string.day_wed
-    DayOfWeek.THURSDAY -> R.string.day_thu
-    DayOfWeek.FRIDAY -> R.string.day_fri
-    DayOfWeek.SATURDAY -> R.string.day_sat
-    DayOfWeek.SUNDAY -> R.string.day_sun
-}

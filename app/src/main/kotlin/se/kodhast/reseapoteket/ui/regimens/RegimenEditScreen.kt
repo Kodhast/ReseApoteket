@@ -49,7 +49,6 @@ import se.kodhast.reseapoteket.data.repository.RegimenRepository
 import se.kodhast.reseapoteket.data.repository.householdSettings
 import se.kodhast.reseapoteket.ui.common.TravelDayChange
 import se.kodhast.reseapoteket.ui.components.DoseScheduleRow
-import se.kodhast.reseapoteket.ui.components.PackingPreview
 import se.kodhast.reseapoteket.ui.components.TravelDayField
 import se.kodhast.reseapoteket.ui.components.kindLabel
 import se.kodhast.reseapoteket.ui.theme.Blue
@@ -65,9 +64,11 @@ import se.kodhast.ui.components.EntityEditScreen
 import se.kodhast.ui.components.ExampleChips
 import se.kodhast.ui.components.InfoPill
 import se.kodhast.ui.components.LabeledGroup
+import se.kodhast.ui.components.NoteCard
 import se.kodhast.ui.components.Suggestion
 import se.kodhast.ui.components.SuggestionField
 import se.kodhast.ui.components.SwitchRow
+import se.kodhast.ui.components.ValueTile
 import se.kodhast.ui.theme.Tone
 
 /** REC-1, REC-2: namnet är obligatoriskt och doseringen ska gå att räkna på. */
@@ -327,7 +328,7 @@ fun RegimenEditContent(
                 error = state.errorFor(RegimenValidator.SCHEDULE)?.let { stringResource(it) }
             )
         }
-        PackingPreview(preview.context, preview.quantity, reason = preview.reason)
+        ValueTile(preview.context, preview.quantity, supporting = preview.reason, tone = Tone.Blue)
         AppTextField(
             regimen.packageSize?.toString().orEmpty(),
             { onEvent(RegimenEditEvent.PackageSize(it)) },
@@ -337,7 +338,7 @@ fun RegimenEditContent(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
         TravelDayField(regimen.travelDay, regimen.travelDayTime, { onEvent(RegimenEditEvent.TravelDay(it)) })
-        AppTextField(regimen.notes, { onEvent(RegimenEditEvent.Notes(it)) }, stringResource(R.string.notes), singleLine = false)
+        NoteCard(regimen.notes.ifEmpty { null }, { onEvent(RegimenEditEvent.Notes(it.orEmpty())) }, initiallyExpanded = regimen.notes.isNotBlank())
         SwitchRow(
             stringResource(R.string.active),
             regimen.active,

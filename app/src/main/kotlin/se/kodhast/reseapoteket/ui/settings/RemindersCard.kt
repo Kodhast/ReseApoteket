@@ -18,9 +18,9 @@ import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.engine.ReminderKind
 import se.kodhast.reseapoteket.core.engine.ReminderSetting
 import se.kodhast.reseapoteket.core.engine.ReminderSettings
-import se.kodhast.reseapoteket.ui.components.PackingPreview
 import se.kodhast.reseapoteket.ui.components.PersonChip
 import se.kodhast.reseapoteket.ui.theme.AppColors
+import se.kodhast.reseapoteket.ui.theme.Blue
 import se.kodhast.ui.common.DateFormat
 import se.kodhast.ui.components.AppBottomSheet
 import se.kodhast.ui.components.AppButton
@@ -33,8 +33,10 @@ import se.kodhast.ui.components.NoticeBanner
 import se.kodhast.ui.components.QuantityStepper
 import se.kodhast.ui.components.SwitchRow
 import se.kodhast.ui.components.TimeField
+import se.kodhast.ui.components.ValueTile
 import se.kodhast.ui.theme.AppTheme
 import se.kodhast.ui.theme.Spacing
+import se.kodhast.ui.theme.Tone
 
 @StringRes
 private fun ReminderKind.title(): Int = when (this) {
@@ -139,8 +141,12 @@ private fun RemindersRows(
 @Composable
 private fun ReminderSheet(kind: ReminderKind, state: RemindersUiState, onChange: (ReminderSetting) -> Unit, onClose: () -> Unit) {
     val setting = state.settings[kind]
-    AppBottomSheet(stringResource(kind.title()), onDismiss = onClose, footer = { AppButton(stringResource(R.string.done), onClose, Modifier.fillMaxWidth()) }) {
-        Text(stringResource(kind.note()), style = AppTheme.typography.itemSubtitle)
+    AppBottomSheet(
+        stringResource(kind.title()),
+        onDismiss = onClose,
+        footer = { AppButton(stringResource(R.string.done), onClose, Modifier.fillMaxWidth()) },
+        subtitle = stringResource(kind.note())
+    ) {
         SwitchRow(stringResource(kind.title()), setting.enabled, { onChange(setting.copy(enabled = it)) })
         if (ReminderSettings.hasDaysBefore(kind)) {
             LabeledGroup(stringResource(R.string.reminder_days_before_label)) {
@@ -155,10 +161,11 @@ private fun ReminderSheet(kind: ReminderKind, state: RemindersUiState, onChange:
         }
         TimeField(stringResource(R.string.reminder_time_label), setting.time, { onChange(setting.copy(time = it)) })
         val next = state.next[kind]
-        PackingPreview(
-            context = stringResource(R.string.reminder_next),
-            quantity = next?.let { nextAt(it.at) } ?: stringResource(R.string.reminder_next_none),
-            reason = next?.tripName
+        ValueTile(
+            label = stringResource(R.string.reminder_next),
+            value = next?.let { nextAt(it.at) } ?: stringResource(R.string.reminder_next_none),
+            supporting = next?.tripName,
+            tone = Tone.Blue
         )
     }
 }

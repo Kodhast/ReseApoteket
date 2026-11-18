@@ -56,8 +56,8 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Emojival | `EmojiPicker` *(android-ui)* | rutnät (`ChoiceGrid`) med rutnätets valmarkering (ringen); listan är appens: `PERSON_EMOJIS` i `ui/components/PersonEmojis.kt` |
 | Färgval | `ColorSwatchPicker` *(android-ui)* | rutnät av runda val (`ChoiceGrid`) över `AppColors.PERSON_HEX` med `AppColors::person`, `personColorLabel` (TalkBack läser färgens namn) och `PersonColorMarker` (ring och vit bock) |
 | Antal ± | `QuantityStepper` *(android-ui)* | M3 ikonknappar i en pill, `label` för TalkBack |
-| Dosering | `DoseScheduleRow` | `AppFilterChip` + `QuantityStepper`; valideringsfel (`error`) under fälten |
-| Mängdregel | `QuantityRuleRow` | `AppFilterChip` + `QuantityStepper`; valideringsfel (`error`) under fälten |
+| Dosering | `DoseScheduleRow` | `ChoiceChips` (typ, veckodagar med `DateFormat.weekdayShort`) + `QuantityStepper(showLabel)`; valideringsfel (`error`) under fälten |
+| Mängdregel | `QuantityRuleRow` | `ChoiceChips` + `QuantityStepper(showLabel)`; valideringsfel (`error`) under fälten |
 | Packprogress | `PackedProgress` | bibliotekets `AppProgress` (android-ui) med packlistans texter: "9 av 14 packat" ovanför ett slätt spår i primärfärgen, allt packat → "14 av 14 · allt packat" i grönt (`ExtendedColors.progressDone`), kortet byter inte färg; `compact` = kort spår och "4 / 10" i resans rad (PAK-5) |
 | Laddning | `AppLoading` *(android-ui)* | två hoppande prickar i `primary` (`AppBrandStyle.dotLoading`, NFR-22), stilla utan systemets animeringar; läses "Laddar" |
 | Tomt tillstånd | `EmptyState` *(android-ui)* | ikon + text + `AppButton`; fullstort utan fel visar hästen (`BrandMark`) i ikonrutan (`AppBrandStyle.emptyStateMark`, NFR-22) |
@@ -78,7 +78,7 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Tidsfält | `TimeField` *(android-ui)* | samma yta som `DateField` + M3 tidsväljare (24 timmar); valfri `helper` |
 | Packas på resedagen (recept, kosttillskott, familjeartikel, egen rad) | `TravelDayField` | `SwitchRow` + `TimeField`; resedagens morgon (`LocalTravelDayMorning`, telefonens tid) tills en egen tid väljs |
 | Horisontell rad av chips | `ChipRow` *(android-ui)* | horisontell lista av `PersonChip`/`AppFilterChip` |
-| Förhandsvisning (mängd, nästa påminnelse) | `PackingPreview` | `ReasonFormatter` i `:core`; samma ruta för "Nästa påminnelse" |
+| Förhandsvisning (mängd, nästa påminnelse) | `ValueTile` *(android-ui)* | `tone = Tone.Blue`; texterna från `ReasonFormatter` i `:core`; samma ruta för "Nästa påminnelse" |
 
 ## Beteende: interaktionsmönster → enda tillåtna ram
 
@@ -90,7 +90,7 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Arkivera/dölj | `SwipeToHide` *(android-ui)* | Svep → dolt direkt → `UndoSnackbar` "%s arkiverad · Ångra" i 5 s (packlistan: "%s dold" via `ArchiveActions(undoFormat)`); `enabled = false` för en redan arkiverad rad |
 | Ångra | `UndoSnackbar` *(android-ui)* | Enda ångra-mekanismen |
 | Permanent radering | `ConfirmDialog` *(android-ui)* | `DeleteConfirmDialog` (`destructive = true`) i redigeringen; alltid bekräftelse, aldrig svep. `onDecline` när nej-knappen gör något annat än att stänga ("Behåll listan") |
-| Förhandsvisning av beräkning | `PackingPreview` | Samma format i recept, kosttillskott, familjeartiklar |
+| Förhandsvisning av beräkning | `ValueTile` *(android-ui)* | Samma format i recept, kosttillskott, familjeartiklar |
 | Komponentöversikt | `ComponentGallery` | bibliotekets `ComponentGallery` *(android-ui, `ui-navigation`)* med bibliotekets komponenter och ramar, och appens egna i `appSections` ("Personer", "Dosering och packning"); debug-skärm |
 
 Gemensamt för ramarna: felmeddelanden via `UiError` (`AppErrors` → `DataError.toMessage()`), skärmbyten via

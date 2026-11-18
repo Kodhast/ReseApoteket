@@ -281,7 +281,7 @@ class ComponentBehaviorTest {
     @Test
     fun `emojivalet väljer en emoji och läses som ett av flera alternativ`() {
         var emoji by mutableStateOf("🦊")
-        show { EmojiPicker(emoji, { emoji = it }, PERSON_EMOJIS) }
+        show { EmojiPicker(PERSON_EMOJIS, emoji, { emoji = it }) }
         rule.onNodeWithContentDescription("🦉").performClick()
         assertEquals("🦉", emoji)
         rule.onNodeWithContentDescription("🦉").assertIsSelected()
@@ -303,7 +303,7 @@ class ComponentBehaviorTest {
         show { DoseScheduleRow(schedule, { schedule = it }, tablets) }
         rule.onNodeWithText("Veckodagar").performClick()
         assertEquals(DoseSchedule.Weekdays(unitsPerDose = 2), schedule)
-        rule.onNodeWithText("tor").performClick()
+        rule.onNodeWithText("tors").performClick()
         assertEquals(setOf(DayOfWeek.THURSDAY), (schedule as DoseSchedule.Weekdays).days)
         rule.onNodeWithText("Vid behov").performClick()
         assertEquals(DoseSchedule.AsNeeded(quantity = 1), schedule, "vid behov börjar giltigt, med 1 att ta med")

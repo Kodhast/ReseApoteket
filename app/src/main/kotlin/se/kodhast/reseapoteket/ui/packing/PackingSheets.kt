@@ -17,7 +17,6 @@ import se.kodhast.reseapoteket.core.model.PackingItem
 import se.kodhast.reseapoteket.core.model.PackingSection
 import se.kodhast.reseapoteket.core.model.PackingSource
 import se.kodhast.reseapoteket.core.model.Person
-import se.kodhast.reseapoteket.ui.components.PackingPreview
 import se.kodhast.reseapoteket.ui.components.PersonChip
 import se.kodhast.reseapoteket.ui.components.TravelDayField
 import se.kodhast.reseapoteket.ui.theme.AppColors
@@ -35,6 +34,7 @@ import se.kodhast.ui.components.InfoPill
 import se.kodhast.ui.components.ItemRow
 import se.kodhast.ui.components.LabeledGroup
 import se.kodhast.ui.components.QuantityStepper
+import se.kodhast.ui.components.ValueTile
 import se.kodhast.ui.theme.AppTheme
 import se.kodhast.ui.theme.Tone
 
@@ -46,15 +46,13 @@ internal fun QuantitySheet(row: PackingRow, onEvent: (PackingListEvent) -> Unit,
         item.name,
         onDismiss = { onEvent(PackingListEvent.CloseQuantity) },
         error = error,
-        footer = { AppButton(stringResource(R.string.packing_done), { onEvent(PackingListEvent.CloseQuantity) }, Modifier.fillMaxWidth()) }
+        footer = { AppButton(stringResource(R.string.packing_done), { onEvent(PackingListEvent.CloseQuantity) }, Modifier.fillMaxWidth()) },
+        subtitle = listOfNotNull(row.person?.name, row.schedule).takeIf { it.isNotEmpty() }?.joinToString(" · ")
     ) {
-        listOfNotNull(row.person?.name, row.schedule).takeIf { it.isNotEmpty() }?.let {
-            Text(it.joinToString(" · "), style = AppTheme.typography.itemSubtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
         QuantityStepper(item.quantity, { onEvent(PackingListEvent.Quantity(it)) }, UnitNames.name(item.quantity, item.unit))
         if (item.sourceType != PackingSource.MANUAL) {
             val suggested = item.copy(quantity = item.suggestedQuantity)
-            PackingPreview(stringResource(R.string.packing_suggestion), PackingList.amount(suggested), reason = item.reason.ifBlank { null })
+            ValueTile(stringResource(R.string.packing_suggestion), PackingList.amount(suggested), supporting = item.reason.ifBlank { null }, tone = Tone.Blue)
         }
         if (PackingList.isChanged(item)) {
             AppButton(stringResource(R.string.packing_reset_format, item.suggestedQuantity), { onEvent(PackingListEvent.ResetQuantity) }, variant = ButtonVariant.Text)

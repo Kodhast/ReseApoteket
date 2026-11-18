@@ -112,6 +112,7 @@ android-ui `ui-testing` (`runListScreenContract`, `runEditScreenContract`, `runD
 | Delade flöden i en ViewModel (`stateIn`) | `screenSharing(forgetWhenStopped = false)` *(android-ui, `ui-common`)* |
 | Visa först efter en fördröjning (indikatorer som inte ska blinka) | `Flow<Boolean>.shownAfter(delay)` *(android-ui, `ui-common`)* |
 | Navigation | `AppKey`, `TOP_LEVEL` och `AddChoice` i `navigation/`; `AppBackStack` = `TabBackStack<AppKey>`, ramen `AppNavHost` och `AppTransitions` *(android-ui, `ui-navigation`)* – appens `AppNavHost` ger bara flikarna och plusmenyn; en påminnelse öppnar med `openInTab(TripsKey, PackingListKey(id))` |
+| Inloggningens ram | `AuthViewModel` (`ui/auth/`) räknar fram `AuthGate` *(android-ui, `ui-common`)*; `AppRoot` ger `AuthGateHost`, `SignInScreen` och `UpdateRequiredScreen` *(android-ui)* appens texter och resväskan (NFR-22) – helskärmar, därför inte i `ComponentGallery` |
 | Synkläget i ramen | `SyncUiState` *(android-ui, `ui-common`)*, byggt i `SyncViewModel` |
 | Feltyp | `DataError` (`Offline`, `PermissionDenied`, `Cancelled`, `UpdateRequired`, `SignInRejected`, `NoHousehold`, `NotFound`, `Unknown`) i `data/common/` |
 | Fel till text | `DataError.toMessage()` i `ui/common/` (appens texter); till ramarna som `UiError` via `AppErrors` (`ErrorMapper`) i `data/common/` – en gång; `NotFound` (raderat) är inte `retryable` och visas utan "Försök igen"; som meddelande via `ErrorSnackbar` (`template` sätter felet i ett sammanhang). `UiError` jämförs på identitet: samma fel två gånger visas två gånger |

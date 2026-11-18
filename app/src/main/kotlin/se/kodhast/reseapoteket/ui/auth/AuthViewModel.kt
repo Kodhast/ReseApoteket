@@ -21,22 +21,26 @@ import se.kodhast.reseapoteket.core.schema.Schema
 import se.kodhast.reseapoteket.data.auth.AuthRepository
 import se.kodhast.reseapoteket.data.auth.AuthUser
 import se.kodhast.reseapoteket.data.auth.ProfileCheckUseCase
+import se.kodhast.reseapoteket.data.common.AppErrors
 import se.kodhast.reseapoteket.data.common.DataError
 import se.kodhast.reseapoteket.data.common.HouseholdVersion
 import se.kodhast.reseapoteket.data.common.dataError
 import se.kodhast.reseapoteket.data.household.HouseholdSession
 import se.kodhast.reseapoteket.domain.EnsureHouseholdUseCase
+import se.kodhast.ui.common.AuthGate
+import se.kodhast.ui.common.UiError
 import se.kodhast.ui.common.screenSharing
 
-/** Vad appen visar: inloggning, "Uppdatera appen" eller innehållet (AUTH-1, HUS-3). */
-enum class AuthGate { Loading, SignedOut, NeedsHousehold, UpdateRequired, Ready }
-
+/**
+ * Inloggningens läge. [gate] avgör vad `AuthGateHost` visar: inloggning, "Uppdatera appen" eller
+ * innehållet (AUTH-1, HUS-3); `NeedsAccount` = inloggad men inget hushåll valt ännu.
+ */
 @Immutable
 data class AuthUiState(
     val gate: AuthGate = AuthGate.Loading,
     /** Inloggning eller val av hushåll pågår. */
     val busy: Boolean = false,
-    val error: DataError? = null,
+    val error: UiError? = null,
     /** Den inloggade – namn, e-post och foto i avataren (NAV-5); `null` utloggad. */
     val account: AuthUser? = null
 )
@@ -59,7 +63,7 @@ class AuthViewModel @Inject constructor(
     private val user: StateFlow<AuthUser?> = auth.authState.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     private val signingIn = MutableStateFlow(false)
     private val ensuring = MutableStateFlow(false)
-    private val error = MutableStateFlow<DataError?>(null)
+    private val error = MutableStateFlow<UiError?>(null)
     private var ensureJob: Job? = null
     private var ensuringUid: String? = null
 
@@ -112,7 +116,7 @@ class AuthViewModel @Inject constructor(
             val result = auth.signInWithGoogle(activityContext)
             signingIn.value = false
             // Avbruten inloggning är inget fel (AUTH-2).
-            result.dataError()?.takeIf { it != DataError.Cancelled }?.let { error.value = it }
+            result.dataError()?.takeIf { it != DataError.Cancelled }?.let { error.value = AppErrors.map(it) }
         }
     }
 
@@ -131,7 +135,7 @@ class AuthViewModel @Inject constructor(
             try {
                 ensureHousehold(user.uid).dataError()
                     ?.takeIf { this@AuthViewModel.user.value?.uid == user.uid }
-                    ?.let { error.value = it }
+                    ?.let { error.value = AppErrors.map(it) }
             } finally {
                 // Ett avbrutet jobb lämnar flaggan åt det som ersatte det.
                 if (ensureJob == coroutineContext[Job]) ensuring.value = false
@@ -145,7 +149,7 @@ class AuthViewModel @Inject constructor(
         fun gateOf(user: AuthUser?, householdId: String?, version: HouseholdVersion?): AuthGate = when {
             user == null -> AuthGate.SignedOut
 
-            householdId == null -> AuthGate.NeedsHousehold
+            householdId == null -> AuthGate.NeedsAccount
 
             // Versionen avgör om appen får visas – vänta på den i stället för att blinka förbi (HUS-3).
             version?.householdId != householdId -> AuthGate.Loading

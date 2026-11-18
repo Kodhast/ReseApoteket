@@ -30,7 +30,7 @@ fun AppRoot(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    AppRootContent(state, viewModel::onEvent, modifier) { AppNavigation(openTrip = openTrip, onTripOpened = onTripOpened) }
+    AppRootContent(state, viewModel::onEvent, modifier) { AppNavigation(account = state.account, openTrip = openTrip, onTripOpened = onTripOpened) }
 }
 
 /** Appens bakgrund sätts här, en gång; skärmarna ritar ovanpå den. */

@@ -4,6 +4,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
@@ -35,14 +38,14 @@ import se.kodhast.ui.common.DetailLoader
 import se.kodhast.ui.common.DetailUiState
 import se.kodhast.ui.common.UiError
 import se.kodhast.ui.common.uiErrorOrNull
-import se.kodhast.ui.components.AppButton
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
+import se.kodhast.ui.components.AppIconButton
 import se.kodhast.ui.components.AppMenuItem
-import se.kodhast.ui.components.ButtonVariant
 import se.kodhast.ui.components.DetailHeader
 import se.kodhast.ui.components.EntityDetailScreen
-import se.kodhast.ui.components.SectionHeader
+import se.kodhast.ui.components.IconButtonVariant
+import se.kodhast.ui.components.SectionFoldout
 import se.kodhast.ui.theme.AppTheme
 
 /** En person med sina recept och kosttillskott, utan arkiverade (PER-4). */
@@ -148,18 +151,31 @@ fun PersonDetailContent(
     }
 }
 
-/** Recept eller kosttillskott i ett kort: rubrik med antal, raderna och "Lägg till" (PER-4, REC-3, REC-5). */
+/**
+ * Recept eller kosttillskott i ett hopfällbart kort (PER-4, REC-3, REC-5): rubriken med antal fäller ut och ihop, och den
+ * runda plusknappen i rubriken lägger till utan att fälla – TalkBack "Lägg till recept"/"Lägg till kosttillskott".
+ * Utfällt när detaljen öppnas; läget sparas medan skärmen lever.
+ */
 @Composable
 private fun RegimenSection(config: RegimenKindConfig, regimens: List<Regimen>, onAdd: () -> Unit, onOpen: (Regimen) -> Unit) {
+    var expanded by rememberSaveable { mutableStateOf(true) }
     AppCard {
-        SectionHeader(stringResource(config.title), icon = config.icon, count = regimens.size.toString(), tone = config.tone)
-        if (regimens.isEmpty()) {
-            Text(stringResource(config.none), style = AppTheme.typography.itemSubtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        SectionFoldout(
+            stringResource(config.title),
+            expanded,
+            onToggle = { expanded = !expanded },
+            icon = config.icon,
+            count = regimens.size.toString(),
+            tone = config.tone,
+            trailing = { AppIconButton(R.drawable.ic_add, stringResource(config.add), onAdd, variant = IconButtonVariant.Tonal, tone = config.tone) }
+        ) {
+            if (regimens.isEmpty()) {
+                Text(stringResource(config.none), style = AppTheme.typography.itemSubtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            regimens.forEachIndexed { index, regimen ->
+                if (index > 0) AppDivider()
+                RegimenRow(regimen, onClick = { onOpen(regimen) })
+            }
         }
-        regimens.forEachIndexed { index, regimen ->
-            if (index > 0) AppDivider()
-            RegimenRow(regimen, onClick = { onOpen(regimen) })
-        }
-        AppButton(stringResource(config.add), onAdd, variant = ButtonVariant.Text, icon = R.drawable.ic_add)
     }
 }

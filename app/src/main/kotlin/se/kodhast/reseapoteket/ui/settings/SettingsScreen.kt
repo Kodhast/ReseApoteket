@@ -62,9 +62,9 @@ import se.kodhast.reseapoteket.data.medicines.MedicineRepository
 import se.kodhast.reseapoteket.data.repository.HouseholdRepository
 import se.kodhast.reseapoteket.ui.common.DateFormat
 import se.kodhast.reseapoteket.ui.common.toMessage
-import se.kodhast.reseapoteket.ui.components.PersonAvatar
-import se.kodhast.reseapoteket.ui.theme.AppColors
+import se.kodhast.ui.account.ProfilePhotoCache
 import se.kodhast.ui.common.STOP_TIMEOUT_MILLIS
+import se.kodhast.ui.components.AccountAvatar
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
 import se.kodhast.ui.components.AppSegmentedChoice
@@ -77,6 +77,7 @@ import se.kodhast.ui.components.LocalBottomClearance
 import se.kodhast.ui.components.MakerMark
 import se.kodhast.ui.components.QuantityStepper
 import se.kodhast.ui.components.SwitchRow
+import se.kodhast.ui.components.TopBarSize
 import se.kodhast.ui.theme.Spacing
 
 /** Kortet där en åtgärd gjordes – ett fel visas där (NFR-5). */
@@ -116,7 +117,7 @@ sealed interface SettingsEvent {
 data class ShareExport(val uri: String)
 
 /**
- * Fliken Inställningar (SET-1–6): hushållets marginaldagar skrivs direkt (bara det fältet),
+ * Inställningar (SET-1–6), en underskärm som avataren i sidhuvudet öppnar (NAV-5): hushållets marginaldagar skrivs direkt (bara det fältet),
  * namnet ändras i ett eget formulär; tema och "Flytta avprickade sist" sparas på enheten.
  */
 @HiltViewModel
@@ -128,6 +129,7 @@ class SettingsViewModel @Inject constructor(
     private val files: ExportFiles,
     private val clock: Clock,
     private val timeZone: TimeZone,
+    private val photos: ProfilePhotoCache,
     medicines: MedicineRepository
 ) : ViewModel() {
 
@@ -157,7 +159,9 @@ class SettingsViewModel @Inject constructor(
 
             is SettingsEvent.SetMarginDays -> setMarginDays(event.days)
 
-            SettingsEvent.SignOut -> run(SettingsSection.Account) { auth.signOut() }
+            // Profilfotot är ingen data som väntar på servern: det tas bort efter en lyckad utloggning (AUTH-4, AUTH-5);
+            // ett fel där är inget för användaren.
+            SettingsEvent.SignOut -> run(SettingsSection.Account) { auth.signOut().onSuccess { photos.clear() } }
 
             SettingsEvent.Export -> exportHousehold()
 
@@ -199,6 +203,7 @@ class SettingsViewModel @Inject constructor(
 
 @Composable
 fun SettingsScreen(
+    onBack: () -> Unit,
     onEditHousehold: () -> Unit,
     onOpenGallery: (() -> Unit)?,
     viewModel: SettingsViewModel = hiltViewModel(),
@@ -220,7 +225,7 @@ fun SettingsScreen(
             viewModel.onEvent(SettingsEvent.ShareShown)
         }
     }
-    SettingsContent(state, viewModel::onEvent, BuildConfig.VERSION_NAME, onEditHousehold, onOpenGallery, medicinesUpdated = medicinesUpdated) {
+    SettingsContent(state, viewModel::onEvent, BuildConfig.VERSION_NAME, onEditHousehold, onOpenGallery, onBack = onBack, medicinesUpdated = medicinesUpdated) {
         RemindersCard(reminders, remindersViewModel::onEvent, access.allowed, access.ask, access.openSettings)
     }
 }
@@ -240,7 +245,9 @@ private fun openShare(share: ShareExport, context: Context, chooserTitle: String
 private val THEME_OPTIONS = listOf(ThemeMode.Light to R.string.theme_light, ThemeMode.Dark to R.string.theme_dark, ThemeMode.System to R.string.theme_system)
 
 /**
+ * Kontot står först (NAV-5).
  * @param onOpenGallery "Komponenter" – bara i debug-bygget, annars `null`.
+ * @param onBack tillbakapilen i toppraden – tillbaka till fliken avataren trycktes på (NAV-5).
  * @param medicinesUpdated datumet för den inbyggda läkemedelslistan (REC-6), under Om.
  * @param reminders kortet Påminnelser (PÅM-1), efter Packlista.
  */
@@ -252,6 +259,7 @@ fun SettingsContent(
     onEditHousehold: () -> Unit,
     onOpenGallery: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    onBack: (() -> Unit)? = null,
     medicinesUpdated: LocalDate? = null,
     reminders: (@Composable () -> Unit)? = null
 ) {
@@ -259,8 +267,21 @@ fun SettingsContent(
     val uriHandler = LocalUriHandler.current
     val sourceUrl = stringResource(R.string.settings_source_url)
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        AppTopBar(stringResource(R.string.tab_settings))
+        AppTopBar(stringResource(R.string.tab_settings), size = TopBarSize.Small, onBack = onBack)
         Column(Modifier.padding(horizontal = Spacing.l), verticalArrangement = Arrangement.spacedBy(Spacing.m)) {
+            GroupLabel(stringResource(R.string.settings_account))
+            SettingsCard(state.error, SettingsSection.Account) {
+                state.account?.let { account ->
+                    val name = account.name ?: account.email ?: stringResource(R.string.settings_signed_in)
+                    ItemRow(
+                        title = name,
+                        subtitle = account.email?.takeIf { it != name } ?: stringResource(R.string.settings_signed_in),
+                        leading = { AccountAvatar(name, onClick = null, photoUrl = account.photoUrl) }
+                    )
+                    AppDivider()
+                }
+                ItemRow(stringResource(R.string.sign_out), onClick = { confirmSignOut = true })
+            }
             state.household?.let { household ->
                 GroupLabel(stringResource(R.string.settings_household))
                 SettingsCard(state.error, SettingsSection.Household) {
@@ -310,19 +331,6 @@ fun SettingsContent(
                         )
                     }
                 )
-            }
-            GroupLabel(stringResource(R.string.settings_account))
-            SettingsCard(state.error, SettingsSection.Account) {
-                state.account?.let { account ->
-                    val name = account.name ?: account.email ?: stringResource(R.string.settings_signed_in)
-                    ItemRow(
-                        title = name,
-                        subtitle = account.email?.takeIf { it != name } ?: stringResource(R.string.settings_signed_in),
-                        leading = { PersonAvatar(name.take(1).uppercase(), AppColors.person(0)) }
-                    )
-                    AppDivider()
-                }
-                ItemRow(stringResource(R.string.sign_out), onClick = { confirmSignOut = true })
             }
             GroupLabel(stringResource(R.string.settings_data))
             SettingsCard(state.error, SettingsSection.Data) {

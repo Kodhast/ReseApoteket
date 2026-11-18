@@ -1,7 +1,9 @@
 package se.kodhast.reseapoteket.navigation
 
 import androidx.compose.foundation.clickable
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -25,9 +27,10 @@ import se.kodhast.reseapoteket.data.common.DataError
 import se.kodhast.reseapoteket.ui.sync.SyncEvent
 import se.kodhast.reseapoteket.ui.sync.SyncUiState
 import se.kodhast.reseapoteket.ui.theme.ReseApoteketTheme
-import se.kodhast.ui.components.AppTopBar
+import se.kodhast.ui.components.AccountAvatar
+import se.kodhast.ui.components.AppHeader
 
-/** Navigationsramen: verktygsraden i flikarnas rot, dold på undersidor (NAV-1). */
+/** Navigationsramen: verktygsraden i flikarnas rot, dold på undersidor (NAV-1), plusmenyn (NAV-6), avataren (NAV-5) och synkprickarna (NFR-6). */
 @RunWith(RobolectricTestRunner::class)
 class AppNavHostTest {
 
@@ -67,7 +70,7 @@ class AppNavHostTest {
         rule.onNodeWithContentDescription("Personer").performClick()
         rule.onNodeWithText("PersonsKey: 0").performClick()
         rule.onNodeWithText("PersonsKey: 1").assertIsDisplayed()
-        rule.onNodeWithContentDescription("Familjeartiklar").performClick()
+        rule.onNodeWithContentDescription("Gemensamt").performClick()
         rule.onNodeWithContentDescription("Personer").performClick()
         rule.onNodeWithText("PersonsKey: 1").assertIsDisplayed()
     }
@@ -101,18 +104,59 @@ class AppNavHostTest {
         rule.onNodeWithContentDescription("Personer").assertIsDisplayed()
     }
 
+    /** En flikrot med appens sidhuvud, som `EntityListScreen` ger flikarna. */
+    @OptIn(ExperimentalMaterial3Api::class)
+    private val header: (AppKey) -> NavEntry<AppKey> = { key -> NavEntry(key) { AppHeader("Resor", TopAppBarDefaults.pinnedScrollBehavior()) } }
+
     @Test
-    fun `synkindikatorn syns i skärmens toppbar och förklarar sig vid tryck (NFR-6)`() {
+    fun `prickarna i sidhuvudet säger att ändringar väntar på servern (NFR-6)`() {
         var sync by mutableStateOf(SyncUiState())
         rule.setContent {
             ReseApoteketTheme {
-                AppNavHost(backStack, { key -> NavEntry(key) { AppTopBar("Resor") } }, sync = sync)
+                AppNavHost(backStack, header, sync = sync)
             }
         }
-        rule.onNodeWithContentDescription("Ändringar väntar på att synkas").assertDoesNotExist()
+        rule.onNodeWithContentDescription(PENDING).assertDoesNotExist()
         sync = SyncUiState(pending = true)
-        rule.onNodeWithContentDescription("Ändringar väntar på att synkas").performClick()
-        rule.onNodeWithText("Ändringarna är sparade på telefonen och skickas när det finns nät.").assertIsDisplayed()
+        rule.onNodeWithContentDescription(PENDING).assertExists()
+    }
+
+    @Test
+    fun `plusknappens meny har de tre valen och ger det valda (NAV-6)`() {
+        val picked = mutableListOf<AddChoice>()
+        rule.setContent {
+            ReseApoteketTheme {
+                AppNavHost(backStack, { key -> NavEntry(key) { Text("Skärm: ${key::class.simpleName}") } }, onAdd = { picked += it })
+            }
+        }
+        rule.onNodeWithText("Ny person").assertDoesNotExist()
+        rule.onNodeWithContentDescription("Lägg till").performClick()
+        rule.onNodeWithText("Ny resa").assertIsDisplayed()
+        rule.onNodeWithText("Ny gemensam sak").assertIsDisplayed()
+        rule.onNodeWithText("Ny person").performClick()
+        assertEquals(listOf(AddChoice.Person), picked)
+    }
+
+    @Test
+    fun `utan onAdd har verktygsraden ingen plusknapp`() {
+        show()
+        rule.onNodeWithContentDescription("Lägg till").assertDoesNotExist()
+    }
+
+    @Test
+    fun `avataren står i flikens sidhuvud (NAV-5)`() {
+        var opened = 0
+        rule.setContent {
+            ReseApoteketTheme {
+                AppNavHost(
+                    backStack,
+                    header,
+                    account = { AccountAvatar("Mats Testsson", onClick = { opened++ }) }
+                )
+            }
+        }
+        rule.onNodeWithContentDescription("Konto och inställningar").performClick()
+        assertEquals(1, opened)
     }
 
     @Test
@@ -138,25 +182,6 @@ class AppNavHostTest {
     }
 
     @Test
-    fun `tryck på synkindikatorn stänger inte ett felmeddelande som visas`() {
-        rule.mainClock.autoAdvance = false
-        rule.setContent {
-            ReseApoteketTheme {
-                AppNavHost(
-                    backStack,
-                    { key -> NavEntry(key) { AppTopBar("Resor") } },
-                    sync = SyncUiState(pending = true, writeError = AppErrors.map(DataError.PermissionDenied))
-                )
-            }
-        }
-        rule.mainClock.advanceTimeBy(SHOWN_MILLIS)
-        rule.onNodeWithContentDescription("Ändringar väntar på att synkas").performClick()
-        rule.mainClock.advanceTimeBy(SHOWN_MILLIS)
-        rule.onNodeWithText("En ändring kunde inte sparas och har ångrats. Du har inte behörighet till det här hushållet.").assertIsDisplayed()
-        rule.onNodeWithText("Ändringarna är sparade på telefonen och skickas när det finns nät.").assertDoesNotExist()
-    }
-
-    @Test
     fun `en påminnelse öppnar resans packlista och släpps sedan (PÅM-7)`() {
         var trip by mutableStateOf<String?>(null)
         var opened = 0
@@ -176,6 +201,7 @@ class AppNavHostTest {
     }
 
     private companion object {
+        const val PENDING = "Ändringar väntar på servern"
         const val SHOWN_MILLIS = 500L
         const val LONG_SNACKBAR_MILLIS = 11_000L
     }

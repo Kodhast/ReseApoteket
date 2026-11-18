@@ -24,7 +24,6 @@ import se.kodhast.reseapoteket.ui.theme.Blue
 import se.kodhast.ui.common.ListEvent
 import se.kodhast.ui.common.ListLoader
 import se.kodhast.ui.common.ListUiState
-import se.kodhast.ui.components.AddAction
 import se.kodhast.ui.components.ArchiveActions
 import se.kodhast.ui.components.EmptyContent
 import se.kodhast.ui.components.EmptyExample
@@ -56,23 +55,21 @@ class FamilyItemsViewModel @Inject constructor(items: FamilyItemRepository) : Vi
     }
 }
 
-/** Fliken Familjeartiklar (FAM-1–4). */
+/** Fliken Gemensamt (FAM-1–4). En ny sak läggs till med plusknappen i flikraden (NAV-6) eller från ett exempel i tomt läge (FAM-4). */
 @Composable
 fun FamilyItemsScreen(
-    onAdd: () -> Unit,
     onAddExample: (FamilyItemExample) -> Unit,
     onOpen: (String) -> Unit,
     viewModel: FamilyItemsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    FamilyItemsContent(state, viewModel::onEvent, onAdd, onOpen, archive = viewModel.archive.collectAsListArchive(), onAddExample = onAddExample)
+    FamilyItemsContent(state, viewModel::onEvent, onOpen, archive = viewModel.archive.collectAsListArchive(), onAddExample = onAddExample)
 }
 
 @Composable
 fun FamilyItemsContent(
     state: ListUiState<FamilyItem>,
     onEvent: (FamilyItemsEvent) -> Unit,
-    onAdd: () -> Unit,
     onOpen: (String) -> Unit,
     modifier: Modifier = Modifier,
     archive: ListArchive = ListArchive(),
@@ -90,7 +87,8 @@ fun FamilyItemsContent(
             message = stringResource(R.string.family_items_empty_message),
             examples = examples
         ),
-        add = AddAction(stringResource(R.string.add), onAdd),
+        // Ny läggs till med plusknappen i flikraden (NAV-6).
+        add = null,
         key = FamilyItem::id,
         modifier = modifier,
         onRetry = { onEvent(FamilyItemsEvent.List(ListEvent.Retry)) },

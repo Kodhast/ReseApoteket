@@ -91,7 +91,7 @@ class PersonScreensTest {
         val events = mutableListOf<ArchiveEvent>()
         rule.setContent {
             ReseApoteketTheme {
-                PersonsContent(ListUiState.Content(persistentListOf(PersonListItem(anna, 1))), {}, {}, {}, archive = ListArchive { events += it })
+                PersonsContent(ListUiState.Content(persistentListOf(PersonListItem(anna, 1))), {}, {}, archive = ListArchive { events += it })
             }
         }
         rule.onNodeWithText("Anna").performTouchInput { swipeLeft() }
@@ -119,11 +119,22 @@ class PersonScreensTest {
         rule.onNodeWithText("Anna").assertIsDisplayed()
         rule.onNodeWithText("4 recept · 1 kosttillskott").assertIsDisplayed()
         rule.onNodeWithText("Levaxin 50 µg").performClick()
-        rule.onNodeWithText("Lägg till kosttillskott").performClick()
+        rule.onNodeWithContentDescription("Lägg till kosttillskott").performClick()
         rule.onNodeWithContentDescription("Redigera").performClick()
         assertEquals(listOf("r1"), opened)
         assertEquals(listOf(RegimenKind.SUPPLEMENT), added)
         assertEquals(1, edits)
+    }
+
+    @Test
+    fun `sektionerna fälls ihop från titelraden men inte av lägg till-knappen (PER-4)`() {
+        rule.setContent { ReseApoteketTheme { PersonDetailContent(DetailUiState.Content(detail), {}, {}, {}, {}, {}) } }
+        rule.onNodeWithText("D-vitamin 10 µg").assertIsDisplayed()
+        rule.onNodeWithContentDescription("Lägg till kosttillskott").performClick()
+        rule.onNodeWithText("D-vitamin 10 µg").assertIsDisplayed()
+        rule.onNodeWithText("Kosttillskott").performClick()
+        rule.onNodeWithText("D-vitamin 10 µg").assertDoesNotExist()
+        rule.onNodeWithText("Levaxin 50 µg").assertIsDisplayed()
     }
 
     @Test

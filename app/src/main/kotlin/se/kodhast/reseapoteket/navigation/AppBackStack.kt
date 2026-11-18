@@ -91,6 +91,7 @@ class AppBackStack internal constructor(current: TopLevelKey, stacks: Map<TopLev
         /**
          * Nycklarna sparas med klassnamn, så ett läge från före paketbytet (#156) eller från en
          * äldre version går inte att läsa: då startar appen på Resor i stället för att krascha.
+         * Det gäller också ett läge från när Inställningar var en flik (NAV-1, före 0.9.0).
          */
         internal fun restore(saved: String): AppBackStack = try {
             val state = json.decodeFromString(Saved.serializer(), saved)

@@ -18,6 +18,10 @@ ogenomträngliga ID:n eller antal. Ta bort felsökningsloggar innan du anser dig
 Ingen analytics eller crash-rapportering som skickar innehåll. Samma gäller `tools/db` och
 GitHub Actions-loggar.
 
+Profilfotots adress (`AuthUser.photoUrl`) räknas som PII: den loggas aldrig och sparas inte av
+appen. Fotot cachas av Coil i appens privata `cacheDir` (säkerhetskopieras inte), och
+utloggningen tömmer cachen (`ProfilePhotoCache`, AUTH-4/AUTH-5).
+
 ### 2. All data i Firestore ligger bakom security rules
 - All användardata ligger under `households/{hid}/…`. `firestore.rules` släpper bara in
   inloggade användare vars uid finns i hushållets `memberUids`.

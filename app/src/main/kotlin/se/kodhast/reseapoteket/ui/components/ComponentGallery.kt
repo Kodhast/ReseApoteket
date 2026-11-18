@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -44,6 +46,7 @@ import se.kodhast.ui.common.DetailUiState
 import se.kodhast.ui.common.EditorEvents
 import se.kodhast.ui.common.EditorUiState
 import se.kodhast.ui.common.ListUiState
+import se.kodhast.ui.components.AccountAvatar
 import se.kodhast.ui.components.AddAction
 import se.kodhast.ui.components.AddSplitButton
 import se.kodhast.ui.components.AppBottomSheet
@@ -52,6 +55,7 @@ import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
 import se.kodhast.ui.components.AppFilterChip
 import se.kodhast.ui.components.AppFloatingToolbar
+import se.kodhast.ui.components.AppHeader
 import se.kodhast.ui.components.AppIconButton
 import se.kodhast.ui.components.AppLoading
 import se.kodhast.ui.components.AppMenu
@@ -88,16 +92,17 @@ import se.kodhast.ui.components.LabeledGroup
 import se.kodhast.ui.components.ListArchive
 import se.kodhast.ui.components.ListGroup
 import se.kodhast.ui.components.ListSubgroup
-import se.kodhast.ui.components.LocalTopBarStatus
 import se.kodhast.ui.components.MakerMark
 import se.kodhast.ui.components.PausableRow
 import se.kodhast.ui.components.QuantityStepper
+import se.kodhast.ui.components.SectionFoldout
 import se.kodhast.ui.components.SectionHeader
 import se.kodhast.ui.components.Suggestion
 import se.kodhast.ui.components.SuggestionField
 import se.kodhast.ui.components.SwipeToHide
 import se.kodhast.ui.components.SwitchRow
 import se.kodhast.ui.components.TimeField
+import se.kodhast.ui.components.ToolbarAction
 import se.kodhast.ui.components.ToolbarItem
 import se.kodhast.ui.components.TopBarSize
 import se.kodhast.ui.components.UndoRequest
@@ -209,7 +214,6 @@ private fun Rows() {
         InfoPill("Kosttillskott", tone = Tone.Green)
         InfoPill("Övrigt", tone = Tone.Blue)
     }
-    InfoPill(stringResource(R.string.sync_pending), tone = Tone.Blue, icon = R.drawable.ic_cloud_upload, onClick = {})
     ChipRow {
         listOf("🦊", "🐻", "🐰", "🦉", "🐯", "🐢", "🦄", "🐧").forEachIndexed { i, emoji -> PersonAvatar(emoji, AppColors.person(i)) }
     }
@@ -278,6 +282,7 @@ private fun Fields() {
     ColorSwatchPicker(AppColors.PERSON_HEX, color, { color = it }, AppColors::person, { personColorLabel(it) }, PersonColorMarker)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Progress() {
     AppCard { SuitcaseProgress(packed = 9, total = 14) }
@@ -289,15 +294,22 @@ private fun Progress() {
         items = listOf(
             ToolbarItem("Resor", R.drawable.ic_luggage),
             ToolbarItem("Personer", R.drawable.ic_person),
-            ToolbarItem("Familjeartiklar", R.drawable.ic_family_items),
-            ToolbarItem("Inställningar", R.drawable.ic_settings)
+            ToolbarItem("Gemensamt", R.drawable.ic_family_items)
         ),
         selectedIndex = tab,
-        onSelect = { tab = it }
+        onSelect = { tab = it },
+        action = ToolbarAction(
+            "Lägg till",
+            R.drawable.ic_add,
+            listOf(
+                AppMenuItem("Ny resa", {}, icon = R.drawable.ic_luggage),
+                AppMenuItem("Ny person", {}, icon = R.drawable.ic_person),
+                AppMenuItem("Ny gemensam sak", {}, icon = R.drawable.ic_family_items)
+            )
+        )
     )
-    CompositionLocalProvider(LocalTopBarStatus provides SyncIndicator(pending = true).topBarStatus()) {
-        AppTopBar("Gran Canaria", size = TopBarSize.Small, onBack = {})
-    }
+    AppTopBar("Gran Canaria", size = TopBarSize.Small, onBack = {})
+    AppHeader("Resor", TopAppBarDefaults.pinnedScrollBehavior(), syncing = true, account = { AccountAvatar("Anna Berg", onClick = {}, online = true) })
 }
 
 @Composable
@@ -338,11 +350,12 @@ private fun Overlays() {
 @Composable
 private fun Frames(onBack: () -> Unit) {
     var undo by remember { mutableStateOf<UndoRequest?>(null) }
+    var expanded by remember { mutableStateOf(true) }
     var items by remember { mutableStateOf(listOf("Solkräm", "Plåster", "Febertermometer")) }
     Label("EntityListScreen · SwipeToHide · UndoSnackbar")
     Box(Modifier.fillMaxWidth().height(FRAME_HEIGHT)) {
         EntityListScreen(
-            title = "Familjeartiklar",
+            title = "Gemensamt",
             state = if (items.isEmpty()) ListUiState.Empty else ListUiState.Content(items.toImmutableList()),
             empty = EmptyContent(
                 R.drawable.ic_family_items,
@@ -435,8 +448,16 @@ private fun Frames(onBack: () -> Unit) {
             leading = { PersonAvatar("🦊", AppColors.person(0), size = AvatarSize.Large) }
         ) {
             AppCard {
-                SectionHeader("Recept", icon = R.drawable.ic_medication, count = "1")
-                ItemRow("Levaxin 50 µg", subtitle = "1 tablett dagligen", navigates = true, onClick = {})
+                SectionFoldout(
+                    "Recept",
+                    expanded = expanded,
+                    onToggle = { expanded = !expanded },
+                    icon = R.drawable.ic_medication,
+                    count = "1",
+                    trailing = { AppIconButton(R.drawable.ic_add, "Lägg till recept", {}, variant = IconButtonVariant.Tonal) }
+                ) {
+                    ItemRow("Levaxin 50 µg", subtitle = "1 tablett dagligen", navigates = true, onClick = {})
+                }
             }
         }
     }

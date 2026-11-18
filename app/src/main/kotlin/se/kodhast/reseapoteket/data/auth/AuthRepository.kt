@@ -4,10 +4,10 @@ import android.content.Context
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Den inloggade användaren – bara det appen behöver. Namn och e-post visas i Inställningar
- * (SET-4) men loggas eller sparas aldrig.
+ * Den inloggade användaren – bara det appen behöver. Namn, e-post och fotots adress visas i avataren och
+ * Inställningar (NAV-5, SET-4) men loggas eller sparas aldrig; själva fotot cachas på enheten (AUTH-5).
  */
-data class AuthUser(val uid: String, val name: String? = null, val email: String? = null)
+data class AuthUser(val uid: String, val name: String? = null, val email: String? = null, val photoUrl: String? = null)
 
 /** Inloggning med Google (skill android:firebase-auth + android-projekt). Alla fel kommer som `DataError`, mappade en gång. */
 interface AuthRepository {
@@ -19,4 +19,10 @@ interface AuthRepository {
 
     /** Rensar Credential Managers sparade inloggning, Firebase-sessionen och det valda hushållet. */
     suspend fun signOut(): Result<Unit>
+
+    /**
+     * Hämtar om den inloggades profil från servern (AUTH-5), så att ett utbytt namn eller foto når [authState].
+     * Utloggad eller utan nät är ett fel (`DataError`).
+     */
+    suspend fun reload(): Result<Unit>
 }

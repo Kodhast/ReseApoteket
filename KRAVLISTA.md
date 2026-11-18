@@ -3,7 +3,7 @@
 > Räknar ut hur mycket av familjens mediciner, kosttillskott och apoteksvaror som ska
 > packas inför en resa, och låter familjen pricka av det som plockats fram.
 >
-> Paket: `se.kodhast.reseapoteket` · Språk: svenska · Status: byggskelett (0.1.0) – inloggning, hushåll, backup, databasåtkomst, navigering med fyra flikar, tema och komponentkatalog finns; personer, recept, familjeartiklar, resor, packlistan och inställningarna finns sedan #21–#27.
+> Paket: `se.kodhast.reseapoteket` · Språk: svenska · Status: byggskelett (0.1.0) – inloggning, hushåll, backup, databasåtkomst, navigering med tre flikar, tema och komponentkatalog finns; personer, recept, familjeartiklar, resor, packlistan och inställningarna finns sedan #21–#27.
 
 Så här används listan: skill [`requirements-kravlista`](.claude/skills/requirements-kravlista/SKILL.md).
 Krav märkta *(planerad)* är beslutade men inte byggda; markeringen tas bort i PR:en som
@@ -36,6 +36,7 @@ bygger kravet. Arkitekturbesluten bakom TP-kraven står i [ARKITEKTUR.md](ARKITE
 | TP-6 | Inloggning via **Firebase Auth + Credential Manager**. |
 | TP-7 | Navigering med **Navigation 3**. |
 | TP-8 | Backup och databasåtkomst från utvecklingssessioner via Node-verktyget **`tools/db`**: `stats`, `query` och `get` läser (med en läsnyckel, inget sparas på disk), `export`, `import` och `migrate` för backup och schemaändringar. |
+| TP-9 | Gemensamma delar – sidhuvud, verktygsrad, avatar, hopfällbara sektioner, anslutningsläge och profilfotots cache (Coil) – kommer från biblioteket **android-ui** (`se.kodhast.ui`), som Dagboken också använder. |
 
 ---
 
@@ -43,9 +44,12 @@ bygger kravet. Arkitekturbesluten bakom TP-kraven står i [ARKITEKTUR.md](ARKITE
 
 | ID | Krav |
 |----|------|
-| NAV-1 | Toppnivå med fyra flikar – **Resor**, **Personer**, **Familjeartiklar**, **Inställningar** – i en flytande verktygsrad. Appen startar på Resor, också när ett sparat läge inte går att läsa (till exempel från före paketbytet, #156). |
+| NAV-1 | Toppnivå med tre flikar – **Resor**, **Personer**, **Gemensamt** – i en flytande verktygsrad med plusknappen (NAV-6) till höger *(0.9.0: tidigare fyra flikar med Familjeartiklar och Inställningar)*. Appen startar på Resor, också när ett sparat läge inte går att läsa (till exempel från före paketbytet, #156, eller med den gamla Inställningar-fliken öppen). |
 | NAV-2 | Underskärmar döljer verktygsraden; fliktillstånd bevaras vid byte. Tillbaka i en annan fliks rot går till Resor; tillbaka i Resor lämnar appen. Ett dubbeltryck öppnar en skärm en gång, och en skärm som stänger sig två gånger stänger aldrig skärmen under. |
 | NAV-3 | Alla skärmbyten använder samma rörelse. |
+| NAV-4 | Flikarnas sidhuvud är Kodhästs (android-ui `AppHeader`): appens ikon och namn, flikens rubrik med två prickar före och kontots avatar längst till höger. Rubriken krymper när listan rullas. |
+| NAV-5 | **Avataren** visar Google-kontots profilfoto (annars initialerna) och öppnar **Inställningar** som undersida med bakåtpil; den läses som "Konto och inställningar". En grön prick på avataren visar att appen har fungerande internet; utan nät eller bakom en inloggningsportal syns ingen prick, och TalkBack säger "Ansluten" eller "Utan anslutning". |
+| NAV-6 | **Plusknappen** i verktygsraden öppnar en meny med **Ny resa**, **Ny person** och **Ny gemensam sak**, som öppnar respektive formulär; menyn stängs med krysset, bakåt eller efter ett val. Listorna har ingen egen "Lägg till"-knapp. |
 
 ---
 
@@ -56,7 +60,8 @@ bygger kravet. Arkitekturbesluten bakom TP-kraven står i [ARKITEKTUR.md](ARKITE
 | AUTH-1 | Appen visar inloggningen ("Logga in med Google") tills användaren loggat in med sitt Google-konto; utloggad visas inget annat innehåll. |
 | AUTH-2 | En avbruten inloggning – kontoväljaren stängd – är inget fel och visar inget meddelande. |
 | AUTH-3 | Medan inloggningen och valet av hushåll pågår visar knappen "Loggar in …" och kan inte tryckas; ett fel visas som meddelande ovanför knappen (NFR-5). |
-| AUTH-4 | Utloggning rensar den sparade inloggningen, Firebase-sessionen och det valda hushållet på enheten; är ingen inloggad rensas ett kvarglömt hushållsval alltid, så att nästa konto aldrig hamnar i ett annat kontos hushåll. Utloggningen görs från Inställningar (SET-4). |
+| AUTH-4 | Utloggning rensar den sparade inloggningen, Firebase-sessionen och det valda hushållet på enheten; är ingen inloggad rensas ett kvarglömt hushållsval alltid, så att nästa konto aldrig hamnar i ett annat kontos hushåll. Utloggningen görs från Inställningar (SET-4) och tömmer också profilfotots cache på enheten; ett fel där stoppar inte utloggningen. |
+| AUTH-5 | Inloggad hämtar appen om kontots profil från Firebase en gång per inloggning och appstart, när den är ansluten (görs om nästa gång den blir ansluten om det misslyckas), så att ett nytt profilfoto kan nå avataren (NAV-5; okontrollerat om Firebase tar in ett utbytt Google-foto då eller först vid nästa inloggning). Profilfotot sparas i appens privata cache (som inte säkerhetskopieras), så att det syns utan nät; fotoadressen sparas eller loggas aldrig. |
 
 ## 5. Hushåll
 
@@ -72,10 +77,10 @@ bygger kravet. Arkitekturbesluten bakom TP-kraven står i [ARKITEKTUR.md](ARKITE
 
 | ID | Krav |
 |----|------|
-| PER-1 | Fliken **Personer** listar hushållets personer med emoji-avatar, namn och antal recept och kosttillskott som inte är arkiverade ("3 recept · 1 kosttillskott", annars "Inga recept eller kosttillskott än"); lista, tomt tillstånd och fel enligt NFR-1. "Visa arkiverade" i menyn visar arkiverade personer sist, märkta "Arkiverad". |
+| PER-1 | Fliken **Personer** listar hushållets personer med emoji-avatar, namn och antal recept och kosttillskott som inte är arkiverade ("3 recept · 1 kosttillskott", annars "Inga recept eller kosttillskott än"); lista, tomt tillstånd och fel enligt NFR-1; en ny person läggs till med plusknappen (NAV-6). "Visa arkiverade" i menyn visar arkiverade personer sist, märkta "Arkiverad". |
 | PER-2 | En person har namn (obligatoriskt), emoji ur en kurerad lista på 40 och en av åtta personfärger, valda direkt i formuläret med en förhandsvisning av avataren (den valda emojin och färgen markeras med samma ring); en ny person börjar med första emojin och färgen och hamnar sist i listan. Skapas och redigeras enligt NFR-2. |
 | PER-3 | En person arkiveras med svep och kan ångras (NFR-3), eller arkiveras och återställs från persondetaljens meny. En arkiverad person föreslås inte i nya resor (BER-9); en befintlig packlista behåller personens rader tills listan räknas om (RES-4), och avprickade rader finns kvar även då. |
-| PER-4 | Persondetaljen visar personens avatar, namn och antal överst, och personens **Recept** och **Kosttillskott** i var sin sektion med antal, dosering per rad och "Lägg till" (NFR-1). Arkiverade recept och kosttillskott visas inte. |
+| PER-4 | Persondetaljen visar personens avatar, namn och antal överst, och personens **Recept** och **Kosttillskott** i var sitt hopfällbart sektionskort (ikonruta, titel och antal i rubriken, utfällt från början; NFR-1), med dosering per rad. Rubrikens runda tonade plusknapp ("Lägg till recept", "Lägg till kosttillskott") lägger till i sektionen utan att fälla den. Arkiverade recept och kosttillskott visas inte. |
 
 ## 7. Recept
 
@@ -97,20 +102,20 @@ bygger kravet. Arkitekturbesluten bakom TP-kraven står i [ARKITEKTUR.md](ARKITE
 | KOS-2 | Formerna är tablett, kapsel, pulver och droppar. Ett kosttillskott som sparats med en annan form visar den formen också. **Pulver** finns även för recept (REC-1) – samma former i hela appen; den kom med `schemaVersion` 2 (BCK-5, DAT-8). |
 | KOS-3 | Ett nytt kosttillskott kan börja från snabbvalen **D-vitamin**, **Omega-3**, **Magnesium** och **Probiotika**, som bara fyller i namnet. Snabbvalen visas inte när ett befintligt redigeras. |
 
-## 9. Familjeartiklar
+## 9. Gemensamt (familjeartiklar)
 
 | ID | Krav |
 |----|------|
-| FAM-1 | Fliken **Familjeartiklar** listar hushållets gemensamma saker grupperade per kategori i ordningen **Krämer & salvor**, **Plåster & förband**, **Verktyg**, **Övrigt**, med ikon och antal per kategori (NFR-1). Varje rad visar namn, mängdregeln i klartext och regeltypen som etikett; en pausad (inaktiv) artikel visas nedtonad med "Pausat" och räknas inte med i packförslaget, som recepten (REC-5). |
+| FAM-1 | Fliken **Gemensamt** *(0.9.0: hette Familjeartiklar)* listar hushållets gemensamma saker grupperade per kategori i ordningen **Krämer & salvor**, **Plåster & förband**, **Verktyg**, **Övrigt**, med ikon och antal per kategori (NFR-1); en ny läggs till med plusknappen ("Ny gemensam sak", NAV-6). Varje rad visar namn, mängdregeln i klartext och regeltypen som etikett; en pausad (inaktiv) artikel visas nedtonad med "Pausat" och räknas inte med i packförslaget, som recepten (REC-5). |
 | FAM-2 | En familjeartikel har namn (obligatoriskt), kategori, enhet, mängdregel, "Packas på resedagen" (PAK-6), anteckning och aktiv/inaktiv; skapas och redigeras enligt NFR-2 och en ny hamnar sist. Den arkiveras med svep och Ångra (NFR-3) eller från formulärets meny; "Visa arkiverade" visar arkiverade sist i sin kategori, och en arkiverad återställs från formulärets meny. |
 | FAM-3 | Mängdregeln är **Fast antal**, **Per resenär** eller **Per N dagar** (DAT-3, BER-5–7), minst 1; samma regeltext i lista, redigering och packlista. Under regeln visas vad som skulle packas för hushållets personer (inte arkiverade) i 7 dagar med hushållets marginaldagar, t.ex. "För 4 resenärer i 7 dagar: 2 tuber", och förklaringen (BER-10). |
-| FAM-4 | När listan är tom finns exemplen **Solkräm**, **Plåster** och **Febertermometer**. Ett exempel öppnar formuläret ifyllt med namn, kategori, enhet och en vanlig mängd (1 tub per 7 dagar, 10 per resenär, 1 st) – inget sparas förrän användaren sparar. |
+| FAM-4 | När listan är tom ("Inget gemensamt än") finns exemplen **Solkräm**, **Plåster** och **Febertermometer**. Ett exempel öppnar formuläret ifyllt med namn, kategori, enhet och en vanlig mängd (1 tub per 7 dagar, 10 per resenär, 1 st) – inget sparas förrän användaren sparar. |
 
 ## 10. Resa
 
 | ID | Krav |
 |----|------|
-| RES-1 | Fliken **Resor** listar resor med senaste start först (samma start: namn i svensk ordning): namn, startdatum och antal dagar, status (**Planeras**, **Packad**, **Klar** – en klar resa nedtonad), resenärernas avatarer och packat ("9 / 16", dolda rader räknas inte). Går resenärer eller packat inte att läsa visas resorna ändå, utan dem. En resa arkiveras med svep och Ångra (NFR-3) eller från formulärets meny; "Visa arkiverade" visar dem sist. Tryck öppnar resans packlista (PAK); resan ändras därifrån med pennan. |
+| RES-1 | Fliken **Resor** listar resor med senaste start först (samma start: namn i svensk ordning): namn, startdatum och antal dagar, status (**Planeras**, **Packad**, **Klar** – en klar resa nedtonad), resenärernas avatarer och packat ("9 / 16", dolda rader räknas inte). Går resenärer eller packat inte att läsa visas resorna ändå, utan dem. En resa arkiveras med svep och Ångra (NFR-3) eller från formulärets meny; "Visa arkiverade" visar dem sist. En ny resa läggs till med plusknappen (NAV-6). Tryck öppnar resans packlista (PAK); resan ändras därifrån med pennan. |
 | RES-2 | En resa har namn ("Vart?"; lämnas det tomt blir det "Resa <datum>", t.ex. "Resa 2 okt"), startdatum (förval i morgon), antal dagar 1–60 (förval 7) och resenärer ("Vem åker med?", alla personer som inte är arkiverade förvalda; en arkiverad person visas bara om den åker med i den sparade resan); minst en resenär krävs. Skapas och redigeras enligt NFR-2. |
 | RES-3 | Under resenärerna visas vad packlistan blir, t.ex. "För 4 resenärer i 7 dagar: 16 saker att packa – 6 recept · 3 kosttillskott · 7 familjeartiklar" (BER). En ny resa sparas med **"Skapa packlista"**, som räknar fram packlistan och öppnar den. |
 | RES-4 | Ändras dagar, startdatum eller resenärer frågar Spara **"Räkna om packlistan?"**: **"Räkna om"** sparar och räknar om – föreslagna rader får nya förslag, en ändrad mängd (med sina förpackningar) och en avprickning behålls, egna rader rörs inte; en avprickad rad som inte längre finns i förslaget behålls med förklaringen "Inte längre i förslaget". **"Behåll listan"** sparar resan utan att röra packlistan; tryck utanför sparar ingenting. Går packlistan inte att räkna fram eller skriva sparas inte heller resan – formuläret står kvar med felet. |
@@ -151,7 +156,7 @@ Formlerna står ordagrant som i skill [`packing-engine`](.claude/skills/packing-
 | SET-1 | Tema **ljust**, **mörkt** eller **system**, sparat på enheten; ingen dynamisk färg. |
 | SET-2 | **Hushållet:** namnet ändras i ett eget formulär (NFR-2); **marginaldagar** 0–7 (förval 2) med förklaringen "Extra dagar som läggs på varje resa, ifall något krånglar" ändras med +/− direkt i Inställningar och sparas på en gång. Var och en skriver bara sitt fält, så att en samtidig ändring av det andra står kvar; medlemmar och `schemaVersion` rörs aldrig. |
 | SET-3 | **"Flytta avprickade sist"** i packlistan, sparat på enheten, förval på (PAK-2). |
-| SET-4 | Kontot visar Google-kontots namn och e-post (de sparas eller loggas aldrig); **"Logga ut"** frågar först ("Logga ut?") och leder till inloggningen (AUTH-4). |
+| SET-4 | Kontot står först i Inställningar, med avataren (profilfoto eller initialer), Google-kontots namn och e-post (de sparas eller loggas aldrig); **"Logga ut"** frågar först ("Logga ut?") och leder till inloggningen (AUTH-4). |
 | SET-5 | **Data & backup:** text om synk och krypterad backup vid behov (BCK-2), dataformat (`schemaVersion`) och appversion; **"Exportera som JSON"** sparar hushållets alla dokument i samma format som `tools/db export` – så att filen kan läsas in med `tools/db import` (BCK-1, BCK-6) – och öppnar Androids delningsmeny, bara efter användarens tryck. Bara den senaste exportfilen finns kvar i appens cache, och vid appstart tas en export som är äldre än en timme bort. Recept under en person som saknar eget dokument (bara möjligt via verktygen; appen visar dem aldrig) kommer bara med i backupen. |
 | SET-6 | **Om:** version, den inbyggda läkemedelslistans datum och källa ("Läkemedelsverket, sön 4 okt 2026 · CC BY 4.0", REC-6) och länk till källkoden; under versionen står Kodhästs signatur, märket och "En kodhäst-app" (NFR-22); i debug-byggen öppnar "Komponenter" komponentgalleriet. |
 | SET-7 | Ett fel från en åtgärd i Inställningar (marginaldagar, utloggning, export) visas i kortet där åtgärden gjordes, med samma texter som överallt (NFR-5), och försvinner vid nästa åtgärd. |
@@ -204,12 +209,12 @@ Struktur och fält står bara i ARKITEKTUR.md → "Datamodell"; här står det s
 
 | ID | Krav |
 |----|------|
-| NFR-1 | **Listskärmar** visar laddning, tomt tillstånd (utseendet enligt NFR-22) med en primärknapp (och där det finns exempel att börja från, som chips med plus ovanför, t.ex. FAM-4), fel med "Försök igen" (utom när det som visas inte finns längre: då bara meddelandet och bakåt) och innehåll på samma sätt överallt. En lista som inte visats på en stund laddas om innan den visas, så att ett tidigare hushålls data aldrig syns efter kontobyte (NFR-8). En hopfällbar grupp (Dolda, PAK-4) fälls ut och ihop med ett tryck på hela rubriken, som är minst 48 dp hög, läses som knapp ("Fäll ut"/"Fäll ihop") med läget, och vars pil vänder med en fjädrande rörelse. |
+| NFR-1 | **Listskärmar** visar laddning, tomt tillstånd (utseendet enligt NFR-22) som pekar på plusknappen (NAV-6), och där det finns exempel att börja från som chips med plus (t.ex. FAM-4), fel med "Försök igen" (utom när det som visas inte finns längre: då bara meddelandet och bakåt) och innehåll på samma sätt överallt. En lista som inte visats på en stund laddas om innan den visas, så att ett tidigare hushålls data aldrig syns efter kontobyte (NFR-8). En hopfällbar grupp (Dolda, PAK-4) fälls ut och ihop med ett tryck på hela rubriken, som är minst 48 dp hög, läses som knapp ("Fäll ut"/"Fäll ihop") med läget, och vars pil vänder med en fjädrande rörelse. |
 | NFR-2 | **Redigering:** "Spara" är aktiv först när uppgifterna är giltiga och ändrade; fältfel visas när fältet ändrats eller efter ett sparförsök; uppgifter som inte går att läsa visas som fel med "Försök igen" (något som inte finns längre utan, NFR-5); bakåt med osparade ändringar – pilen eller systemets bakåt – frågar "Släng ändringar?", likaså Arkivera och Återställ i menyn; sparfel visas som meddelande. När tangentbordet öppnas krymper formulärets rullande yta, så att fältet man skriver i hamnar ovanför tangentbordet. Medan uppgifterna laddas sparas inget och menyn (Arkivera, Återställ, Radera) visas först när de är lästa, och ändras något medan det sparas står formuläret kvar med ändringen osparad i stället för att stängas. |
 | NFR-3 | **Arkivera/dölj** sker med svep och kan ångras i 5 sekunder, räknat från att meddelandet syns (inte medan det väntar bakom ett annat meddelande); samma åtgärd finns för TalkBack. Lämnar man skärmen under tiden är åtgärden klar – meddelandet visas inte igen. |
 | NFR-4 | **Permanent radering** kräver alltid bekräftelse. |
 | NFR-5 | **Felmeddelanden** har samma svenska formuleringar överallt; varje fel från datalagret har en egen text. Något som inte finns längre (raderat på en annan enhet) visas som det, utan "Försök igen". |
-| NFR-6 | En **synkindikator** "Väntar på synk" står i toppraden på alla skärmar när en ändring väntat minst 2 s på att nå servern (online syns den aldrig) och försvinner när allt nått fram; tryck förklarar att ändringarna är sparade på telefonen och skickas när det finns nät, och TalkBack meddelar när den dyker upp. En skrivning som servern senare nekar (och som därför ångrats) visas som meddelande "En ändring kunde inte sparas och har ångrats." med orsaken (NFR-5) – även om den kom medan appen låg i bakgrunden. |
+| NFR-6 | När en ändring väntat minst 2 s på att nå servern hoppar **prickarna i flikens sidhuvud** (NAV-4, NFR-22) tills allt nått fram (online syns det aldrig), och TalkBack säger "Ändringar väntar på servern" *(0.9.0: ersätter synkindikatorn "Väntar på synk")*. En skrivning som servern senare nekar (och som därför ångrats) visas som meddelande "En ändring kunde inte sparas och har ångrats." med orsaken (NFR-5) – även om den kom medan appen låg i bakgrunden. |
 | NFR-20 | **Listrader** visar titeln på högst två rader; får den inte plats kapas den med "…" och ett långtryck på raden visar hela titeln och undertexten i en bubbla. En grupp med flera kolumner (Övrigt i packlistan, PAK-1) visar bara så många kolumner som får plats med minst 260 dp var – på en telefon en, på en surfplatta eller i liggande läge två – så att texten inte kapas i onödan. |
 | NFR-21 | **Paneler** (bottom sheets) med en knapprad – "Klar" (ändra mängd PAK-3, påminnelse PÅM-6), "Lägg till" (PAK-4, PAK-7) – har den fast i panelens botten, ovanför navigeringsfältet och tangentbordet; innehållet ovanför rullar, och ett fel visas direkt ovanför knappraden. |
 
@@ -230,7 +235,7 @@ Struktur och fält står bara i ARKITEKTUR.md → "Datamodell"; här står det s
 | NFR-17 | Release-APK:n heter `ReseApoteket-<version>-<ÅÅÅÅMMDD-HHMM>.apk` – appens namn, versionen och byggtiden i UTC (`release.yml`). |
 | NFR-18 | Textfältens tangentbord börjar med stor bokstav (första ordet i varje mening); sifferfält visar siffertangentbordet. |
 | NFR-19 | Appikonen är en resväska med apotekskors i krämvitt på terrakotta, med Kodhästs två prickar uppe till vänster (NFR-22) – en adaptiv ikon som också fungerar som enfärgad temaikon (Android 13+); allt ligger inom ikonens säkra zon. |
-| NFR-22 | **Kodhäst-igenkänningen** (avsändaren Kodhäst, i appens egna färger och typsnitt; ingen Kodhäst-färg): startskärmen visar ordmärket "kodhäst" under ikonen (Android 12+, ljust och mörkt); fullstora tomma lägen utan fel – även "Uppdatera appen" – visar hästen i ikonrutan; inloggningen visar appens resväska; laddning visas som två hoppande prickar (stilla när systemets animeringar är avstängda) med samma text för skärmläsare ("Laddar"); en sektionsrubrik utan ikonruta får två prickar före titeln. Signaturen står i Om (SET-6) och prickarna i appikonen (NFR-19). |
+| NFR-22 | **Kodhäst-igenkänningen** (avsändaren Kodhäst, i appens egna färger och typsnitt; ingen Kodhäst-färg): startskärmen visar ordmärket "kodhäst" under ikonen (Android 12+, ljust och mörkt); fullstora tomma lägen utan fel – även "Uppdatera appen" – visar hästen i ikonrutan; inloggningen visar appens resväska; laddning visas som två hoppande prickar (stilla när systemets animeringar är avstängda) med samma text för skärmläsare ("Laddar"); en sektionsrubrik utan ikonruta och flikarnas sidhuvud får två prickar före titeln (i sidhuvudet hoppar de medan ändringar väntar, NFR-6). Signaturen står i Om (SET-6) och prickarna i appikonen (NFR-19). |
 | NFR-23 | **Djup och tryckkänsla** (android-ui `AppDepth`, satt en gång i temat): det man kan trycka på och det som är valt – knappar, ikonknappar, valda chips, segment och flikar, kryss, stegare och växlar – har en ljuskant upptill, ett svagt skimmer och en mjuk skugga tonad i koppar, och knappar sjunker in när de trycks (inte med systemets animeringar avstängda); inaktivt är platt. Kort har en hårfin kant och mjuk skugga, fältet i fokus en fokusring, och meddelanden, menyer och dialoger en hårfin kant. I mörkt bär den ljusa kanten djupet. Kontrasten räknas mot grundfärgen och påverkas inte. |
 
 ---

@@ -18,7 +18,9 @@ import se.kodhast.reseapoteket.core.model.Household
 import se.kodhast.reseapoteket.core.schema.Schema
 import se.kodhast.reseapoteket.data.auth.AuthRepository
 import se.kodhast.reseapoteket.data.auth.AuthUser
+import se.kodhast.reseapoteket.data.auth.ProfileCheckUseCase
 import se.kodhast.reseapoteket.data.common.DataError
+import se.kodhast.reseapoteket.testing.FakeNetworkStatus
 import se.kodhast.reseapoteket.testing.HouseholdFixture
 import se.kodhast.reseapoteket.testing.MainDispatcherRule
 
@@ -39,7 +41,7 @@ class AuthViewModelTest {
     private val context: Context = RuntimeEnvironment.getApplication()
     private val auth = FakeAuthRepository()
 
-    private fun TestScope.viewModel(fixture: HouseholdFixture = HouseholdFixture(backgroundScope, folder.root)) = fixture to AuthViewModel(auth, fixture.session, fixture.ensureHousehold)
+    private fun TestScope.viewModel(fixture: HouseholdFixture = HouseholdFixture(backgroundScope, folder.root)) = fixture to AuthViewModel(auth, fixture.session, fixture.ensureHousehold, ProfileCheckUseCase(auth, FakeNetworkStatus()))
 
     private suspend fun AuthViewModel.awaitGate(gate: AuthGate) = state.first { it.gate == gate && !it.busy }
 
@@ -57,7 +59,7 @@ class AuthViewModelTest {
 
         vm.onEvent(AuthEvent.SignIn(context))
 
-        assertEquals(AuthUiState(AuthGate.Ready), vm.awaitGate(AuthGate.Ready))
+        assertEquals(AuthUiState(AuthGate.Ready, account = AuthUser("uid-anna")), vm.awaitGate(AuthGate.Ready))
         assertEquals(listOf("uid-anna"), fixture.households().single().memberUids)
         assertEquals(1, auth.signInCalls)
     }
@@ -154,7 +156,7 @@ class AuthViewModelTest {
         auth.authState.value = AuthUser("uid-anna")
         val (_, vm) = viewModel(fixture)
 
-        assertEquals(AuthUiState(AuthGate.Ready), vm.awaitGate(AuthGate.Ready))
+        assertEquals(AuthUiState(AuthGate.Ready, account = AuthUser("uid-anna")), vm.awaitGate(AuthGate.Ready))
         assertEquals("annas", fixture.session.householdId.value)
     }
 
@@ -188,7 +190,7 @@ class AuthViewModelTest {
         vm.state.first { it.gate == AuthGate.NeedsHousehold }
         hold.complete(Unit)
 
-        assertEquals(AuthUiState(AuthGate.Ready), vm.awaitGate(AuthGate.Ready))
+        assertEquals(AuthUiState(AuthGate.Ready, account = AuthUser("uid-erik")), vm.awaitGate(AuthGate.Ready))
         assertEquals("eriks", fixture.session.householdId.value)
     }
 
@@ -238,5 +240,14 @@ class FakeAuthRepository : AuthRepository {
     override suspend fun signOut(): Result<Unit> {
         signOutCalls++
         return nextSignOut.onSuccess { authState.value = null }
+    }
+
+    var nextReload: Result<Unit> = Result.success(Unit)
+    var reloadCalls = 0
+        private set
+
+    override suspend fun reload(): Result<Unit> {
+        reloadCalls++
+        return nextReload
     }
 }

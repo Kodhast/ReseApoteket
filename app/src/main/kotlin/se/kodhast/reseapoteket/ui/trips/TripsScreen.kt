@@ -42,7 +42,6 @@ import se.kodhast.reseapoteket.ui.theme.Green
 import se.kodhast.ui.common.ListEvent
 import se.kodhast.ui.common.ListLoader
 import se.kodhast.ui.common.ListUiState
-import se.kodhast.ui.components.AddAction
 import se.kodhast.ui.components.ArchiveActions
 import se.kodhast.ui.components.EmptyContent
 import se.kodhast.ui.components.EntityListScreen
@@ -99,18 +98,17 @@ class TripsViewModel @Inject constructor(
     }
 }
 
-/** Fliken Resor – appens startskärm (NAV-2, RES-1). */
+/** Fliken Resor – appens startskärm (NAV-2, RES-1). En ny resa läggs till med plusknappen i flikraden (NAV-6). */
 @Composable
-fun TripsScreen(onAdd: () -> Unit, onOpen: (String) -> Unit, viewModel: TripsViewModel = hiltViewModel()) {
+fun TripsScreen(onOpen: (String) -> Unit, viewModel: TripsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    TripsContent(state, viewModel::onEvent, onAdd, onOpen, archive = viewModel.archive.collectAsListArchive())
+    TripsContent(state, viewModel::onEvent, onOpen, archive = viewModel.archive.collectAsListArchive())
 }
 
 @Composable
 fun TripsContent(
     state: ListUiState<TripListItem>,
     onEvent: (TripsEvent) -> Unit,
-    onAdd: () -> Unit,
     onOpen: (String) -> Unit,
     modifier: Modifier = Modifier,
     archive: ListArchive = ListArchive()
@@ -123,7 +121,8 @@ fun TripsContent(
             title = stringResource(R.string.trips_empty_title),
             message = stringResource(R.string.trips_empty_message)
         ),
-        add = AddAction(stringResource(R.string.trips_add), onAdd),
+        // Ny läggs till med plusknappen i flikraden (NAV-6).
+        add = null,
         key = { it.trip.id },
         modifier = modifier,
         onRetry = { onEvent(TripsEvent.List(ListEvent.Retry)) },

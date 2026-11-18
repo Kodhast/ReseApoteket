@@ -26,11 +26,11 @@ Kraven med ID:n står i [KRAVLISTA.md](KRAVLISTA.md); här är översikten.
 - "Uppdatera appen" om hushållets data sparats av en nyare appversion (HUS-3).
 - Krypterad backup på begäran och återställning med `tools/db` (BCK).
 - Databasåtkomst från en Claude-session, bara läsning (TP-8).
-- Fyra flikar – Resor, Personer, Familjeartiklar och Inställningar – i en flytande verktygsrad (NAV).
+- Tre flikar – Resor, Personer och Gemensamt – i en flytande verktygsrad med plusknapp för ny resa, person eller gemensam sak; Kodhästs sidhuvud med kontots avatar (profilfoto och anslutningsprick), som öppnar Inställningar (NAV).
 - Designsystemet: Material 3 Expressive med egen palett och Nunito, ljust, mörkt eller system (SET-1).
 - Personer med recept och kosttillskott: dosering, förhandsvisning av vad som ska packas, pausade recept och snabbval (PER, REC, KOS).
 - Nytt recept föreslår läkemedel ur Läkemedelsverkets lista medan man skriver och fyller i namn, styrka, form och enhet – listan är inbyggd och sökningen sker på telefonen (REC-6–7).
-- Familjeartiklar på hushållsnivå, t.ex. solkräm och plåster, med mängdregler och exempel att börja från (FAM).
+- Gemensamt: familjeartiklar på hushållsnivå, t.ex. solkräm och plåster, med mängdregler och exempel att börja från (FAM).
 - Resor: skapa en resa som räknar fram packlistan från resans längd och vilka som åker med, och räkna om när resan ändras (RES).
 - Packlistan: pricka av per sektion och person, ändra mängd, lägg till egna rader – en i taget eller en hel inklistrad lista under Övrigt (PAK-7) – dölj med svep och ångra, och konfetti när allt är packat (PAK).
 - Inställningar: hushållets namn och marginaldagar, "Flytta avprickade sist", tema, konto med utloggning, och export av hushållet som JSON i samma format som backupen (SET).
@@ -234,3 +234,4 @@ Versionen och raden nedan höjs och skrivs i funktions-PR:en; releasen görs via
 | 0.7.1 | Inloggningen visar resväskan igen i stället för Kodhästs häst (NFR-22). |
 | 0.8.0 | **Djup och tryckkänsla** (NFR-23, android-ui 1.4.1): knappar, kort, valda chips och flikar, kryss, stegare, växlar, fältet i fokus, meddelanden, menyer och dialoger får en hårfin kant, ljuskant, svagt skimmer och mjuk koppartonad skugga (i mörkt bär den ljusa kanten djupet), och knappar sjunker in när de trycks. Färgerna är desamma. |
 | 0.8.1 | Uppdaterad läkemedelslista (16 nov 2026). Listskriptet hittar Läkemedelsverkets fil även när sidan inte längre länkar till den (#167). |
+| 0.9.0 | **Kodhästs sidhuvud och fot** (#169, android-ui 1.8.1): tre flikar – Resor, Personer och **Gemensamt** (hette Familjeartiklar) – och en plusknapp i verktygsraden med Ny resa, Ny person och Ny gemensam sak; listornas egna "Lägg till" är borta (NAV-1, NAV-6). Kontots avatar i sidhuvudet visar profilfotot (sparat på enheten) och en grön prick när appen är ansluten, och öppnar Inställningar (NAV-4, NAV-5, AUTH-5). Synken visas av prickarna i sidhuvudet i stället för "Väntar på synk" (NFR-6). Persondetaljens Recept och Kosttillskott är hopfällbara kort med en rund plusknapp i rubriken (PER-4). |

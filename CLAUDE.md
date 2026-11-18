@@ -65,7 +65,7 @@ finns på ett ställe.**
   först när giltigt, "Släng ändringar?" vid bakåt, fel som snackbar) = `EntityEditScreen`
   + `EditorState`; arkivera/dölj = `SwipeToHide` + `UndoSnackbar`; permanent radering =
   alltid `ConfirmDialog`; felmeddelanden = `DataError.toMessage()`; skärmbyten =
-  `navigation/Transitions`.
+  `AppTransitions` (android-ui).
 - **Kod i alla lager:** ingen kopierad logik. Firestore via generisk
   `FirestoreCollection<T>` + `DocCodec<T>`; listtillstånd via `asListUiState()`;
   beräkningar och texter om mängder i `:core` (`PackingEngine`, `ReasonFormatter`).

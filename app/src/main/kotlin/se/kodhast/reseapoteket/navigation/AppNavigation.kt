@@ -1,6 +1,5 @@
 package se.kodhast.reseapoteket.navigation
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +31,7 @@ import se.kodhast.reseapoteket.ui.regimens.RegimenEditViewModel
 import se.kodhast.reseapoteket.ui.regimens.RegimenKindConfig
 import se.kodhast.reseapoteket.ui.settings.HouseholdEditScreen
 import se.kodhast.reseapoteket.ui.settings.SettingsScreen
+import se.kodhast.reseapoteket.ui.sync.SyncEvent
 import se.kodhast.reseapoteket.ui.sync.SyncViewModel
 import se.kodhast.reseapoteket.ui.trips.TripEditScreen
 import se.kodhast.reseapoteket.ui.trips.TripEditViewModel
@@ -53,7 +53,6 @@ fun AppNavigation(
 ) {
     val sync by syncViewModel.state.collectAsStateWithLifecycle()
     val backStack = rememberAppBackStack()
-    val activity = LocalActivity.current
     val tabOwner = checkNotNull(LocalViewModelStoreOwner.current) { "AppNavigation kräver en ViewModelStoreOwner" }
     val entries = remember(backStack, tabOwner) { appEntries(backStack, tabOwner) }
     OpenTripEffect(backStack, openTrip, onTripOpened)
@@ -61,9 +60,8 @@ fun AppNavigation(
         backStack,
         entries,
         modifier,
-        onExit = { activity?.finish() },
         sync = sync,
-        onSyncEvent = syncViewModel::onEvent,
+        onSyncErrorShown = { syncViewModel.onEvent(SyncEvent.WriteErrorShown) },
         onAdd = { choice -> backStack.push(choice.key) },
         // Samma lambda tills kontot eller anslutningen ändras, så att flikarnas sidhuvud inte ritas om i onödan.
         account = remember(account, sync.online, backStack) {
@@ -80,7 +78,7 @@ fun OpenTripEffect(backStack: AppBackStack, tripId: String?, onOpened: () -> Uni
     val opened by rememberUpdatedState(onOpened)
     LaunchedEffect(tripId) {
         if (tripId == null) return@LaunchedEffect
-        backStack.openPackingList(tripId)
+        backStack.openInTab(TripsKey, PackingListKey(tripId))
         opened()
     }
 }

@@ -90,7 +90,7 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Komponentöversikt | `ComponentGallery` | Debug-skärm med alla komponenter och ramar i alla tillstånd |
 
 Gemensamt för ramarna: felmeddelanden via `UiError` (`AppErrors` → `DataError.toMessage()`), skärmbyten via
-`navigation/Transitions`, ramarnas och komponenternas texter ("Spara", "Släng ändringar?", "Ångra", "Försök igen") en gång
+`AppTransitions` *(android-ui, `ui-navigation`)*, ramarnas och komponenternas texter ("Spara", "Släng ändringar?", "Ångra", "Försök igen") en gång
 i android-ui, appens återkommande texter en gång i `strings.xml`. Kontraktstesterna kommer från
 android-ui `ui-testing` (`runListScreenContract`, `runEditScreenContract`, `runDetailScreenContract`) med appens
 `ContractEnvironment` (`contracts` i testkällornas `ui/Contracts.kt`).
@@ -111,7 +111,8 @@ android-ui `ui-testing` (`runListScreenContract`, `runEditScreenContract`, `runD
 | Skrivfel utan ram (detalj, packlistans paneler) | `WriteFailures(viewModelScope, AppErrors)` *(android-ui, `ui-common`)* – `write { … }`, `report`, `clear` |
 | Delade flöden i en ViewModel (`stateIn`) | `screenSharing(forgetWhenStopped = false)` *(android-ui, `ui-common`)* |
 | Visa först efter en fördröjning (indikatorer som inte ska blinka) | `Flow<Boolean>.shownAfter(delay)` *(android-ui, `ui-common`)* |
-| Navigation | `AppKey`, `AppBackStack`, `AppNavHost`, `Transitions` i `navigation/` |
+| Navigation | `AppKey`, `TOP_LEVEL` och `AddChoice` i `navigation/`; `AppBackStack` = `TabBackStack<AppKey>`, ramen `AppNavHost` och `AppTransitions` *(android-ui, `ui-navigation`)* – appens `AppNavHost` ger bara flikarna och plusmenyn; en påminnelse öppnar med `openInTab(TripsKey, PackingListKey(id))` |
+| Synkläget i ramen | `SyncUiState` *(android-ui, `ui-common`)*, byggt i `SyncViewModel` |
 | Feltyp | `DataError` (`Offline`, `PermissionDenied`, `Cancelled`, `UpdateRequired`, `SignInRejected`, `NoHousehold`, `NotFound`, `Unknown`) i `data/common/` |
 | Fel till text | `DataError.toMessage()` i `ui/common/` (appens texter); till ramarna som `UiError` via `AppErrors` (`ErrorMapper`) i `data/common/` – en gång; `NotFound` (raderat) är inte `retryable` och visas utan "Försök igen"; som meddelande via `ErrorSnackbar` (`template` sätter felet i ett sammanhang). `UiError` jämförs på identitet: samma fel två gånger visas två gånger |
 | Arkivera | `Archivable` + `FirestoreCollection.setArchived` |

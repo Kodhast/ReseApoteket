@@ -162,7 +162,7 @@ ReseApoteket/
 │       │                         ReminderSync (medan appen syns), ReminderSnoozeReceiver ("Senare")
 │       ├── domain/               use cases som spänner över flera repositories (EnsureHouseholdUseCase)
 │       ├── di/                   övriga Hilt-moduler (Firestore-modulen ligger i data/firestore)
-│       ├── navigation/           Navigation 3: AppKey, AppBackStack (en stack per flik), AppNavHost (+ synkindikator och appens meddelanden), Transitions
+│       ├── navigation/           Navigation 3: AppKey, AppBackStack (= android-ui:s TabBackStack), AppNavHost (flikar och plusmeny runt android-ui:s ram)
 │       └── ui/
 │           ├── theme/            ReseApoteketTheme (android-ui:s AppTheme), AppColors, AppTypeScale (Nunito)
 │           ├── components/       appens egna komponenter (personavatar, dosering, mängdregel, packprogress …), PERSON_EMOJIS, ComponentGallery (ramarna och övriga komponenter från android-ui)

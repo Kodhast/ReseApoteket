@@ -24,9 +24,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import se.kodhast.reseapoteket.data.common.AppErrors
 import se.kodhast.reseapoteket.data.common.DataError
-import se.kodhast.reseapoteket.ui.sync.SyncEvent
-import se.kodhast.reseapoteket.ui.sync.SyncUiState
 import se.kodhast.reseapoteket.ui.theme.ReseApoteketTheme
+import se.kodhast.ui.common.SyncUiState
 import se.kodhast.ui.components.AccountAvatar
 import se.kodhast.ui.components.AppHeader
 
@@ -37,7 +36,7 @@ class AppNavHostTest {
     @get:Rule
     val rule = createComposeRule()
 
-    private val backStack = AppBackStack()
+    private val backStack = appBackStack()
 
     private fun show() = rule.setContent {
         ReseApoteketTheme {
@@ -161,7 +160,7 @@ class AppNavHostTest {
 
     @Test
     fun `en nekad skrivning visas med orsaken och släpps sedan (NFR-6)`() {
-        val events = mutableListOf<SyncEvent>()
+        var shown = 0
         rule.mainClock.autoAdvance = false
         rule.setContent {
             ReseApoteketTheme {
@@ -169,16 +168,16 @@ class AppNavHostTest {
                     backStack,
                     { key -> NavEntry(key) { Text("Skärm: ${key::class.simpleName}") } },
                     sync = SyncUiState(writeError = AppErrors.map(DataError.PermissionDenied)),
-                    onSyncEvent = { events += it }
+                    onSyncErrorShown = { shown++ }
                 )
             }
         }
         rule.mainClock.advanceTimeBy(SHOWN_MILLIS)
         rule.onNodeWithText("En ändring kunde inte sparas och har ångrats. Du har inte behörighet till det här hushållet.").assertIsDisplayed()
-        assertEquals(emptyList(), events)
+        assertEquals(0, shown)
         rule.mainClock.advanceTimeBy(LONG_SNACKBAR_MILLIS)
         rule.waitForIdle()
-        assertEquals(listOf<SyncEvent>(SyncEvent.WriteErrorShown), events)
+        assertEquals(1, shown)
     }
 
     @Test

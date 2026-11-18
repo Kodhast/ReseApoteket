@@ -4,8 +4,8 @@ import androidx.navigation3.runtime.NavEntry
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import se.kodhast.reseapoteket.navigation.AppBackStack
 import se.kodhast.reseapoteket.navigation.AppNavHost
+import se.kodhast.reseapoteket.navigation.appBackStack
 import se.kodhast.reseapoteket.testing.captureLightAndDark
 import se.kodhast.reseapoteket.ui.AppRootContent
 import se.kodhast.reseapoteket.ui.auth.AuthGate
@@ -23,7 +23,7 @@ class ThemeScreenshotTest {
         captureLightAndDark("AppRoot_start") {
             AppRootContent(AuthUiState(AuthGate.Ready), {}) {
                 AppNavHost(
-                    AppBackStack(),
+                    appBackStack(),
                     { key -> NavEntry(key) { TripsContent(ListUiState.Empty, {}, {}) } },
                     onAdd = {},
                     account = { AccountAvatar("Anna Berg", onClick = {}, online = true) }

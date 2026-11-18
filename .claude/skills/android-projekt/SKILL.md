@@ -17,7 +17,7 @@ verifierade API:er står bara i [ARKITEKTUR.md](../../../ARKITEKTUR.md).
 - `:core` (ren Kotlin/JVM: modeller, codecs, `PackingEngine`) + `:app`. Utseende och gemensamt beteende bara i `ui/theme`, `ui/components`, `ui/common`; Firestore bara i `data/firestore`.
 - Fel mappas en gång till `DataError` med `suspendRunCatching` (`data/common/`): `FirestoreCollection` för data, `AuthRepository` för inloggning. Repositories skickar `Result<T>` vidare; skärmar visar felet med `DataError.toMessage()`; `DataError.Cancelled` är tyst.
 - Ramarna (regel 4): listskärmar `EntityListScreen` + `asListUiState()`, redigering `EntityEditScreen` + `EditorState<T>` – aldrig egna varianter.
-- Navigation: en Activity (`MainActivity`), back stacken är vanligt state i `navigation/`, övergångar en gång i `navigation/Transitions`.
+- Navigation: en Activity (`MainActivity`), back stacken är vanligt state i `navigation/`, övergångar en gång i bibliotekets `AppTransitions` (`ui-navigation`).
 - Bakgrundsjobb: inga WorkManager-jobb – Firestore synkar själv och backupen körs i GitHub Actions (`tools/db`, krypterad, på begäran). Ingen backupkod i appen. Behövs bakgrundsarbete: skriv en skill först.
 - **Nuvarande läge, avviker från pluginen:** `SavedStateHandle` i stället för assisted injection, ingen Renovate eller Baseline Profile, och fyra compose-rules-regler avstängda i ktlint för befintliga komponent-API:er (`parameter-naming`, `lambda-param-event-trailing`, `multiple-emitters-check`, `modifier-naming`, listade i `ktlintRules` i `build.gradle.kts`). Tas i egna PR:er senare; ny kod följer pluginen där det går.
 - Kodstil: ktlint 1.8 (stil `android_studio`) med compose-rules via Spotless, bara lokalt och inte i CI (regel 5). Kör `./gradlew spotlessApply` före push; `spotlessCheck` kontrollerar. Nya CompositionLocals läggs i `compose_allowed_composition_locals` i samma map.
@@ -54,8 +54,8 @@ verifierade API:er står bara i [ARKITEKTUR.md](../../../ARKITEKTUR.md).
 
 ## Navigation 3 (android:navigation-3)
 
-Googles referens är generell. Här gäller vår `AppBackStack` (`navigation/AppBackStack.kt`) med en
-stack per flik, nycklarna i `navigation/AppKeys.kt`, övergångarna i `navigation/Transitions` och
+Googles referens är generell. Här gäller `AppBackStack` (`navigation/AppBackStack.kt`, alias för android-ui:s `TabBackStack<AppKey>`) med en
+stack per flik, nycklarna i `navigation/AppKeys.kt`, övergångarna i android-ui:s `AppTransitions` och
 Hilt via `hiltViewModel`.
 
 ## Tillgänglighet (android:accessibility-compose)

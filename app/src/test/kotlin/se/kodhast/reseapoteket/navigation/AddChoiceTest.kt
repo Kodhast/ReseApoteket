@@ -13,7 +13,7 @@ class AddChoiceTest {
 
     @Test
     fun `ett val tryckt två gånger öppnar formuläret en gång`() {
-        val backStack = AppBackStack()
+        val backStack = appBackStack()
         backStack.push(AddChoice.Person.key)
         backStack.push(AddChoice.Person.key)
         assertEquals(listOf<AppKey>(TripsKey, PersonEditKey()), backStack.entries.toList())

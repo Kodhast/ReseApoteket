@@ -13,6 +13,7 @@ import se.kodhast.reseapoteket.data.common.DataError
 import se.kodhast.reseapoteket.data.common.SyncStatus
 import se.kodhast.reseapoteket.testing.FakeNetworkStatus
 import se.kodhast.reseapoteket.testing.MainDispatcherRule
+import se.kodhast.ui.common.SyncUiState
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SyncViewModelTest {

@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import se.kodhast.reseapoteket.R
+import se.kodhast.ui.components.ActionColor
 import se.kodhast.ui.components.ActionMenuStyle
 import se.kodhast.ui.components.AppBrandStyle
 import se.kodhast.ui.components.AppIdentity
@@ -29,7 +30,9 @@ private val ReseApoteketBrandStyle = AppBrandStyle(
     emptyStateMark = true,
     headerDots = true,
     toolbarStyle = ToolbarStyle.Tonal,
-    actionMenu = ActionMenuStyle.Fab
+    actionMenu = ActionMenuStyle.Fab,
+    // secondary är en neutral gråbrun i ReseApoteket; den blåa accenten skiljer plusknappen från den valda fliken (NAV-6).
+    actionColor = ActionColor.Tertiary
 )
 
 /**

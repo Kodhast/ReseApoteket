@@ -23,6 +23,7 @@ import se.kodhast.reseapoteket.data.common.DataError
 import se.kodhast.reseapoteket.testing.FakeNetworkStatus
 import se.kodhast.reseapoteket.testing.HouseholdFixture
 import se.kodhast.reseapoteket.testing.MainDispatcherRule
+import se.kodhast.ui.common.AuthGate
 
 /**
  * Robolectric bara för att kunna skicka en `Context` i händelsen; allt annat är fakes. Köad
@@ -81,7 +82,7 @@ class AuthViewModelTest {
 
         vm.onEvent(AuthEvent.SignIn(context))
 
-        assertEquals(DataError.Offline, vm.state.first { it.error != null }.error)
+        assertEquals(DataError.Offline, vm.state.first { it.error != null }.error?.cause)
         vm.onEvent(AuthEvent.ErrorShown)
         assertEquals(AuthUiState(AuthGate.SignedOut), vm.state.first { it.error == null })
     }
@@ -106,8 +107,8 @@ class AuthViewModelTest {
         val (_, vm) = viewModel(fixture)
 
         val failed = vm.state.first { it.error != null }
-        assertEquals(AuthGate.NeedsHousehold, failed.gate)
-        assertEquals(DataError.Offline, failed.error)
+        assertEquals(AuthGate.NeedsAccount, failed.gate)
+        assertEquals(DataError.Offline, failed.error?.cause)
 
         fixture.directory.failure = null
         vm.onEvent(AuthEvent.SignIn(context))
@@ -187,7 +188,7 @@ class AuthViewModelTest {
 
         auth.signOut()
         auth.authState.value = AuthUser("uid-erik")
-        vm.state.first { it.gate == AuthGate.NeedsHousehold }
+        vm.state.first { it.gate == AuthGate.NeedsAccount }
         hold.complete(Unit)
 
         assertEquals(AuthUiState(AuthGate.Ready, account = AuthUser("uid-erik")), vm.awaitGate(AuthGate.Ready))

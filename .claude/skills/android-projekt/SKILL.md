@@ -91,7 +91,7 @@ Versioner, SDK-nivåer och skäl: ARKITEKTUR.md → "Byggkonfiguration".
 
 Inloggning är **obligatorisk**: inget data läses utloggat, rules bygger på `request.auth.uid`.
 
-- `AuthViewModel.state.gate`: `Loading | SignedOut | NeedsHousehold | UpdateRequired | Ready`; `AppRoot` visar `SignInScreen` tills det finns en användare.
+- `AuthViewModel.state.gate`: `Loading | SignedOut | NeedsAccount | UpdateRequired | Ready` (`AuthGate` i android-ui:s `ui-common`); `AppRoot` ger bibliotekets `AuthGateHost` appens texter och visar `SignInScreen` tills det finns en användare.
 - `AuthRepository` (`data/auth/`), enda implementationen `GoogleAuthRepository` (bunden i `di/AuthModule`), fel mappas i `data/auth/AuthErrors.kt`; tester använder `FakeAuthRepository`. `AuthUser(uid, name?, email?)` – namn och e-post visas bara i Inställningar (SET-4), aldrig fotot (skill `data-privacy-security`).
 - Hushållssteget: när `authState` har en användare och `HouseholdSession.selection` är `null` väljer `EnsureHouseholdUseCase` äldsta hushållet där `memberUids` innehåller uid, annars skapas "Mitt hushåll". `HouseholdDirectory` (`data/household/`, Firestore-implementation i `data/firestore/`) frågar bara servern (`Source.SERVER`, HUS-1); `create` returnerar först när servern tagit emot (annars `Offline` efter 15 s).
 - En knapp, ett event `AuthEvent.SignIn(context)`: utloggad → logga in; inloggad utan hushåll → försök hushållssteget igen. `busy` täcker båda; knappen visar "Loggar in …". Fel visas en gång via `AppSnackbarHost` och kvitteras med `AuthEvent.ErrorShown`; `Cancelled` är tyst (AUTH-2).

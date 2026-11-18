@@ -8,9 +8,9 @@ import se.kodhast.reseapoteket.navigation.AppNavHost
 import se.kodhast.reseapoteket.navigation.appBackStack
 import se.kodhast.reseapoteket.testing.captureLightAndDark
 import se.kodhast.reseapoteket.ui.AppRootContent
-import se.kodhast.reseapoteket.ui.auth.AuthGate
 import se.kodhast.reseapoteket.ui.auth.AuthUiState
 import se.kodhast.reseapoteket.ui.trips.TripsContent
+import se.kodhast.ui.common.AuthGate
 import se.kodhast.ui.common.ListUiState
 import se.kodhast.ui.components.AccountAvatar
 

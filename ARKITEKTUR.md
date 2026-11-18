@@ -167,7 +167,7 @@ ReseApoteket/
 │           ├── theme/            ReseApoteketTheme (android-ui:s AppTheme), AppColors, AppTypeScale (Nunito)
 │           ├── components/       appens egna komponenter (personavatar, dosering, mängdregel, packprogress …), PERSON_EMOJIS, ComponentGallery (ramarna och övriga komponenter från android-ui)
 │           ├── common/           activeOnly, DateFormat, DataError.toMessage() (tillstånden från android-ui:s ui-common, ArchiveActions från ui-components)
-│           ├── auth/             AuthViewModel (vad appen visar), SignInScreen, UpdateRequiredScreen
+│           ├── auth/             AuthViewModel (vad appen visar; skärmarna och AuthGateHost från android-ui)
 │           ├── sync/             SyncViewModel (synkläget för UI:t, NFR-6)
 │           └── persons/ regimens/ familyitems/ trips/ packing/ settings/
 ├── tools/db/                     Node: query, get, stats, export, import, migrate + lib/ + tester

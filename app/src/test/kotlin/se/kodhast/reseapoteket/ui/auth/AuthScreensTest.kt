@@ -11,10 +11,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import se.kodhast.reseapoteket.data.common.AppErrors
 import se.kodhast.reseapoteket.data.common.DataError
 import se.kodhast.reseapoteket.testing.captureLightAndDark
 import se.kodhast.reseapoteket.ui.AppRootContent
 import se.kodhast.reseapoteket.ui.theme.ReseApoteketTheme
+import se.kodhast.ui.common.AuthGate
 
 /** Skärmarna som inloggningen styr: beteende och skärmdumpar (ljust + mörkt). */
 @RunWith(RobolectricTestRunner::class)
@@ -44,7 +46,7 @@ class AuthScreensTest {
     fun `ett fel visas som snackbar och markeras som visat`() {
         val events = mutableListOf<AuthEvent>()
         rule.setContent {
-            ReseApoteketTheme { AppRootContent(AuthUiState(AuthGate.SignedOut, error = DataError.Offline), { events += it }) }
+            ReseApoteketTheme { AppRootContent(AuthUiState(AuthGate.SignedOut, error = AppErrors.map(DataError.Offline)), { events += it }) }
         }
 
         rule.onNodeWithText("Ingen anslutning just nu", substring = true).assertIsDisplayed()
@@ -77,7 +79,7 @@ class AuthScreensTest {
             waitForIdle()
             mainClock.advanceTimeBy(SNACKBAR_VISIBLE_MS)
         }) {
-            AppRootContent(AuthUiState(AuthGate.SignedOut, error = DataError.Unknown), {})
+            AppRootContent(AuthUiState(AuthGate.SignedOut, error = AppErrors.map(DataError.Unknown)), {})
         }
     }
 

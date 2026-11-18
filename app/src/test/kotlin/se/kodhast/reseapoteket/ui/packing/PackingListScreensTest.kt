@@ -1,6 +1,7 @@
 package se.kodhast.reseapoteket.ui.packing
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsActions
@@ -10,12 +11,14 @@ import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.filterToOne
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -62,6 +65,7 @@ import se.kodhast.ui.common.EditorUiState
 import se.kodhast.ui.common.ListEvent
 import se.kodhast.ui.common.ListUiState
 import se.kodhast.ui.components.ArchiveEvent
+import se.kodhast.ui.components.ENTITY_LIST_ADD_TAG
 import se.kodhast.ui.components.ListArchive
 import se.kodhast.ui.testing.runListScreenContract
 
@@ -112,14 +116,70 @@ class PackingListScreensTest {
     private val allChecked = rows.map { it.copy(item = it.item.copy(checked = true)) }
 
     @Test
-    fun `packlistan uppfyller listkontraktet`() = rule.runListScreenContract(contracts, rows.first(), "Levaxin 50 µg", "Inget att packa än", "Lägg till") { state, onAdd, onRetry ->
-        PackingListContent(state, header(rows), {
-            if (it == PackingListEvent.Add) {
-                onAdd()
-            } else if (it == PackingListEvent.List(ListEvent.Retry)) {
-                onRetry()
+    fun `packlistan uppfyller listkontraktet, utan lägg till-knapp nere till höger`() = rule.runListScreenContract(contracts, rows.first(), "Levaxin 50 µg", "Inget att packa än", null) { state, _, onRetry ->
+        PackingListContent(state, header(rows), { if (it == PackingListEvent.List(ListEvent.Retry)) onRetry() }, {}, {})
+    }
+
+    @Test
+    fun `plus i rubriken på Mediciner, Kosttillskott och Övrigt, också hopfälld, och rubriken fäller ihop (PAK-1, PAK-4)`() {
+        val events = mutableListOf<PackingListEvent>()
+        rule.setContent {
+            ReseApoteketTheme {
+                PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), { events += it }, {}, {}, collapsed = setOf(PackingGroup.MEDICINE))
             }
-        }, {}, {})
+        }
+        rule.onNodeWithText("Levaxin 50 µg").assertDoesNotExist()
+        rule.onNodeWithText("3 / 6").assertIsDisplayed()
+        rule.onNodeWithContentDescription("Lägg till i Mediciner").performClick()
+        rule.onNodeWithContentDescription("Lägg till i Kosttillskott").performClick()
+        rule.onNode(hasScrollAction()).performScrollToNode(hasContentDescription("Lägg till i Övrigt"))
+        rule.onNodeWithContentDescription("Lägg till i Övrigt").performClick()
+        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Kosttillskott"))
+        rule.onNodeWithText("Kosttillskott").performClick()
+        assertEquals(
+            listOf(
+                PackingListEvent.Add(PackingSection.MEDICINE),
+                PackingListEvent.Add(PackingSection.SUPPLEMENT),
+                PackingListEvent.Add(PackingSection.FAMILY),
+                PackingListEvent.ToggleGroup(PackingGroup.SUPPLEMENT)
+            ),
+            events
+        )
+        rule.onNodeWithTag(ENTITY_LIST_ADD_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun `⋮ har Räkna om, Dölj packade och Visa dolda bara när något är dolt (PAK-4)`() {
+        val events = mutableListOf<PackingListEvent>()
+        val archive = mutableListOf<ArchiveEvent>()
+        var hidden by mutableIntStateOf(0)
+        rule.setContent {
+            ReseApoteketTheme {
+                PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), { events += it }, {}, {}, archive = ListArchive { archive += it }, hiddenCount = hidden)
+            }
+        }
+        rule.onNodeWithContentDescription("Fler val").performClick()
+        rule.onNodeWithText("Dölj packade").assertIsDisplayed()
+        rule.onNodeWithText("Visa dolda", substring = true).assertDoesNotExist()
+        rule.onNodeWithText("Räkna om").performClick()
+        assertEquals(listOf<PackingListEvent>(PackingListEvent.AskRecount), events)
+        hidden = 2
+        rule.onNodeWithContentDescription("Fler val").performClick()
+        rule.onNodeWithText("Visa dolda (2)").performClick()
+        assertEquals(listOf<ArchiveEvent>(ArchiveEvent.ToggleArchived), archive)
+    }
+
+    @Test
+    fun `en tom packlista visar de tre sektionerna med plus och Räkna om (PAK-1)`() {
+        val events = mutableListOf<PackingListEvent>()
+        rule.setContent { ReseApoteketTheme { PackingListContent(ListUiState.Empty, header(emptyList()), { events += it }, {}, {}) } }
+        listOf("Inget att packa än", "Mediciner", "Kosttillskott").forEach { rule.onNodeWithText(it).assertIsDisplayed() }
+        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Övrigt"))
+        rule.onNodeWithContentDescription("Lägg till i Övrigt").assertIsDisplayed()
+        rule.onAllNodesWithText("Inget här än").assertCountEquals(3)
+        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Räkna om"))
+        rule.onNodeWithText("Räkna om").performClick()
+        assertEquals(listOf<PackingListEvent>(PackingListEvent.AskRecount), events)
     }
 
     @Test
@@ -157,16 +217,14 @@ class PackingListScreensTest {
     }
 
     @Test
-    fun `Dolda är hopfälld tills rubriken trycks, och en dold rad visas igen (PAK-4)`() {
+    fun `Dolda visas sist och utfälld, och en dold rad visas igen (PAK-4)`() {
         val events = mutableListOf<PackingListEvent>()
-        rule.setContent { ReseApoteketTheme { PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), { events += it }, {}, {}) } }
-        rule.onNodeWithText("Plåster").assertDoesNotExist()
-        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Dolda"))
-        rule.onNodeWithText("Dolda").performSemanticsAction(SemanticsActions.OnClick)
+        rule.setContent { ReseApoteketTheme { PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), { events += it }, {}, {}, archive = ListArchive(showing = true), hiddenCount = 1) } }
         rule.onNode(hasScrollAction()).performScrollToNode(hasText("Visa igen"))
-        // Semantisk klick: raden kan ligga under "Lägg till"-knappen längst ned.
+        rule.onNodeWithText("Plåster").assertIsDisplayed()
         rule.onNodeWithText("Visa igen").performSemanticsAction(SemanticsActions.OnClick)
-        assertEquals(listOf<PackingListEvent>(PackingListEvent.Show("plaster")), events)
+        rule.onNodeWithText("Dolda").performSemanticsAction(SemanticsActions.OnClick)
+        assertEquals(listOf(PackingListEvent.Show("plaster"), PackingListEvent.ToggleGroup(null)), events)
     }
 
     @Test
@@ -191,7 +249,10 @@ class PackingListScreensTest {
         val events = mutableListOf<PackingListEvent>()
         val adding = EditorUiState(PackingItem("ny", PackingSection.MEDICINE, name = "Nässpray", quantity = 1, sourceType = PackingSource.MANUAL), isValid = false, isDirty = true)
         rule.setContent { ReseApoteketTheme { PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), { events += it }, {}, {}, adding = adding) } }
+        rule.onNodeWithText("Lägg till i Mediciner").assertIsDisplayed()
         rule.onNodeWithText("Vem?", ignoreCase = true).assertIsDisplayed()
+        rule.onNodeWithText("Var?", ignoreCase = true).assertDoesNotExist()
+        rule.onNodeWithText("Lista").assertDoesNotExist()
         rule.onAllNodesWithText("Erik").filterToOne(hasClickAction()).performClick()
         assertEquals(listOf<PackingListEvent>(PackingListEvent.AddPerson("erik")), events)
     }
@@ -209,7 +270,8 @@ class PackingListScreensTest {
     fun `lägg till som lista visar vad som läggs till under Övrigt och sparar (PAK-7)`() {
         val events = mutableListOf<PackingListEvent>()
         rule.setContent { ReseApoteketTheme { PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), { events += it }, {}, {}, adding = newItem, addList = pasted) } }
-        rule.onNodeWithText("Läggs till under Övrigt", ignoreCase = true).assertIsDisplayed()
+        rule.onNodeWithText("Lägg till i Övrigt").assertIsDisplayed()
+        rule.onNodeWithText("Läggs till", ignoreCase = true).assertIsDisplayed()
         rule.onNodeWithText("2 st").assertIsDisplayed()
         rule.onNodeWithText("finns redan").assertIsDisplayed()
         rule.onNodeWithText("Vad?").assertDoesNotExist()
@@ -281,6 +343,7 @@ class PackingListScreensTest {
         rule.onNodeWithText("Försök igen").assertDoesNotExist()
         rule.onNodeWithText("Lägg till").assertDoesNotExist()
         rule.onNodeWithContentDescription("Redigera resa").assertDoesNotExist()
+        rule.onNodeWithContentDescription("Fler val").assertDoesNotExist()
     }
 
     @Test
@@ -298,6 +361,36 @@ class PackingListScreensTest {
         captureLightAndDark("PackingListScreen_ovrigt") { PackingListContent(ListUiState.Content(other.toImmutableList()), header(other), {}, {}, {}) }
         val fresh = rows.map { it.copy(item = it.item.copy(checked = false, hidden = false, quantity = it.item.suggestedQuantity)) }
         captureLightAndDark("PackingListScreen_ny") { PackingListContent(ListUiState.Content(fresh.toImmutableList()), header(fresh), {}, {}, {}) }
+    }
+
+    @Test
+    fun `skärmdumpar - en sektion hopfälld, Dolda visad och tom packlista`() {
+        captureLightAndDark("PackingListScreen_hopfalld") {
+            PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), {}, {}, {}, collapsed = setOf(PackingGroup.MEDICINE))
+        }
+        captureLightAndDark("PackingListScreen_tom") { PackingListContent(ListUiState.Empty, header(emptyList()), {}, {}, {}) }
+    }
+
+    @Test
+    @Config(qualifiers = "w390dp-h1400dp-xxhdpi")
+    fun `skärmdump - Dolda visad sist`() {
+        val few = rows.filter { it.item.section == PackingSection.FAMILY }
+        captureLightAndDark("PackingListScreen_dolda") {
+            PackingListContent(ListUiState.Content(few.toImmutableList()), header(few), {}, {}, {}, archive = ListArchive(showing = true), hiddenCount = 1)
+        }
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h900dp-xxhdpi")
+    fun `skärmdump - 360 dp med 1 av 2 i Kosttillskott`() {
+        captureLightAndDark("PackingListScreen_w360") {
+            PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), {}, {}, {}, collapsed = setOf(PackingGroup.MEDICINE))
+        }
+    }
+
+    @Test
+    fun `skärmdump - lägg till i Övrigt, en sak`() = rule.captureScreenLightAndDark("PackingListScreen_lagg_till_ovrigt") {
+        PackingListContent(ListUiState.Content(rows.toImmutableList()), header(rows), {}, {}, {}, adding = newItem)
     }
 
     @Test

@@ -49,7 +49,7 @@ bygger kravet. Arkitekturbesluten bakom TP-kraven står i [ARKITEKTUR.md](ARKITE
 | NAV-3 | Alla skärmbyten använder samma rörelse. |
 | NAV-4 | Flikarnas sidhuvud är Kodhästs (android-ui `AppHeader`): appens ikon och namn, flikens rubrik med två prickar före och kontots avatar längst till höger. Rubriken krymper när listan rullas. |
 | NAV-5 | **Avataren** visar Google-kontots profilfoto (annars initialerna) och öppnar **Inställningar** som undersida med bakåtpil; den läses som "Konto och inställningar". En grön prick på avataren visar att appen har fungerande internet; utan nät eller bakom en inloggningsportal syns ingen prick, och TalkBack säger "Ansluten" eller "Utan anslutning". |
-| NAV-6 | **Plusknappen** i verktygsraden öppnar en meny med **Ny resa**, **Ny person** och **Ny gemensam sak**, som öppnar respektive formulär; menyn stängs med krysset, bakåt eller efter ett val. Listorna har ingen egen "Lägg till"-knapp. |
+| NAV-6 | **Plusknappen** i verktygsraden, i appens blåa accentfärg (skild från den valda fliken), öppnar en meny med **Ny resa**, **Ny person** och **Ny gemensam sak**, som öppnar respektive formulär; menyn stängs med krysset, bakåt eller efter ett val. Listorna har ingen egen "Lägg till"-knapp. |
 
 ---
 

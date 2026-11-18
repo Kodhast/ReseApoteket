@@ -89,8 +89,8 @@ miljön får aldrig köra dem utan emulator (skill `data-safety-backup`).
 ## Dokumentdrift-kontrollen
 
 `UiConsistencyTest` jämför komponent- och ramtabellen i skill `shared-ui-components` med
-koden i båda riktningar, och att varje publik komponent har skärmdumpar och en plats i
-`ComponentGallery`.
+koden i båda riktningar, och att varje publik komponent i appen har skärmdumpar och en plats i
+appens sektioner i `ComponentGallery` (bibliotekets komponenter håller biblioteket i sitt galleri).
 
 ## Skärmdumpar (Roborazzi)
 

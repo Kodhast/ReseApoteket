@@ -165,7 +165,7 @@ ReseApoteket/
 │       ├── navigation/           Navigation 3: AppKey, AppBackStack (= android-ui:s TabBackStack), AppNavHost (flikar och plusmeny runt android-ui:s ram)
 │       └── ui/
 │           ├── theme/            ReseApoteketTheme (android-ui:s AppTheme), AppColors, AppTypeScale (Nunito)
-│           ├── components/       appens egna komponenter (personavatar, dosering, mängdregel, packprogress …), PERSON_EMOJIS, ComponentGallery (ramarna och övriga komponenter från android-ui)
+│           ├── components/       appens egna komponenter (personavatar, dosering, mängdregel, packprogress …), PERSON_EMOJIS, ComponentGallery (bibliotekets galleri med appens egna sektioner)
 │           ├── common/           activeOnly, DateFormat, DataError.toMessage() (tillstånden från android-ui:s ui-common, ArchiveActions från ui-components)
 │           ├── auth/             AuthViewModel (vad appen visar; skärmarna och AuthGateHost från android-ui)
 │           ├── sync/             SyncViewModel (synkläget för UI:t, NFR-6)

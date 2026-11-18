@@ -131,21 +131,16 @@ class UiConsistencyTest {
         assertTrue(missingInCode.isEmpty(), "Ta bort raden i shared-ui-components eller bygg komponenten: $missingInCode")
     }
 
+    // Bibliotekets galleri (android-ui ComponentGallery) visar bibliotekets komponenter, och bibliotekets eget
+    // UiConsistencyTest håller det fullständigt – appens galleri visar bara appens egna.
     @Test
-    fun `komponenterna märkta android-ui finns i biblioteket, i ComponentGallery och inte som kopia i appen`() {
+    fun `komponenterna märkta android-ui finns i biblioteket och inte som kopia i appen`() {
         val fromLibrary = documentedComponents().getValue(true)
         assertTrue(fromLibrary.isNotEmpty(), "inga rader märkta $LIBRARY_MARK i shared-ui-components")
         val copies = fromLibrary intersect publicComponents("android-ui")
         assertTrue(copies.isEmpty(), "Ta bort appens kopia – komponenten finns i android-ui: $copies")
-        val gallery = galleryText()
-        val inLibrary = libraryFunctions()
-        val problems = fromLibrary.flatMap { name ->
-            listOfNotNull(
-                "$name finns inte i android-ui ($LIBRARY_PACKAGE)".takeIf { name !in inLibrary },
-                "$name saknas i ComponentGallery".takeIf { !inGallery(gallery, name) }
-            )
-        }
-        assertTrue(problems.isEmpty(), problems.joinToString("\n"))
+        val missing = fromLibrary - libraryFunctions()
+        assertTrue(missing.isEmpty(), "Finns inte i android-ui ($LIBRARY_PACKAGE): $missing")
     }
 
     @Test

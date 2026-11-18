@@ -18,10 +18,10 @@ komponent, komponentnamnet i backticks först i kolumn två.
 > [android-ui](https://github.com/Kodhast/android-ui) (`se.kodhast.ui.components`, sedan #126; fler komponenter och tillståndsmodulen `ui-common` sedan #129; listrader, ark, meny, dialoger, datumfält, emojival och de tre ramarna med `ArchiveActions` sedan #131, android-ui 0.4.0) –
 > appen har ingen egen kopia, och en ändring görs i biblioteket. Temat (`AppTheme`, `Spacing`,
 > `AppShapes`, `AppTypography`, `ExtendedColors`, `Tone`) kommer också därifrån (skill `ui-style`).
-> `UiConsistencyTest` kontrollerar att de finns i biblioteket och i `ComponentGallery`.
+> `UiConsistencyTest` kontrollerar att de finns i biblioteket; bibliotekets eget test håller dem i galleriet.
 >
-> Hela katalogen och ramarna finns sedan #20 och syns i `ComponentGallery` (Inställningar →
-> Komponenter i debug-bygget). De exakta API:erna bakom kolumnen *Bygger på*
+> Hela katalogen och ramarna syns i `ComponentGallery` (Inställningar → Komponenter i debug-bygget):
+> bibliotekets galleri (android-ui 1.18.0) med appens egna sektioner efter. De exakta API:erna bakom kolumnen *Bygger på*
 > står i `ARKITEKTUR.md` → "Verifierade API:er" – gissa aldrig ett API-namn.
 
 ## Utseende: elementtyp → enda tillåtna komponent
@@ -91,7 +91,7 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Ångra | `UndoSnackbar` *(android-ui)* | Enda ångra-mekanismen |
 | Permanent radering | `ConfirmDialog` *(android-ui)* | `DeleteConfirmDialog` (`destructive = true`) i redigeringen; alltid bekräftelse, aldrig svep. `onDecline` när nej-knappen gör något annat än att stänga ("Behåll listan") |
 | Förhandsvisning av beräkning | `PackingPreview` | Samma format i recept, kosttillskott, familjeartiklar |
-| Komponentöversikt | `ComponentGallery` | Debug-skärm med alla komponenter och ramar i alla tillstånd |
+| Komponentöversikt | `ComponentGallery` | bibliotekets `ComponentGallery` *(android-ui, `ui-navigation`)* med bibliotekets komponenter och ramar, och appens egna i `appSections` ("Personer", "Dosering och packning"); debug-skärm |
 
 Gemensamt för ramarna: felmeddelanden via `UiError` (`AppErrors` → `DataError.toMessage()`), skärmbyten via
 `AppTransitions` *(android-ui, `ui-navigation`)*, ramarnas och komponenternas texter ("Spara", "Släng ändringar?", "Ångra", "Försök igen") en gång
@@ -177,7 +177,7 @@ undantag bara i `ui-allowlist.txt`. Att hooken och testet tolkar filen likadant 
   utan `@Immutable` eller `@Stable`. Listor och kartor i dem är `ImmutableList`/`ImmutableMap`;
   modellerna från `:core`, `DataError` och datum-/tidstyperna räknas som stabila via `app/compose-stability.conf` (skill `android:compose-expert`).
 - **I `ui/components/`:** publik komponent utan skärmdump (ljust + mörkt) eller utan plats i
-  `ComponentGallery`.
+  appens sektioner i `ComponentGallery`.
 - **Undantag:** en rad i `ui-allowlist.txt` (`fil:symbol – motivering`). Undantaget gäller bara
   träffar vars matchade text överlappar symbolen – andra förbjudna mönster på samma rad stoppas
   ändå. En rad utan symbol eller motivering fäller hooken och bygget. Filen är tom som

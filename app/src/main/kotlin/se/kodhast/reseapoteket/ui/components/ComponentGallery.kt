@@ -1,286 +1,80 @@
 package se.kodhast.reseapoteket.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
-import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.model.DoseSchedule
 import se.kodhast.reseapoteket.core.model.QuantityRule
-import se.kodhast.reseapoteket.data.common.AppErrors
-import se.kodhast.reseapoteket.data.common.DataError
 import se.kodhast.reseapoteket.ui.theme.AppColors
-import se.kodhast.reseapoteket.ui.theme.Blue
-import se.kodhast.reseapoteket.ui.theme.Green
-import se.kodhast.ui.common.DetailUiState
-import se.kodhast.ui.common.EditorEvents
-import se.kodhast.ui.common.EditorUiState
-import se.kodhast.ui.common.ListUiState
-import se.kodhast.ui.components.AboutCard
-import se.kodhast.ui.components.AccountAvatar
-import se.kodhast.ui.components.AccountRow
-import se.kodhast.ui.components.AddAction
-import se.kodhast.ui.components.AddSplitButton
-import se.kodhast.ui.components.AppBottomSheet
-import se.kodhast.ui.components.AppButton
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
-import se.kodhast.ui.components.AppFilterChip
-import se.kodhast.ui.components.AppFloatingToolbar
-import se.kodhast.ui.components.AppHeader
-import se.kodhast.ui.components.AppIconButton
-import se.kodhast.ui.components.AppLoading
-import se.kodhast.ui.components.AppMenu
-import se.kodhast.ui.components.AppMenuItem
-import se.kodhast.ui.components.AppSegmentedChoice
-import se.kodhast.ui.components.AppSnackbarHost
-import se.kodhast.ui.components.AppTextField
-import se.kodhast.ui.components.AppTopBar
-import se.kodhast.ui.components.ArchiveEvent
-import se.kodhast.ui.components.ButtonVariant
-import se.kodhast.ui.components.CheckRow
 import se.kodhast.ui.components.ChipRow
-import se.kodhast.ui.components.ChoiceChips
 import se.kodhast.ui.components.ColorSwatchPicker
-import se.kodhast.ui.components.Confetti
-import se.kodhast.ui.components.ConfirmDialog
-import se.kodhast.ui.components.DateField
-import se.kodhast.ui.components.DeleteAction
-import se.kodhast.ui.components.DetailHeader
 import se.kodhast.ui.components.EmojiPicker
-import se.kodhast.ui.components.EmptyContent
-import se.kodhast.ui.components.EmptyExample
-import se.kodhast.ui.components.EmptyState
-import se.kodhast.ui.components.EntityDetailScreen
-import se.kodhast.ui.components.EntityEditScreen
-import se.kodhast.ui.components.EntityListScreen
-import se.kodhast.ui.components.ExampleChips
-import se.kodhast.ui.components.FieldError
 import se.kodhast.ui.components.GroupLabel
-import se.kodhast.ui.components.IconButtonVariant
-import se.kodhast.ui.components.InfoPill
 import se.kodhast.ui.components.ItemRow
-import se.kodhast.ui.components.LabeledGroup
-import se.kodhast.ui.components.ListArchive
-import se.kodhast.ui.components.ListGroup
-import se.kodhast.ui.components.ListSubgroup
-import se.kodhast.ui.components.MakerMark
-import se.kodhast.ui.components.NoticeBanner
-import se.kodhast.ui.components.PausableRow
-import se.kodhast.ui.components.QuantityStepper
-import se.kodhast.ui.components.SectionFoldout
-import se.kodhast.ui.components.SectionHeader
-import se.kodhast.ui.components.SignOutRow
-import se.kodhast.ui.components.Suggestion
-import se.kodhast.ui.components.SuggestionField
-import se.kodhast.ui.components.SwipeToHide
-import se.kodhast.ui.components.SwitchRow
-import se.kodhast.ui.components.TimeField
-import se.kodhast.ui.components.ToolbarAction
-import se.kodhast.ui.components.ToolbarItem
-import se.kodhast.ui.components.TopBarSize
-import se.kodhast.ui.components.UndoRequest
-import se.kodhast.ui.components.UndoSnackbar
-import se.kodhast.ui.components.asSplitMenu
-import se.kodhast.ui.theme.AppTheme
-import se.kodhast.ui.theme.Spacing
-import se.kodhast.ui.theme.Tone
+import se.kodhast.ui.navigation.gallery.ComponentGallery as LibraryGallery
+import se.kodhast.ui.navigation.gallery.GallerySection
 
 /**
- * Alla komponenter och ramar på en skärm, med riktiga svenska texter (skill
- * shared-ui-components). Nås från Inställningar → "Komponenter" i debug-bygget.
- * `UiConsistencyTest` kontrollerar att varje publik komponent finns här.
+ * Komponentgalleriet (android-ui `ComponentGallery`): bibliotekets sektioner med varje delad komponent,
+ * sedan ReseApotekets egna – personerna, doseringen och packningen – med påhittad data. Nås från
+ * Inställningar → "Komponenter" i debug-bygget. `UiConsistencyTest` kontrollerar att varje publik
+ * komponent i appens `ui.components` finns här.
  */
 @Composable
 fun ComponentGallery(onBack: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxSize()) {
-        AppTopBar("Komponenter", size = TopBarSize.Small, onBack = onBack)
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.l, vertical = Spacing.s),
-            verticalArrangement = Arrangement.spacedBy(Spacing.l)
-        ) {
-            GallerySection("Knappar och meny") { Buttons() }
-            GallerySection("Kort, rader och rubriker") { Rows() }
-            GallerySection("Fält, val och mängder") { Fields() }
-            GallerySection("Progress och navigering") { Progress() }
-            GallerySection("Dialog, sheet, meddelanden") { Overlays() }
-            GallerySection("Ramar") { Frames(onBack) }
-        }
-    }
-}
-
-@Composable
-private fun GallerySection(title: String, content: @Composable () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.s)) {
-        Text(title, style = AppTheme.typography.headline, modifier = Modifier.semantics { heading() })
-        content()
-    }
-}
-
-@Composable
-private fun Label(text: String) = GroupLabel(text)
-
-@Composable
-private fun Buttons() {
-    Label("AppButton")
-    AppButton("Ny resa", {}, Modifier.fillMaxWidth(), icon = R.drawable.ic_add)
-    AppButton("Sparar …", {}, Modifier.fillMaxWidth(), loading = true)
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
-        AppButton("Lägg till", {}, variant = ButtonVariant.Secondary)
-        AppButton("Avbryt", {}, variant = ButtonVariant.Text)
-        AppButton("Spara", {}, enabled = false)
-    }
-    AppButton("Radera", {}, variant = ButtonVariant.Destructive)
-    Label("AppIconButton · AppMenu · AddSplitButton")
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s), verticalAlignment = Alignment.CenterVertically) {
-        AppIconButton(R.drawable.ic_arrow_back, "Tillbaka", {}, variant = IconButtonVariant.Tonal)
-        AppIconButton(R.drawable.ic_add, "Lägg till", {}, variant = IconButtonVariant.Tonal)
-        AppMenu(sampleMenu())
-    }
-    AddSplitButton("Lägg till", {}, menu = listOf(AppMenuItem("Räkna om", {}), AppMenuItem("Dölj packade", {})).asSplitMenu())
-    AddSplitButton("Lägg till person", {})
-}
-
-@Composable
-private fun sampleMenu() = listOf(
-    AppMenuItem("Arkivera", {}, R.drawable.ic_archive),
-    AppMenuItem("Radera", {}, R.drawable.ic_delete, destructive = true)
-)
-
-@Composable
-private fun Rows() {
-    var packed by remember { mutableStateOf(false) }
-    var sorted by remember { mutableStateOf(true) }
-    AppCard {
-        SectionHeader("Mediciner", icon = R.drawable.ic_medication, count = "4 / 5")
-        ItemRow(
-            "Anna",
-            subtitle = "3 recept · 1 kosttillskott",
-            leading = { PersonAvatar("🦊", AppColors.person(0)) },
-            navigates = true,
-            onClick = {}
+    LibraryGallery(
+        onBack = onBack,
+        modifier = modifier,
+        appSections = listOf(
+            GallerySection("Personer") { Persons() },
+            GallerySection("Dosering och packning") { Packing() }
         )
+    )
+}
+
+@Composable
+private fun Persons() {
+    val selected = remember { mutableStateOf(setOf("Anna", "Erik")) }
+    var emoji by remember { mutableStateOf("🦉") }
+    var color by remember { mutableStateOf(AppColors.PERSON_HEX[3]) }
+    AppCard {
+        ItemRow("Anna", subtitle = "3 recept · 1 kosttillskott", leading = { PersonAvatar("🦊", AppColors.person(0)) }, navigates = true, onClick = {})
         AppDivider()
         ItemRow(
             "Gran Canaria",
             subtitle = "fre 2 okt 2026 · 7 dagar",
-            trailing = { InfoPill("Planeras", tone = Tone.Blue) },
-            onClick = {},
-            navigates = true,
-            below = {
-                AvatarStack(listOf(StackedAvatar("🦊", AppColors.person(0), "Anna"), StackedAvatar("🐻", AppColors.person(1), "Erik")))
-            }
+            below = { AvatarStack(listOf(StackedAvatar("🦊", AppColors.person(0), "Anna"), StackedAvatar("🐻", AppColors.person(1), "Erik"))) }
         )
-        AppDivider()
-        PausableRow("Solkräm SPF 50", "1 tub per 7 dagar", "Per N dagar", active = true, onClick = {}, pillTone = Tone.Blue)
-        AppDivider()
-        PausableRow("Hydrokortison 1 %", "1 tub", "Fast antal", active = false, onClick = {}, pillTone = Tone.Blue)
-        AppDivider()
-        CheckRow("Enalapril 10 mg", packed, { packed = it }, subtitle = "18 tabletter · 2 kartor", trailing = { InfoPill("1/dag", tone = Tone.Blue) })
-        CheckRow("Levaxin 50 µg", true, {}, subtitle = "9 tabletter · 1 karta")
-        CheckRow("Ventoline", false, {}, subtitle = "1 st", onClick = {}, accent = AppColors.person(1), trailing = { InfoPill("vid behov", tone = Tone.Blue) })
-        AppDivider()
-        SwitchRow("Flytta avprickade sist", sorted, { sorted = it }, subtitle = "I packlistan")
-        SwitchRow("Dags att packa", sorted, { sorted = it }, subtitle = "3 dagar före · 18:00", onClick = {})
-    }
-    AppCard {
-        AccountRow("Anna Svensson", "anna.svensson@exempel.se", photoUrl = null)
-        AppDivider()
-        SignOutRow("ReseApoteket", onSignOut = {})
-    }
-    NoticeBanner(
-        "Notiser är avstängda",
-        R.drawable.ic_notifications_off,
-        onClick = {},
-        detail = "Påminnelserna kan inte visas. Tryck för att slå på notiser för ReseApoteket."
-    )
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
-        InfoPill("Mediciner")
-        InfoPill("Kosttillskott", tone = Tone.Green)
-        InfoPill("Övrigt", tone = Tone.Blue)
     }
     ChipRow {
-        listOf("🦊", "🐻", "🐰", "🦉", "🐯", "🐢", "🦄", "🐧").forEachIndexed { i, emoji -> PersonAvatar(emoji, AppColors.person(i)) }
+        listOf("🦊", "🐻", "🐰", "🦉", "🐯", "🐢", "🦄", "🐧").forEachIndexed { i, avatar -> PersonAvatar(avatar, AppColors.person(i)) }
     }
     PersonAvatar("🦉", AppColors.person(3), size = AvatarSize.Large)
-}
-
-@Composable
-private fun Fields() {
-    var name by remember { mutableStateOf("Solkräm") }
-    var date by remember { mutableStateOf<LocalDate?>(LocalDate(2026, 12, 19)) }
-    var form by remember { mutableIntStateOf(0) }
-    var theme by remember { mutableIntStateOf(2) }
-    var count by remember { mutableIntStateOf(7) }
-    var schedule by remember { mutableStateOf<DoseSchedule>(DoseSchedule.Daily(dosesPerDay = 2)) }
-    var rule by remember { mutableStateOf<QuantityRule>(QuantityRule.PerDays(1, 7)) }
-    val selected = remember { mutableStateOf(setOf("Anna", "Erik")) }
-    AppTextField(name, { name = it }, "Namn", helper = "Visas i packlistan")
-    AppTextField("", {}, "Namn", error = "Ange ett namn")
-    var medicine by remember { mutableStateOf("Alved") }
-    SuggestionField(
-        medicine,
-        { medicine = it },
-        "Namn",
-        suggestions = listOf(Suggestion("Alvedon 500 mg", "Filmdragerad tablett", 0..4), Suggestion("Alvedon forte 1 g", "Filmdragerad tablett", 0..4))
-            .takeIf { medicine == "Alved" }.orEmpty(),
-        onPick = { medicine = "Alvedon" },
-        footer = "Från Läkemedelsverkets lista"
-    )
-    DateField("Startdatum", date, { date = it })
-    var time by remember { mutableStateOf(LocalTime(18, 0)) }
-    TimeField("Tid", time, { time = it })
-    var travelDay by remember { mutableStateOf(true) }
-    var travelTime by remember { mutableStateOf<LocalTime?>(null) }
-    TravelDayField(travelDay, travelTime, {
-        travelDay = it.on
-        travelTime = it.ownTime
-    })
-    LabeledGroup("Form") {
-        ChoiceChips(listOf(0, 1, 2, 3), form, { form = it }, { listOf("Tablett", "Kapsel", "Flytande", "Inhalator")[it] })
-    }
-    FieldError("Ingen anslutning just nu. Det du sparar skickas när nätet är tillbaka.")
-    AppFilterChip("Flytande", selected = false, onClick = {}, enabled = false)
-    ExampleChips(listOf("D-vitamin", "Omega-3", "Magnesium"), {}, chosen = "D-vitamin")
     ChipRow(wrap = false) {
-        listOf("Anna" to "🦊", "Erik" to "🐻", "Lova" to "🐰").forEachIndexed { i, (person, emoji) ->
-            PersonChip(person, emoji, AppColors.person(i), person in selected.value, {
+        listOf("Anna" to "🦊", "Erik" to "🐻", "Lova" to "🐰").forEachIndexed { i, (person, avatar) ->
+            PersonChip(person, avatar, AppColors.person(i), person in selected.value, {
                 selected.value = if (person in selected.value) selected.value - person else selected.value + person
             })
         }
     }
-    AppSegmentedChoice(listOf("Ljust", "Mörkt", "System"), theme, { theme = it })
-    QuantityStepper(count, { count = it }, "dagar")
+    GroupLabel("Personens emoji")
+    EmojiPicker(emoji, { emoji = it }, PERSON_EMOJIS)
+    GroupLabel("Personens färg")
+    ColorSwatchPicker(AppColors.PERSON_HEX, color, { color = it }, AppColors::person, { personColorLabel(it) }, PersonColorMarker)
+}
+
+@Composable
+private fun Packing() {
+    var schedule by remember { mutableStateOf<DoseSchedule>(DoseSchedule.Daily(dosesPerDay = 2)) }
+    var rule by remember { mutableStateOf<QuantityRule>(QuantityRule.PerDays(1, 7)) }
+    var travelDay by remember { mutableStateOf(true) }
+    var travelTime by remember { mutableStateOf<LocalTime?>(null) }
     DoseScheduleRow(
         schedule,
         { schedule = it },
@@ -289,194 +83,11 @@ private fun Fields() {
     )
     PackingPreview("För en 7-dagarsresa", "18 tabletter · 2 kartor", reason = "2 × 1 tablett/dag × (7 + 2) dagar")
     QuantityRuleRow(rule, { rule = it }, unitName = { if (it == 1) "tub" else "tuber" })
-    var emoji by remember { mutableStateOf("🦉") }
-    var color by remember { mutableStateOf(AppColors.PERSON_HEX[3]) }
-    Label("EmojiPicker")
-    EmojiPicker(emoji, { emoji = it }, PERSON_EMOJIS)
-    Label("ColorSwatchPicker")
-    ColorSwatchPicker(AppColors.PERSON_HEX, color, { color = it }, AppColors::person, { personColorLabel(it) }, PersonColorMarker)
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun Progress() {
+    TravelDayField(travelDay, travelTime, {
+        travelDay = it.on
+        travelTime = it.ownTime
+    })
     AppCard { PackedProgress(packed = 9, total = 14) }
     AppCard { PackedProgress(packed = 14, total = 14) }
     PackedProgress(packed = 4, total = 10, compact = true)
-    Box(Modifier.fillMaxWidth().height(96.dp)) { AppLoading() }
-    var tab by remember { mutableIntStateOf(0) }
-    AppFloatingToolbar(
-        items = listOf(
-            ToolbarItem("Resor", R.drawable.ic_luggage),
-            ToolbarItem("Personer", R.drawable.ic_person),
-            ToolbarItem("Gemensamt", R.drawable.ic_family_items)
-        ),
-        selectedIndex = tab,
-        onSelect = { tab = it },
-        action = ToolbarAction(
-            "Lägg till",
-            R.drawable.ic_add,
-            listOf(
-                AppMenuItem("Ny resa", {}, icon = R.drawable.ic_luggage),
-                AppMenuItem("Ny person", {}, icon = R.drawable.ic_person),
-                AppMenuItem("Ny gemensam sak", {}, icon = R.drawable.ic_family_items)
-            )
-        )
-    )
-    AppTopBar("Gran Canaria", size = TopBarSize.Small, onBack = {})
-    AppHeader("Resor", TopAppBarDefaults.pinnedScrollBehavior(), syncing = true, account = { AccountAvatar("Anna Berg", onClick = {}, online = true) })
 }
-
-@Composable
-private fun Overlays() {
-    var dialog by remember { mutableStateOf(false) }
-    var sheet by remember { mutableStateOf(false) }
-    var celebrate by remember { mutableStateOf(false) }
-    var archived by remember { mutableStateOf<UndoRequest?>(null) }
-    val snackbar = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
-        AppButton("Dialog", { dialog = true }, variant = ButtonVariant.Secondary)
-        AppButton("Sheet", { sheet = true }, variant = ButtonVariant.Secondary)
-        AppButton("Snackbar", { scope.launch { snackbar.showSnackbar("Ingen anslutning just nu.") } }, variant = ButtonVariant.Secondary)
-    }
-    AppButton("Arkivera Solkräm", { archived = UndoRequest("solkram", "Solkräm") }, variant = ButtonVariant.Text)
-    UndoSnackbar(archived, snackbar, onUndo = { archived = null }, onDismissed = { archived = null })
-    if (dialog) {
-        ConfirmDialog("Radera Alvedon?", "Receptet tas bort för gott. Det går inte att ångra.", "Radera", { dialog = false }, { dialog = false }, destructive = true)
-    }
-    if (sheet) {
-        AppBottomSheet("Levaxin 50 µg", onDismiss = { sheet = false }) {
-            QuantityStepper(12, {}, "tabletter")
-            AppButton("Återställ till förslag (9)", {}, variant = ButtonVariant.Text)
-        }
-    }
-    EmptyState(R.drawable.ic_family_items, "Inga familjeartiklar än", "Solkräm, plåster, febertermometer – saker hela familjen delar.") {
-        AppButton("Lägg till", {}, Modifier.fillMaxWidth(), icon = R.drawable.ic_add)
-    }
-    AppCard { MakerMark() }
-    AboutCard("ReseApoteket", "0.12.0")
-    Box(Modifier.fillMaxWidth().height(120.dp)) {
-        AppButton("Allt packat!", { celebrate = !celebrate }, Modifier.align(Alignment.Center), variant = ButtonVariant.Text)
-        Confetti(Modifier.fillMaxSize(), play = celebrate)
-    }
-    AppSnackbarHost(snackbar)
-}
-
-@Composable
-private fun Frames(onBack: () -> Unit) {
-    var undo by remember { mutableStateOf<UndoRequest?>(null) }
-    var expanded by remember { mutableStateOf(true) }
-    var items by remember { mutableStateOf(listOf("Solkräm", "Plåster", "Febertermometer")) }
-    Label("EntityListScreen · SwipeToHide · UndoSnackbar")
-    Box(Modifier.fillMaxWidth().height(FRAME_HEIGHT)) {
-        EntityListScreen(
-            title = "Gemensamt",
-            state = if (items.isEmpty()) ListUiState.Empty else ListUiState.Content(items.toImmutableList()),
-            empty = EmptyContent(
-                R.drawable.ic_family_items,
-                "Inga familjeartiklar än",
-                "Solkräm, plåster, febertermometer.",
-                examples = listOf(EmptyExample("Solkräm") { items = listOf("Solkräm") })
-            ),
-            add = AddAction("Lägg till", {}),
-            key = { it },
-            archive = ListArchive(undo = undo) { event ->
-                when (event) {
-                    ArchiveEvent.Undo -> {
-                        undo?.let { items = items + it.name }
-                        undo = null
-                    }
-
-                    ArchiveEvent.UndoDismissed -> undo = null
-
-                    else -> Unit
-                }
-            }
-        ) { item ->
-            SwipeToHide(onHide = {
-                items = items - item
-                undo = UndoRequest(item, item)
-            }) { swipe ->
-                ItemRow(item, swipe, subtitle = "1 per resenär", navigates = true, onClick = {})
-            }
-        }
-    }
-    Label("EntityListScreen – fel")
-    Box(Modifier.fillMaxWidth().height(FRAME_HEIGHT)) {
-        EntityListScreen<String>(
-            title = "Personer",
-            state = ListUiState.Error(AppErrors.map(DataError.Offline)),
-            empty = EmptyContent(R.drawable.ic_person, "Inga personer än", ""),
-            add = AddAction("Lägg till person", {}),
-            key = { it }
-        ) {}
-    }
-    Label("EntityListScreen – rubrik, grupper, undergrupper, kolumner, hopfällbar")
-    val grouped = listOf("Anna" to "Levaxin 50 µg", "Erik" to "Ventoline", "" to "Solkräm", "" to "Plåster", "" to "Myggmedel", "-" to "Halstabletter")
-    Box(Modifier.fillMaxWidth().height(FRAME_HEIGHT)) {
-        EntityListScreen(
-            title = "Kreta",
-            subtitle = "2 okt · 7 dagar",
-            state = ListUiState.Content(grouped.toImmutableList()),
-            empty = EmptyContent(R.drawable.ic_family_items, "", ""),
-            add = AddAction("", {}),
-            key = { it.second },
-            onBack = {},
-            header = { AppCard { PackedProgress(packed = 2, total = 5) } },
-            group = { (who, _) ->
-                when (who) {
-                    "" -> ListGroup("Övrigt", count = "1 / 3", columns = 2)
-                    "-" -> ListGroup("Dolda", count = "1", collapsible = true)
-                    else -> ListGroup("Mediciner", tone = Tone.Blue, count = "1 / 2")
-                }
-            },
-            subgroup = { (who, _) -> if (who.length > 1) ListSubgroup(who, AppColors.person(if (who == "Anna") 0 else 1)) else null }
-        ) { (_, name) -> CheckRow(name, name.startsWith("S") || name.startsWith("L"), {}) }
-    }
-    Label("EntityDetailScreen – finns inte längre")
-    Box(Modifier.fillMaxWidth().height(FRAME_HEIGHT)) {
-        EntityDetailScreen<String>(DetailUiState.Error(AppErrors.notFound()), header = { DetailHeader(it) }, onBack = {}) {}
-    }
-    Label("EntityEditScreen")
-    var name by remember { mutableStateOf("") }
-    Box(Modifier.fillMaxWidth().height(FRAME_HEIGHT)) {
-        EntityEditScreen(
-            title = "Ny familjeartikel",
-            state = EditorUiState(value = name, errors = if (name.isBlank()) persistentMapOf("name" to R.string.error_unknown) else persistentMapOf(), isValid = name.isNotBlank(), isDirty = name.isNotEmpty()),
-            events = EditorEvents.None,
-            onSave = {},
-            onClose = onBack,
-            onArchive = {},
-            delete = DeleteAction("Radera Solkräm?", "Artikeln tas bort för gott. Det går inte att ångra.") {}
-        ) {
-            AppTextField(name, { name = it }, "Namn")
-        }
-    }
-    Label("EntityDetailScreen")
-    Box(Modifier.fillMaxWidth().height(FRAME_HEIGHT)) {
-        EntityDetailScreen(
-            state = DetailUiState.Content("Anna"),
-            header = { DetailHeader(it, "3 recept · 1 kosttillskott") },
-            onBack = onBack,
-            onEdit = {},
-            menu = { listOf(AppMenuItem("Arkivera", {}, R.drawable.ic_archive)) },
-            leading = { PersonAvatar("🦊", AppColors.person(0), size = AvatarSize.Large) }
-        ) {
-            AppCard {
-                SectionFoldout(
-                    "Recept",
-                    expanded = expanded,
-                    onToggle = { expanded = !expanded },
-                    icon = R.drawable.ic_medication,
-                    count = "1",
-                    trailing = { AppIconButton(R.drawable.ic_add, "Lägg till recept", {}, variant = IconButtonVariant.Tonal) }
-                ) {
-                    ItemRow("Levaxin 50 µg", subtitle = "1 tablett dagligen", navigates = true, onClick = {})
-                }
-            }
-        }
-    }
-}
-
-private val FRAME_HEIGHT = 480.dp

@@ -1,129 +1,50 @@
 package se.kodhast.reseapoteket.navigation
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.SaveableStateHolder
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
-import androidx.navigation3.ui.NavDisplay
 import se.kodhast.reseapoteket.R
-import se.kodhast.reseapoteket.ui.sync.SyncEvent
-import se.kodhast.reseapoteket.ui.sync.SyncUiState
-import se.kodhast.ui.components.AppFloatingToolbar
+import se.kodhast.ui.common.SyncUiState
 import se.kodhast.ui.components.AppMenuItem
-import se.kodhast.ui.components.AppSnackbarHost
-import se.kodhast.ui.components.ErrorSnackbar
-import se.kodhast.ui.components.FloatingToolbarClearance
-import se.kodhast.ui.components.LocalBottomClearance
-import se.kodhast.ui.components.LocalTopBarAccount
-import se.kodhast.ui.components.LocalTopBarSyncing
 import se.kodhast.ui.components.ToolbarAction
 import se.kodhast.ui.components.ToolbarItem
-import se.kodhast.ui.theme.Spacing
+import se.kodhast.ui.navigation.AppNavHost as LibraryNavHost
 
 /**
- * Navigationsramen: `NavDisplay` med [Transitions] och den flytande verktygsraden, som bara
- * syns i en fliks rot. Skärmarna kommer från [entryProvider] (`appEntries` i appen); flikarnas
- * ViewModels hör till aktiviteten (se `appEntries`), så att de också överlever flikbyten.
- * [sync] får prickarna i flikarnas sidhuvud att hoppa (NFR-6, NFR-22) och ger meddelandet om en
- * nekad skrivning, i appens gemensamma meddelandeyta ovanför verktygsraden. [onAdd] är plusknappens
- * meny (NAV-6) och [account] avataren i sidhuvudet (NAV-5).
+ * Appens navigationsram: bibliotekets `AppNavHost` med appens tre flikar och plusknappens meny. Skärmarna kommer från
+ * [entryProvider] (`appEntries` i appen). [sync] får prickarna i flikarnas sidhuvud att hoppa (NFR-6, NFR-22) och ger
+ * meddelandet om en nekad skrivning; [onSyncErrorShown] släpper det. [onAdd] är plusknappens meny (NAV-6) och
+ * [account] avataren i sidhuvudet (NAV-5).
  */
 @Composable
 fun AppNavHost(
     backStack: AppBackStack,
     entryProvider: (AppKey) -> NavEntry<AppKey>,
     modifier: Modifier = Modifier,
-    onExit: () -> Unit = {},
     sync: SyncUiState = SyncUiState(),
-    onSyncEvent: (SyncEvent) -> Unit = {},
+    onSyncErrorShown: () -> Unit = {},
     onAdd: ((AddChoice) -> Unit)? = null,
     account: @Composable () -> Unit = {}
 ) {
-    val toolbar = toolbarItems()
     val addLabel = stringResource(R.string.add)
-    val action = onAdd?.let { ToolbarAction(addLabel, R.drawable.ic_add, addMenu(it)) }
-    val clearance = if (backStack.atTopLevel) FloatingToolbarClearance else 0.dp
-    val messages = remember { SnackbarHostState() }
-    ErrorSnackbar(sync.writeError, messages, R.string.sync_write_rejected, SnackbarDuration.Long) { onSyncEvent(SyncEvent.WriteErrorShown) }
-    Box(modifier.fillMaxSize()) {
-        CompositionLocalProvider(LocalBottomClearance provides clearance, LocalTopBarSyncing provides sync.pending, LocalTopBarAccount provides account) {
-            NavDisplay(
-                backStack = backStack.entries,
-                onBack = { if (!backStack.pop()) onExit() },
-                entryDecorators = listOf(
-                    rememberSaveableStateHolderNavEntryDecorator(rememberTabRootStateHolder()),
-                    rememberViewModelStoreNavEntryDecorator()
-                ),
-                transitionSpec = Transitions.forward,
-                popTransitionSpec = Transitions.back,
-                predictivePopTransitionSpec = Transitions.predictiveBack,
-                entryProvider = { key -> entryProvider(key).asTabRootIf(key) }
-            )
-        }
-        AnimatedVisibility(
-            visible = backStack.atTopLevel,
-            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = Spacing.l),
-            enter = slideInVertically { it } + fadeIn(),
-            exit = slideOutVertically { it } + fadeOut()
-        ) {
-            AppFloatingToolbar(
-                items = toolbar,
-                selectedIndex = TOP_LEVEL.indexOf(backStack.currentTab),
-                onSelect = { backStack.select(TOP_LEVEL[it]) },
-                action = action
-            )
-        }
-        AppSnackbarHost(messages, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = clearance))
-    }
+    LibraryNavHost(
+        backStack = backStack,
+        tabs = toolbarItems(),
+        entryProvider = entryProvider,
+        modifier = modifier,
+        sync = sync,
+        onSyncErrorShown = onSyncErrorShown,
+        action = onAdd?.let { ToolbarAction(addLabel, R.drawable.ic_add, addMenu(it)) },
+        account = account
+    )
 }
-
-/**
- * Sparat tillstånd (t.ex. rullning) för flikarnas rötter behålls när fliken lämnar back stacken
- * vid flikbyte (NAV-2); undersidornas tillstånd släpps som vanligt när de stängs.
- */
-@Composable
-private fun rememberTabRootStateHolder(): SaveableStateHolder {
-    val holder = rememberSaveableStateHolder()
-    return remember(holder) { TabRootStateHolder(holder) }
-}
-
-private class TabRootStateHolder(private val holder: SaveableStateHolder) : SaveableStateHolder {
-    @Composable
-    override fun SaveableStateProvider(key: Any, content: @Composable () -> Unit) = holder.SaveableStateProvider(key, content)
-
-    override fun removeState(key: Any) {
-        if (!(key is String && key.startsWith(TAB_ROOT))) holder.removeState(key)
-    }
-}
-
-/** Prefix för flikrötternas innehållsnycklar (en sträng, eftersom nyckeln sparas i en Bundle). */
-private const val TAB_ROOT = "flikrot:"
-
-private fun NavEntry<AppKey>.asTabRootIf(key: AppKey): NavEntry<AppKey> = if (key is TopLevelKey) NavEntry(key, contentKey = TAB_ROOT + key, metadata = metadata) { Content() } else this
 
 /** Plusknappens meny (NAV-6): de tre valen i flikarnas ordning, med flikarnas ikoner, som android-ui:s FAB-meny. */
 @Composable
 private fun addMenu(onPick: (AddChoice) -> Unit): List<AppMenuItem> = AddChoice.entries.map { choice -> AppMenuItem(stringResource(choice.label), { onPick(choice) }, icon = choice.icon) }
 
+/** Verktygsradens flikar, i samma ordning som [TOP_LEVEL]. */
 @Composable
 private fun toolbarItems(): List<ToolbarItem> = listOf(
     ToolbarItem(stringResource(R.string.tab_trips), R.drawable.ic_luggage),

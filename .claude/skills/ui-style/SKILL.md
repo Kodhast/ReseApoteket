@@ -62,7 +62,7 @@ färg som bär text ska klara 4,5:1 mot sin bakgrund – räkna efter vid ny nya
 
 - Fjädrande (Expressive spring) på kryss, chips, split-knapp och progress.
 - Kryss: formmorf till fylld cirkel, raden tonas till dämpad "packad"-stil.
-- Skärmbyten: samma rörelse överallt, definierad en gång i `navigation/Transitions`.
+- Skärmbyten: samma rörelse överallt, definierad en gång i android-ui:s `AppTransitions` (`ui-navigation`).
 - 100 % packat: kort `Confetti` + "Allt packat! 🧳 Trevlig resa".
 - Rörelse förstärker, blockerar aldrig: inga väntetider för att se en animation.
 

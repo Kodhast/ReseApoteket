@@ -127,6 +127,7 @@ dependencies {
     implementation(libs.android.ui.theme)
     implementation(libs.android.ui.components)
     implementation(libs.android.ui.common)
+    implementation(libs.android.ui.navigation)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     implementation(libs.hilt.android)

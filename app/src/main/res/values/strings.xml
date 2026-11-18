@@ -76,9 +76,6 @@
     <string name="tab_family_items">Gemensamt</string>
     <string name="tab_settings">Inställningar</string>
 
-    <!-- Synk (NFR-6) -->
-    <string name="sync_write_rejected">En ändring kunde inte sparas och har ångrats. %1$s</string>
-
     <!-- Packas på resedagen (PAK-6) -->
     <string name="travel_day">Packas på resedagen</string>
     <string name="travel_day_note">Används till sista morgonen</string>

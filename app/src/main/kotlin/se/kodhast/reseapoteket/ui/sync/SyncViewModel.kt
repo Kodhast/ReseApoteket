@@ -1,6 +1,5 @@
 package se.kodhast.reseapoteket.ui.sync
 
-import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,22 +13,19 @@ import kotlinx.coroutines.flow.stateIn
 import se.kodhast.reseapoteket.data.common.AppErrors
 import se.kodhast.reseapoteket.data.common.SyncStatus
 import se.kodhast.ui.account.NetworkStatus
-import se.kodhast.ui.common.UiError
+import se.kodhast.ui.common.SyncUiState
 import se.kodhast.ui.common.shownAfter
-
-/**
- * [pending]: ändringar har väntat minst [SyncViewModel.PENDING_DELAY] på servern (prickarna hoppar, NFR-6);
- * [writeError]: en nekad skrivning att visa; [online]: appen har internet (pluppen på avataren, NAV-5).
- */
-@Immutable
-data class SyncUiState(val pending: Boolean = false, val writeError: UiError? = null, val online: Boolean = false)
 
 sealed interface SyncEvent {
     /** Felet har visats och kan släppas. */
     data object WriteErrorShown : SyncEvent
 }
 
-/** Appens synk- och nätläge för UI:t (NFR-6, NAV-5): prickarna i sidhuvudet, pluppen på avataren och meddelandet om en nekad skrivning. */
+/**
+ * Appens synk- och nätläge för UI:t som bibliotekets `SyncUiState` (NFR-6, NAV-5): `pending` (prickarna i sidhuvudet)
+ * när ändringar väntat minst [PENDING_DELAY] på servern, `writeError` en nekad skrivning att visa och `online`
+ * pluppen på avataren.
+ */
 @HiltViewModel
 class SyncViewModel @Inject constructor(private val status: SyncStatus, network: NetworkStatus) : ViewModel() {
 

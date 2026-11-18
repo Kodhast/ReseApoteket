@@ -27,10 +27,10 @@ import se.kodhast.reseapoteket.core.engine.ReminderKind
 import se.kodhast.reseapoteket.core.engine.ReminderSetting
 import se.kodhast.reseapoteket.core.engine.ReminderSettings
 import se.kodhast.reseapoteket.reminders.canPostNotifications
-import se.kodhast.reseapoteket.ui.common.DateFormat
 import se.kodhast.reseapoteket.ui.components.PackingPreview
 import se.kodhast.reseapoteket.ui.components.PersonChip
 import se.kodhast.reseapoteket.ui.theme.AppColors
+import se.kodhast.ui.common.DateFormat
 import se.kodhast.ui.components.AppBottomSheet
 import se.kodhast.ui.components.AppButton
 import se.kodhast.ui.components.AppCard

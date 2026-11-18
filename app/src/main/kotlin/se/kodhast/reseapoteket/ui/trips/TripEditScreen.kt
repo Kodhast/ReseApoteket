@@ -39,10 +39,10 @@ import se.kodhast.reseapoteket.data.repository.PersonRepository
 import se.kodhast.reseapoteket.data.repository.TripRepository
 import se.kodhast.reseapoteket.domain.PackingUpdate
 import se.kodhast.reseapoteket.domain.TripPacking
-import se.kodhast.reseapoteket.ui.common.DateFormat
 import se.kodhast.reseapoteket.ui.components.PackingPreview
 import se.kodhast.reseapoteket.ui.components.PersonChip
 import se.kodhast.reseapoteket.ui.theme.AppColors
+import se.kodhast.ui.common.DateFormat
 import se.kodhast.ui.common.EditorEvents
 import se.kodhast.ui.common.EditorLoader
 import se.kodhast.ui.common.EditorState

@@ -12,7 +12,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -31,7 +30,7 @@ import se.kodhast.reseapoteket.data.datastore.SettingsStore
 import se.kodhast.reseapoteket.data.repository.PersonRepository
 import se.kodhast.reseapoteket.reminders.ReminderRunner
 import se.kodhast.reseapoteket.reminders.ReminderSource
-import se.kodhast.ui.common.STOP_TIMEOUT_MILLIS
+import se.kodhast.ui.common.screenSharing
 
 /** Kortet Påminnelser: personerna att välja bland, telefonens inställningar och nästa påminnelse av varje slag. */
 @Immutable
@@ -67,7 +66,7 @@ class RemindersViewModel @Inject constructor(
         val now = clock.now()
         val upcoming = planned.filter { it.at.toInstant(zone) > now }
         RemindersUiState(people.toImmutableList(), chosen, ReminderKind.entries.mapNotNull { kind -> upcoming.firstOrNull { it.kind == kind }?.let { kind to it } }.toMap().toImmutableMap())
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), RemindersUiState())
+    }.stateIn(viewModelScope, screenSharing(forgetWhenStopped = false), RemindersUiState())
 
     fun onEvent(event: RemindersEvent) {
         viewModelScope.launch {

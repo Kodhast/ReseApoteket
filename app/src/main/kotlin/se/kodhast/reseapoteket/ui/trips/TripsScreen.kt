@@ -32,13 +32,13 @@ import se.kodhast.reseapoteket.data.common.withFallback
 import se.kodhast.reseapoteket.data.repository.PackingRepository
 import se.kodhast.reseapoteket.data.repository.PersonRepository
 import se.kodhast.reseapoteket.data.repository.TripRepository
-import se.kodhast.reseapoteket.ui.common.DateFormat
 import se.kodhast.reseapoteket.ui.components.AvatarStack
 import se.kodhast.reseapoteket.ui.components.StackedAvatar
 import se.kodhast.reseapoteket.ui.components.SuitcaseProgress
 import se.kodhast.reseapoteket.ui.theme.AppColors
 import se.kodhast.reseapoteket.ui.theme.Blue
 import se.kodhast.reseapoteket.ui.theme.Green
+import se.kodhast.ui.common.DateFormat
 import se.kodhast.ui.common.ListEvent
 import se.kodhast.ui.common.ListLoader
 import se.kodhast.ui.common.ListUiState

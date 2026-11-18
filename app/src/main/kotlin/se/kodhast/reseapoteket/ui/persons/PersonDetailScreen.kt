@@ -16,11 +16,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.launch
 import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.model.Person
 import se.kodhast.reseapoteket.core.model.Regimen
@@ -37,7 +34,7 @@ import se.kodhast.reseapoteket.ui.theme.AppColors
 import se.kodhast.ui.common.DetailLoader
 import se.kodhast.ui.common.DetailUiState
 import se.kodhast.ui.common.UiError
-import se.kodhast.ui.common.uiErrorOrNull
+import se.kodhast.ui.common.WriteFailures
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
 import se.kodhast.ui.components.AppIconButton
@@ -82,19 +79,16 @@ class PersonDetailViewModel @AssistedInject constructor(
     )
     val state = loader.state
 
+    private val failures = WriteFailures(viewModelScope, AppErrors)
+
     /** Ett misslyckat arkivera/återställ, tills skärmen visat det. */
-    private val _error = MutableStateFlow<UiError?>(null)
-    val error: StateFlow<UiError?> = _error.asStateFlow()
+    val error: StateFlow<UiError?> = failures.failure
 
     fun onEvent(event: PersonDetailEvent) {
         when (event) {
             PersonDetailEvent.Retry -> loader.retry()
-
-            is PersonDetailEvent.SetArchived -> viewModelScope.launch {
-                persons.setArchived(personId, event.archived).uiErrorOrNull(AppErrors)?.let { _error.value = it }
-            }
-
-            PersonDetailEvent.ErrorShown -> _error.value = null
+            is PersonDetailEvent.SetArchived -> failures.write { persons.setArchived(personId, event.archived) }
+            PersonDetailEvent.ErrorShown -> failures.clear()
         }
     }
 }

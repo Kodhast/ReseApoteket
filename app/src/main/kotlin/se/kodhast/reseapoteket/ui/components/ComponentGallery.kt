@@ -46,7 +46,9 @@ import se.kodhast.ui.common.DetailUiState
 import se.kodhast.ui.common.EditorEvents
 import se.kodhast.ui.common.EditorUiState
 import se.kodhast.ui.common.ListUiState
+import se.kodhast.ui.components.AboutCard
 import se.kodhast.ui.components.AccountAvatar
+import se.kodhast.ui.components.AccountRow
 import se.kodhast.ui.components.AddAction
 import se.kodhast.ui.components.AddSplitButton
 import se.kodhast.ui.components.AppBottomSheet
@@ -93,10 +95,12 @@ import se.kodhast.ui.components.ListArchive
 import se.kodhast.ui.components.ListGroup
 import se.kodhast.ui.components.ListSubgroup
 import se.kodhast.ui.components.MakerMark
+import se.kodhast.ui.components.NoticeBanner
 import se.kodhast.ui.components.PausableRow
 import se.kodhast.ui.components.QuantityStepper
 import se.kodhast.ui.components.SectionFoldout
 import se.kodhast.ui.components.SectionHeader
+import se.kodhast.ui.components.SignOutRow
 import se.kodhast.ui.components.Suggestion
 import se.kodhast.ui.components.SuggestionField
 import se.kodhast.ui.components.SwipeToHide
@@ -209,6 +213,17 @@ private fun Rows() {
         SwitchRow("Flytta avprickade sist", sorted, { sorted = it }, subtitle = "I packlistan")
         SwitchRow("Dags att packa", sorted, { sorted = it }, subtitle = "3 dagar före · 18:00", onClick = {})
     }
+    AppCard {
+        AccountRow("Anna Svensson", "anna.svensson@exempel.se", photoUrl = null)
+        AppDivider()
+        SignOutRow("ReseApoteket", onSignOut = {})
+    }
+    NoticeBanner(
+        "Notiser är avstängda",
+        R.drawable.ic_notifications_off,
+        onClick = {},
+        detail = "Påminnelserna kan inte visas. Tryck för att slå på notiser för ReseApoteket."
+    )
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
         InfoPill("Mediciner")
         InfoPill("Kosttillskott", tone = Tone.Green)
@@ -340,6 +355,7 @@ private fun Overlays() {
         AppButton("Lägg till", {}, Modifier.fillMaxWidth(), icon = R.drawable.ic_add)
     }
     AppCard { MakerMark() }
+    AboutCard("ReseApoteket", "0.12.0")
     Box(Modifier.fillMaxWidth().height(120.dp)) {
         AppButton("Allt packat!", { celebrate = !celebrate }, Modifier.align(Alignment.Center), variant = ButtonVariant.Text)
         Confetti(Modifier.fillMaxSize(), play = celebrate)

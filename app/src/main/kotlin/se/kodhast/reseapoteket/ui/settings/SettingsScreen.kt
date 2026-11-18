@@ -15,9 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -63,20 +60,21 @@ import se.kodhast.reseapoteket.ui.common.toMessage
 import se.kodhast.ui.account.ProfilePhotoCache
 import se.kodhast.ui.common.DateFormat
 import se.kodhast.ui.common.screenSharing
-import se.kodhast.ui.components.AccountAvatar
+import se.kodhast.ui.components.AboutCard
+import se.kodhast.ui.components.AccountRow
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
 import se.kodhast.ui.components.AppSegmentedChoice
 import se.kodhast.ui.components.AppTopBar
-import se.kodhast.ui.components.ConfirmDialog
 import se.kodhast.ui.components.FieldError
 import se.kodhast.ui.components.GroupLabel
 import se.kodhast.ui.components.ItemRow
 import se.kodhast.ui.components.LocalBottomClearance
-import se.kodhast.ui.components.MakerMark
 import se.kodhast.ui.components.QuantityStepper
+import se.kodhast.ui.components.SignOutRow
 import se.kodhast.ui.components.SwitchRow
 import se.kodhast.ui.components.TopBarSize
+import se.kodhast.ui.components.rememberNotificationAccess
 import se.kodhast.ui.theme.Spacing
 
 /** Kortet där en åtgärd gjordes – ett fel visas där (NFR-5). */
@@ -262,7 +260,6 @@ fun SettingsContent(
     medicinesUpdated: LocalDate? = null,
     reminders: (@Composable () -> Unit)? = null
 ) {
-    var confirmSignOut by rememberSaveable { mutableStateOf(false) }
     val uriHandler = LocalUriHandler.current
     val sourceUrl = stringResource(R.string.settings_source_url)
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -271,15 +268,10 @@ fun SettingsContent(
             GroupLabel(stringResource(R.string.settings_account))
             SettingsCard(state.error, SettingsSection.Account) {
                 state.account?.let { account ->
-                    val name = account.name ?: account.email ?: stringResource(R.string.settings_signed_in)
-                    ItemRow(
-                        title = name,
-                        subtitle = account.email?.takeIf { it != name } ?: stringResource(R.string.settings_signed_in),
-                        leading = { AccountAvatar(name, onClick = null, photoUrl = account.photoUrl) }
-                    )
+                    AccountRow(account.name, account.email, account.photoUrl)
                     AppDivider()
                 }
-                ItemRow(stringResource(R.string.sign_out), onClick = { confirmSignOut = true })
+                SignOutRow(stringResource(R.string.app_name), onSignOut = { onEvent(SettingsEvent.SignOut) })
             }
             state.household?.let { household ->
                 GroupLabel(stringResource(R.string.settings_household))
@@ -350,12 +342,7 @@ fun SettingsContent(
                 )
             }
             GroupLabel(stringResource(R.string.settings_about))
-            AppCard {
-                ItemRow(
-                    stringResource(R.string.app_name),
-                    subtitle = stringResource(R.string.settings_version_format, versionName),
-                    below = { MakerMark() }
-                )
+            AboutCard(stringResource(R.string.app_name), versionName) {
                 medicinesUpdated?.let {
                     AppDivider()
                     ItemRow(stringResource(R.string.settings_medicines), subtitle = stringResource(R.string.settings_medicines_note, DateFormat.display(it)))
@@ -379,20 +366,6 @@ fun SettingsContent(
             }
             Spacer(Modifier.height(LocalBottomClearance.current))
         }
-    }
-
-    if (confirmSignOut) {
-        ConfirmDialog(
-            title = stringResource(R.string.sign_out_title),
-            message = stringResource(R.string.sign_out_message),
-            confirmLabel = stringResource(R.string.sign_out),
-            onConfirm = {
-                confirmSignOut = false
-                onEvent(SettingsEvent.SignOut)
-            },
-            onDismiss = { confirmSignOut = false },
-            destructive = true
-        )
     }
 }
 

@@ -33,7 +33,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
@@ -60,10 +59,10 @@ import se.kodhast.reseapoteket.data.export.ExportFiles
 import se.kodhast.reseapoteket.data.export.HouseholdExport
 import se.kodhast.reseapoteket.data.medicines.MedicineRepository
 import se.kodhast.reseapoteket.data.repository.HouseholdRepository
-import se.kodhast.reseapoteket.ui.common.DateFormat
 import se.kodhast.reseapoteket.ui.common.toMessage
 import se.kodhast.ui.account.ProfilePhotoCache
-import se.kodhast.ui.common.STOP_TIMEOUT_MILLIS
+import se.kodhast.ui.common.DateFormat
+import se.kodhast.ui.common.screenSharing
 import se.kodhast.ui.components.AccountAvatar
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
@@ -135,7 +134,7 @@ class SettingsViewModel @Inject constructor(
 
     /** Datumet för den inbyggda läkemedelslistan (REC-6), eller `null` om den saknas. */
     val medicinesUpdated: StateFlow<LocalDate?> = flow { emit(medicines.catalog().updated) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), null)
+        .stateIn(viewModelScope, screenSharing(forgetWhenStopped = false), null)
 
     private val action = MutableStateFlow(Action())
 
@@ -149,7 +148,7 @@ class SettingsViewModel @Inject constructor(
         action
     ) { household, account, theme, checkedLast, action ->
         SettingsUiState(household, account, theme, checkedLast, action.exporting, action.error, action.share)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), SettingsUiState())
+    }.stateIn(viewModelScope, screenSharing(forgetWhenStopped = false), SettingsUiState())
 
     fun onEvent(event: SettingsEvent) {
         when (event) {

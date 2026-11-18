@@ -48,7 +48,7 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Textfält | `AppTextField` *(android-ui)* | M3 textfält med fel/hjälptext; flerradigt växer med texten upp till `maxLines` |
 | Textfält med förslag (läkemedelslistan, REC-6) | `SuggestionField` *(android-ui)* | `AppTextField` + kort med en `ItemRow` per `Suggestion` (matchningen färgmarkerad via `titleHighlight`) och valfri källrad; antalet läses upp; anroparen bestämmer vad ett val fyller i |
 | Etikett/pill | `InfoPill` *(android-ui)* | `AppTheme.shapes.pill`; `icon` före texten, `onClick` gör den till en knapp med 48 dp tryckyta |
-| Personchip | `PersonChip` | M3 filterchip + `PersonAvatar` |
+| Personchip | `PersonChip` | `AppFilterChip(leading)` *(android-ui)* + `PersonAvatar` |
 | Valchip | `AppFilterChip` *(android-ui)* | M3 filterchip |
 | Ett val bland några (form, enhet, kategori) | `ChoiceChips` *(android-ui)* | `ChipRow` + en `AppFilterChip` per alternativ |
 | Exempel att börja från (snabbval, tom lista) | `ExampleChips` *(android-ui)* | `ChipRow` + `AppFilterChip` med plus; det valda med bock; varje chip väljer sitt eget objekt (`label` ger texten) |
@@ -107,7 +107,9 @@ android-ui `ui-testing` (`runListScreenContract`, `runEditScreenContract`, `runD
 | Svep-arkivera, Ångra, "Visa arkiverade" i en lista | `ArchiveActions(scope, AppErrors, …)` + `ArchiveEvent` *(android-ui)*, `visible(källa, Archivable::archived)` (en per list-ViewModel, exponerad som `archive`); skärmen skickar `archive.collectAsListArchive()` till `EntityListScreen`. Ångra för något annat än arkivering (t.ex. rader som just lagts till, PAK-7) erbjuds med `offerUndo(request) { … }` – samma snackbar |
 | Detaljtillstånd | `Flow<T?>.asDetailUiState(AppErrors, retry)` → `DetailUiState<T>`, och `DetailLoader(…, AppErrors)` (med "Försök igen") för en detaljskärms ViewModel *(android-ui, `ui-common`)* |
 | ViewModel med nyckel | Hilt assisted injection: `@HiltViewModel(assistedFactory = …)` + `hiltViewModel<VM, VM.Factory> { it.create(key.…) }` i `appEntries` (ARKITEKTUR → Verifierade API:er) |
-| Datum i UI | `DateFormat` i `ui/common/` ("lör 19 dec 2026", millis för datumväljaren) |
+| Datum i UI | `DateFormat` *(android-ui, `ui-common`)* ("lör 19 dec 2026", millis för datumväljaren) |
+| Skrivfel utan ram (detalj, packlistans paneler) | `WriteFailures(viewModelScope, AppErrors)` *(android-ui, `ui-common`)* – `write { … }`, `report`, `clear` |
+| Delade flöden i en ViewModel (`stateIn`) | `screenSharing(forgetWhenStopped = false)` *(android-ui, `ui-common`)* |
 | Visa först efter en fördröjning (indikatorer som inte ska blinka) | `Flow<Boolean>.shownAfter(delay)` *(android-ui, `ui-common`)* |
 | Navigation | `AppKey`, `AppBackStack`, `AppNavHost`, `Transitions` i `navigation/` |
 | Feltyp | `DataError` (`Offline`, `PermissionDenied`, `Cancelled`, `UpdateRequired`, `SignInRejected`, `NoHousehold`, `NotFound`, `Unknown`) i `data/common/` |

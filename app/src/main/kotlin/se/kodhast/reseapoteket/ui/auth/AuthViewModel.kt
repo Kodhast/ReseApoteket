@@ -26,6 +26,7 @@ import se.kodhast.reseapoteket.data.common.HouseholdVersion
 import se.kodhast.reseapoteket.data.common.dataError
 import se.kodhast.reseapoteket.data.household.HouseholdSession
 import se.kodhast.reseapoteket.domain.EnsureHouseholdUseCase
+import se.kodhast.ui.common.screenSharing
 
 /** Vad appen visar: inloggning, "Uppdatera appen" eller innehållet (AUTH-1, HUS-3). */
 enum class AuthGate { Loading, SignedOut, NeedsHousehold, UpdateRequired, Ready }
@@ -67,7 +68,7 @@ class AuthViewModel @Inject constructor(
     val state: StateFlow<AuthUiState> =
         combine(gate, signingIn, ensuring, error, user) { gate, signingIn, ensuring, error, user ->
             AuthUiState(gate, busy = signingIn || ensuring, error = error, account = user)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), AuthUiState())
+        }.stateIn(viewModelScope, screenSharing(forgetWhenStopped = false), AuthUiState())
 
     init {
         // Profilen (fotot) hämtas om när appen är ansluten, en gång per inloggad användare (AUTH-5).
@@ -141,8 +142,6 @@ class AuthViewModel @Inject constructor(
     }
 
     private companion object {
-        const val STOP_TIMEOUT_MS = 5_000L
-
         fun gateOf(user: AuthUser?, householdId: String?, version: HouseholdVersion?): AuthGate = when {
             user == null -> AuthGate.SignedOut
 

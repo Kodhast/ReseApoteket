@@ -1,17 +1,13 @@
 package se.kodhast.reseapoteket.ui.components
 
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import se.kodhast.ui.components.AppFilterChip
-import se.kodhast.ui.components.chipColors
-import se.kodhast.ui.theme.AppTheme
 
-/** Personchip ("Vem åker med?"): avatar och namn, samma färger som [AppFilterChip]. */
+/** Personchip ("Vem åker med?"): ett [AppFilterChip] med personens avatar före namnet, också när det är valt. */
 @Composable
 fun PersonChip(
     name: String,
@@ -21,14 +17,12 @@ fun PersonChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    FilterChip(
+    AppFilterChip(
+        label = name,
         selected = selected,
         onClick = onClick,
-        label = { Text(name, style = AppTheme.typography.pill) },
         modifier = modifier.heightIn(min = PERSON_CHIP_HEIGHT),
-        leadingIcon = { PersonAvatar(emoji, color, size = AvatarSize.Small) },
-        shape = AppTheme.shapes.pill,
-        colors = chipColors()
+        leading = { PersonAvatar(emoji, color, size = AvatarSize.Small) }
     )
 }
 

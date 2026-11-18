@@ -65,6 +65,7 @@ import se.kodhast.ui.common.ListLoader
 import se.kodhast.ui.common.ListUiState
 import se.kodhast.ui.common.UiError
 import se.kodhast.ui.common.Validator
+import se.kodhast.ui.common.WriteFailures
 import se.kodhast.ui.common.uiErrorOrNull
 import se.kodhast.ui.components.ArchiveActions
 import se.kodhast.ui.components.UndoRequest
@@ -290,10 +291,10 @@ class PackingListViewModel @AssistedInject constructor(
      */
     val celebrate: StateFlow<Boolean> = _celebrate.asStateFlow()
 
-    private val _sheetError = MutableStateFlow<UiError?>(null)
+    private val sheetFailures = WriteFailures(viewModelScope, AppErrors)
 
     /** Ett skrivfel medan en panel är öppen – visas i panelen, som ligger över listans meddelanden. */
-    val sheetError: StateFlow<UiError?> = _sheetError.asStateFlow()
+    val sheetError: StateFlow<UiError?> = sheetFailures.failure
 
     /** Användaren har ändrat något sedan listan öppnades – först då följer statusen listan (PAK-5). */
     private var changedHere = false
@@ -397,17 +398,17 @@ class PackingListViewModel @AssistedInject constructor(
 
     /** Öppnar eller stänger en panel; ett fel från förra panelen följer inte med. */
     private fun openSheet(change: () -> Unit) {
-        _sheetError.value = null
+        sheetFailures.clear()
         change()
     }
 
     private fun editNew(vararg fields: String, change: (PackingItem) -> PackingItem) {
-        _sheetError.value = null
+        sheetFailures.clear()
         addEditor.update(*fields, transform = change)
     }
 
     private fun addSave() {
-        _sheetError.value = null
+        sheetFailures.clear()
         changedHere = true
         viewModelScope.launch {
             addEditor.save { item -> collection.upsertPlaced(item.copy(name = item.name.trim()), isNew = true) { copy(sortOrder = it) } }
@@ -429,7 +430,7 @@ class PackingListViewModel @AssistedInject constructor(
     private fun addListSave() {
         val lines = addList.value.toAdd
         if (lines.isEmpty() || listSaving.value) return
-        _sheetError.value = null
+        sheetFailures.clear()
         listSaving.value = true
         changedHere = true
         viewModelScope.launch {
@@ -458,7 +459,7 @@ class PackingListViewModel @AssistedInject constructor(
 
     private fun editItem(change: (PackingItem) -> PackingItem) {
         val item = editing.value?.item ?: return
-        _sheetError.value = null
+        sheetFailures.clear()
         write { collection.update(change(item), QUANTITY_FIELDS) }
     }
 
@@ -491,7 +492,7 @@ class PackingListViewModel @AssistedInject constructor(
     }
 
     private fun report(error: UiError) {
-        if (editing.value != null || _adding.value) _sheetError.value = error else hiding.report(error)
+        if (editing.value != null || _adding.value) sheetFailures.report(error) else hiding.report(error)
     }
 
     private fun newManualItem(section: PackingSection = PackingSection.FAMILY) = PackingItem(

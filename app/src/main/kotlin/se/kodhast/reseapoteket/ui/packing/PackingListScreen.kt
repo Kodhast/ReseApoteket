@@ -23,8 +23,8 @@ import se.kodhast.reseapoteket.core.model.PackingItem
 import se.kodhast.reseapoteket.core.model.PackingSection
 import se.kodhast.reseapoteket.ui.components.AvatarStack
 import se.kodhast.reseapoteket.ui.components.LocalTravelDayMorning
+import se.kodhast.reseapoteket.ui.components.PackedProgress
 import se.kodhast.reseapoteket.ui.components.StackedAvatar
-import se.kodhast.reseapoteket.ui.components.SuitcaseProgress
 import se.kodhast.reseapoteket.ui.theme.AppColors
 import se.kodhast.reseapoteket.ui.theme.Blue
 import se.kodhast.reseapoteket.ui.theme.Green
@@ -159,7 +159,7 @@ fun PackingListContent(
             },
             header = header?.let {
                 {
-                    AppCard(tone = if (progress.isComplete) Tone.Green else null) { SuitcaseProgress(progress.packed, progress.total) }
+                    AppCard { PackedProgress(progress.packed, progress.total) }
                 }
             },
             subgroup = { row ->

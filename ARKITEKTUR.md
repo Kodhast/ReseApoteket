@@ -84,7 +84,7 @@ körs i PR:er som rör koden den testar, och vid release bara för kod som inte 
 
 **4. Material 3 Expressive.**
 Expressive-tema och -rörelse (fjädrande), och Expressive-komponenter bakom våra delade
-komponenter: vågig progress för packningen, split-knapp för "Lägg till", flytande
+komponenter: split-knapp för "Lägg till", flytande
 verktygsrad som toppnivånavigering, formmorfande kryss, flexibel toppbar. Typsnitt Nunito
 (rubriker) och Nunito Sans (brödtext). Exakta API-namn och versioner verifieras i #11 och
 skrivs in under [Verifierade API:er](#verifierade-apier); experimentella opt-ins hålls i

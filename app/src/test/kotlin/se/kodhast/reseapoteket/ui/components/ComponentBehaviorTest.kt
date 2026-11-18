@@ -126,9 +126,9 @@ class ComponentBehaviorTest {
     }
 
     @Test
-    fun `allt packat visar Allt packat i stället för progressen (PAK-5)`() {
-        show { SuitcaseProgress(14, 14) }
-        rule.onNodeWithContentDescription("Allt packat! 🧳 Trevlig resa · 14 av 14").assertIsDisplayed()
+    fun `allt packat läses som allt packat (PAK-5)`() {
+        show { PackedProgress(14, 14) }
+        rule.onNodeWithContentDescription("14 av 14 · allt packat").assertIsDisplayed()
     }
 
     @Test
@@ -341,7 +341,7 @@ class ComponentBehaviorTest {
 
     @Test
     fun `packprogressen läses som en mening`() {
-        show { SuitcaseProgress(9, 14) }
+        show { PackedProgress(9, 14) }
         rule.onNodeWithContentDescription("9 av 14 packat").assertIsDisplayed()
     }
 

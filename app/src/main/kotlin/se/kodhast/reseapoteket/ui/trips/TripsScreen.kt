@@ -33,8 +33,8 @@ import se.kodhast.reseapoteket.data.repository.PackingRepository
 import se.kodhast.reseapoteket.data.repository.PersonRepository
 import se.kodhast.reseapoteket.data.repository.TripRepository
 import se.kodhast.reseapoteket.ui.components.AvatarStack
+import se.kodhast.reseapoteket.ui.components.PackedProgress
 import se.kodhast.reseapoteket.ui.components.StackedAvatar
-import se.kodhast.reseapoteket.ui.components.SuitcaseProgress
 import se.kodhast.reseapoteket.ui.theme.AppColors
 import se.kodhast.reseapoteket.ui.theme.Blue
 import se.kodhast.reseapoteket.ui.theme.Green
@@ -157,7 +157,7 @@ private fun TripRow(item: TripListItem, modifier: Modifier = Modifier, onOpen: (
         below = {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 AvatarStack(item.travellers.map { StackedAvatar(it.emoji, AppColors.person(it.colorHex), it.name) })
-                if (item.progress.total > 0) SuitcaseProgress(item.progress.packed, item.progress.total, compact = true)
+                if (item.progress.total > 0) PackedProgress(item.progress.packed, item.progress.total, compact = true)
             }
         }
     )

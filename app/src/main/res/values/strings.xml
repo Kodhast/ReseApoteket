@@ -37,9 +37,8 @@
     <string name="list_error_title">Kunde inte hämta listan</string>
     <string name="discard_title">Släng ändringar?</string>
     <string name="keep_editing">Fortsätt redigera</string>
-    <string name="packed_of_format">av %d packat</string>
-    <string name="packed_all_title">Allt packat! 🧳</string>
-    <string name="packed_all_message">Trevlig resa · %1$d av %1$d</string>
+    <string name="packed_progress">%1$d av %2$d packat</string>
+    <string name="packed_all">%1$d av %1$d · allt packat</string>
     <string name="unknown_variant">Det här kan inte visas i den här versionen. Uppdatera appen för att ändra.</string>
 
     <!-- Dosering (DoseScheduleRow) -->

@@ -66,7 +66,7 @@ Krav NFR-11 (TalkBack, stor text, kontrast ≥ 4,5:1, `ThemeContrastTest`).
 - Små ikoner får tryckyta via `AppIconButton`.
 - Text i `sp` via `AppTypography`; `ComponentGallery` har en Roborazzi-skärmdump med `fontScale = 1.3`.
 - `ItemRow` och `CheckRow` slås ihop med `mergeDescendants`. `CheckRow`: `Role.Checkbox` + `stateDescription` "packad"/"inte packad", t.ex. "Enalapril 10 mg, 18 tabletter, inte packad".
-- `QuantityStepper`: "Minska"/"Öka" + värde och enhet. `SuitcaseProgress`: "9 av 14 packat". `UndoSnackbar`: ångra nåbar och annonserad.
+- `QuantityStepper`: "Minska"/"Öka" + värde och enhet. `PackedProgress`: "9 av 14 packat", allt packat "14 av 14 · allt packat". `UndoSnackbar`: ångra nåbar och annonserad.
 - Sektionsfärger (Medicin/Kosttillskott/Övrigt) och personfärger kompletteras alltid med text eller ikon. Dämpad text på vit yta minst `#6B5A50`.
 - Testexempel: `onNode(hasStateDescription("inte packad"))`.
 

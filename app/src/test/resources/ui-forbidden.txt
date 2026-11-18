@@ -42,7 +42,7 @@
 \b(Horizontal|Vertical)?Divider\s*[({]	AppDivider
 \bAlertDialog\s*[({]	ConfirmDialog
 \bModalBottomSheet\s*[({]	AppBottomSheet
-\b[A-Za-z]*ProgressIndicator\s*[({]	SuitcaseProgress / AppLoading
+\b[A-Za-z]*ProgressIndicator\s*[({]	AppProgress (PackedProgress) / AppLoading
 \bSnackbar(Host)?\s*[({]	AppSnackbarHost / UndoSnackbar
 \bLazyColumn\s*[({]	EntityListScreen
 \bLazy(Row|VerticalGrid|HorizontalGrid|VerticalStaggeredGrid)\s*[({]	EntityListScreen (gruppering, columns) / ChipRow

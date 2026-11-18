@@ -68,7 +68,7 @@ import se.kodhast.ui.theme.Tone
 /**
  * Skärmdumpar (ljust + mörkt) av katalogens komponenter i vila – en bild per komponent med
  * dess viktigaste lägen. Popup-komponenter och ramar fotograferas i sina egna tester, och
- * `AppLoading` och `SuitcaseProgress` (oändliga animationer) i [ComponentsTest] – se `captureLightAndDark`.
+ * `AppLoading` (oändlig animation) i [ComponentsTest] – se `captureLightAndDark`.
  */
 @RunWith(RobolectricTestRunner::class)
 class CatalogScreenshotTest {

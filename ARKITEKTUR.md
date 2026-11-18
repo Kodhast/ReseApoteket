@@ -239,7 +239,7 @@ households/{hid}/persons/{pid}/regimens/{rid}
               dosesPerDay?, unitsPerDose?, weekdays?: [1..7], intervalDays?, asNeededQuantity? },
   notes, active, travelDay, travelDayTime? ("HH:mm"), sortOrder, archived
 households/{hid}/familyItems/{fid}
-  name, category: CREAM|PLASTER|TOOL|OTHER, unit,
+  name, category: CREAM|HYGIENE|OTHER (PLASTER, TOOL och okänt läses som OTHER), unit,
   rule: { type: FIXED|PER_TRAVELLER|PER_DAYS, quantity, perDays? },
   notes, active, travelDay, travelDayTime? ("HH:mm"), sortOrder, archived
 households/{hid}/trips/{tid}

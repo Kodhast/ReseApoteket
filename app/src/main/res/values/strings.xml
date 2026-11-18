@@ -250,15 +250,14 @@
     <string name="family_item_category">Kategori</string>
     <string name="family_item_quantity">Mängd</string>
     <string name="category_cream">Krämer &amp; salvor</string>
-    <string name="category_plaster">Plåster &amp; förband</string>
-    <string name="category_tool">Verktyg</string>
+    <string name="category_hygiene">Hygien</string>
     <string name="category_other">Övrigt</string>
     <string name="rule_min_one">Minst 1</string>
     <string name="example_sunscreen">Solkräm</string>
-    <string name="example_plaster">Plåster</string>
+    <string name="example_toothpaste">Tandkräm</string>
     <string name="example_thermometer">Febertermometer</string>
     <string name="family_items_empty_title">Inget gemensamt än</string>
-    <string name="family_items_empty_message">Solkräm, plåster, febertermometer – saker hela familjen delar. Tryck på ett exempel, eller på plus och välj Ny gemensam sak.</string>
+    <string name="family_items_empty_message">Solkräm, tandkräm, febertermometer – saker hela familjen delar. Tryck på ett exempel, eller på plus och välj Ny gemensam sak.</string>
     <!-- Packlistan (PAK-1–5) -->
     <string name="packing_medicines">Mediciner</string>
     <string name="packing_supplements">Kosttillskott</string>
@@ -279,7 +278,7 @@
     <string name="packing_suggestion">Förslag</string>
     <string name="packing_reset_format">Återställ till förslag (%d)</string>
     <string name="packing_done">Klar</string>
-    <string name="packing_add_to_format">Lägg till i %s</string>
+    <string name="add_to_format">Lägg till i %s</string>
     <string name="packing_what">Vad?</string>
     <string name="packing_who">Vem?</string>
     <string name="packing_how_many">Hur många?</string>

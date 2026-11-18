@@ -95,13 +95,15 @@ sealed interface FamilyItemEditEvent {
 
 /**
  * Skapa ([itemId] = `null`) eller redigera en familjeartikel (FAM-2–4). En ny kan börja från ett
- * [example] med namnet [exampleName] (FAM-4); annars som "1 st" i Övrigt.
+ * [example] med namnet [exampleName] (FAM-4); annars som "1 st" i [category] (kategorins plus, FAM-1)
+ * eller Övrigt.
  */
 @HiltViewModel(assistedFactory = FamilyItemEditViewModel.Factory::class)
 class FamilyItemEditViewModel @AssistedInject constructor(
     @Assisted("itemId") private val itemId: String?,
     @Assisted example: FamilyItemExample?,
     @Assisted("exampleName") exampleName: String,
+    @Assisted category: FamilyItemCategory?,
     private val items: FamilyItemRepository,
     persons: PersonRepository,
     households: HouseholdRepository
@@ -109,13 +111,14 @@ class FamilyItemEditViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(@Assisted("itemId") itemId: String?, example: FamilyItemExample?, @Assisted("exampleName") exampleName: String): FamilyItemEditViewModel
+        fun create(@Assisted("itemId") itemId: String?, example: FamilyItemExample?, @Assisted("exampleName") exampleName: String, category: FamilyItemCategory?): FamilyItemEditViewModel
     }
 
     val isNew: Boolean = itemId == null
 
     val editor: EditorState<FamilyItem> =
-        EditorState(FamilyItem(itemId ?: items.newId(), rule = QuantityRule.Fixed()), FamilyItemValidator, AppErrors, loading = !isNew)
+        // Kategorin från plus är formulärets start, ingen ändring: bakåt utan att skriva något frågar inget.
+        EditorState(FamilyItem(itemId ?: items.newId(), category = category ?: FamilyItemCategory.OTHER, rule = QuantityRule.Fixed()), FamilyItemValidator, AppErrors, loading = !isNew)
     val state = editor.state
     private val loader = EditorLoader(editor, viewModelScope, itemId?.let { id -> { items.get(id) } })
 

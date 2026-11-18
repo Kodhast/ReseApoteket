@@ -21,4 +21,8 @@ data class FamilyItem(
     Sortable,
     Archivable
 
-enum class FamilyItemCategory { CREAM, PLASTER, TOOL, OTHER }
+/**
+ * Kategorin i Gemensamt (FAM-1), fast i koden. Lagras som namnet; de borttagna `PLASTER` och `TOOL`
+ * (Plåster & förband, Verktyg) och okända värden läses som [OTHER] (`FamilyItemCodec`).
+ */
+enum class FamilyItemCategory { CREAM, HYGIENE, OTHER }

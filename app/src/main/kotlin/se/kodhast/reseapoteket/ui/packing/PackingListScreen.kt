@@ -203,7 +203,7 @@ private fun packingGroups(progress: Map<PackingGroup, PackingProgress>, collapse
     fun fold(group: PackingGroup?) = GroupFold(group !in collapsed) { event(PackingListEvent.ToggleGroup(group)) }
 
     @Composable
-    fun add(section: PackingSection) = GroupAction(R.drawable.ic_add, stringResource(R.string.packing_add_to_format, sectionName(section))) { event(PackingListEvent.Add(section)) }
+    fun add(section: PackingSection) = GroupAction(R.drawable.ic_add, stringResource(R.string.add_to_format, sectionName(section))) { event(PackingListEvent.Add(section)) }
     val medicines = ListGroup(stringResource(R.string.packing_medicines), R.drawable.ic_medication, Tone.Primary, count(PackingGroup.MEDICINE), action = add(PackingSection.MEDICINE), fold = fold(PackingGroup.MEDICINE), emptyText = emptyText)
     val supplements = ListGroup(stringResource(R.string.packing_supplements), R.drawable.ic_eco, Tone.Green, count(PackingGroup.SUPPLEMENT), action = add(PackingSection.SUPPLEMENT), fold = fold(PackingGroup.SUPPLEMENT), emptyText = emptyText)
     val other = ListGroup(stringResource(R.string.packing_other), R.drawable.ic_box, Tone.Blue, count(PackingGroup.FAMILY), columns = 2, action = add(PackingSection.FAMILY), fold = fold(PackingGroup.FAMILY), emptyText = emptyText)

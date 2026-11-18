@@ -78,7 +78,7 @@ internal fun AddItemSheet(
     val section = state.value.section
     val mode = if (section == PackingSection.FAMILY) list.mode else AddMode.ONE
     AppBottomSheet(
-        stringResource(R.string.packing_add_to_format, sectionName(section)),
+        stringResource(R.string.add_to_format, sectionName(section)),
         onDismiss = { onEvent(PackingListEvent.CloseAdd) },
         error = error,
         footer = {

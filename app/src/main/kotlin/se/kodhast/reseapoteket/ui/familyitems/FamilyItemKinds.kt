@@ -12,8 +12,7 @@ import se.kodhast.reseapoteket.core.model.QuantityRule
 @StringRes
 fun FamilyItemCategory.label(): Int = when (this) {
     FamilyItemCategory.CREAM -> R.string.category_cream
-    FamilyItemCategory.PLASTER -> R.string.category_plaster
-    FamilyItemCategory.TOOL -> R.string.category_tool
+    FamilyItemCategory.HYGIENE -> R.string.category_hygiene
     FamilyItemCategory.OTHER -> R.string.category_other
 }
 
@@ -21,8 +20,7 @@ fun FamilyItemCategory.label(): Int = when (this) {
 @DrawableRes
 fun FamilyItemCategory.icon(): Int = when (this) {
     FamilyItemCategory.CREAM -> R.drawable.ic_cream
-    FamilyItemCategory.PLASTER -> R.drawable.ic_plaster
-    FamilyItemCategory.TOOL -> R.drawable.ic_thermometer
+    FamilyItemCategory.HYGIENE -> R.drawable.ic_hygiene
     FamilyItemCategory.OTHER -> R.drawable.ic_box
 }
 
@@ -37,8 +35,8 @@ enum class FamilyItemExample(
     val rule: QuantityRule
 ) {
     SUNSCREEN(R.string.example_sunscreen, FamilyItemCategory.CREAM, ItemUnit.TUB, QuantityRule.PerDays(quantity = 1, perDays = 7)),
-    PLASTER(R.string.example_plaster, FamilyItemCategory.PLASTER, ItemUnit.ST, QuantityRule.PerTraveller(quantity = 10)),
-    THERMOMETER(R.string.example_thermometer, FamilyItemCategory.TOOL, ItemUnit.ST, QuantityRule.Fixed(quantity = 1));
+    TOOTHPASTE(R.string.example_toothpaste, FamilyItemCategory.HYGIENE, ItemUnit.TUB, QuantityRule.Fixed(quantity = 1)),
+    THERMOMETER(R.string.example_thermometer, FamilyItemCategory.OTHER, ItemUnit.ST, QuantityRule.Fixed(quantity = 1));
 
     fun item(id: String, name: String): FamilyItem = FamilyItem(id, name, category, unit, rule)
 }

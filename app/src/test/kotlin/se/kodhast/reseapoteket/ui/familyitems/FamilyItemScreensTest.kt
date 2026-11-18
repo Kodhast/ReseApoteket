@@ -1,7 +1,9 @@
 package se.kodhast.reseapoteket.ui.familyitems
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -43,8 +45,8 @@ class FamilyItemScreensTest {
         sunscreen,
         FamilyItem("f2", "Hydrokortison 1 %", FamilyItemCategory.CREAM, ItemUnit.TUB, QuantityRule.Fixed(1)),
         FamilyItem("f3", "Myggmedel", FamilyItemCategory.CREAM, ItemUnit.ST, QuantityRule.PerTraveller(1)),
-        FamilyItem("f4", "Plåster", FamilyItemCategory.PLASTER, ItemUnit.ST, QuantityRule.PerTraveller(10)),
-        FamilyItem("f5", "Febertermometer", FamilyItemCategory.TOOL, ItemUnit.ST, QuantityRule.Fixed(1)),
+        FamilyItem("f4", "Tops", FamilyItemCategory.HYGIENE, ItemUnit.ST, QuantityRule.PerTraveller(10)),
+        FamilyItem("f5", "Febertermometer", FamilyItemCategory.OTHER, ItemUnit.ST, QuantityRule.Fixed(1)),
         FamilyItem("f6", "Alvedon barn 250 mg", FamilyItemCategory.OTHER, ItemUnit.ST, QuantityRule.Fixed(10), active = false)
     )
 
@@ -78,12 +80,35 @@ class FamilyItemScreensTest {
     }
 
     @Test
+    fun `plus i varje kategori, också hopfälld och tom, och rubriken fäller ihop (FAM-1)`() {
+        val added = mutableListOf<FamilyItemCategory>()
+        val events = mutableListOf<FamilyItemsEvent>()
+        val creams = list.filter { it.category == FamilyItemCategory.CREAM }
+        rule.setContent {
+            ReseApoteketTheme {
+                FamilyItemsContent(ListUiState.Content(creams.toImmutableList()), { events += it }, {}, onAdd = { added += it }, collapsed = setOf(FamilyItemCategory.CREAM))
+            }
+        }
+        rule.onNodeWithText("Solkräm SPF 50").assertDoesNotExist()
+        rule.onNodeWithText("3").assertIsDisplayed()
+        rule.onAllNodesWithText("Inget här än").assertCountEquals(2)
+        rule.onNodeWithContentDescription("Lägg till i Krämer & salvor").performClick()
+        rule.onNodeWithContentDescription("Lägg till i Hygien").performClick()
+        rule.onNodeWithContentDescription("Lägg till i Övrigt").performClick()
+        rule.onNodeWithText("Hygien").performClick()
+        assertEquals(listOf(FamilyItemCategory.CREAM, FamilyItemCategory.HYGIENE, FamilyItemCategory.OTHER), added)
+        assertEquals(listOf<FamilyItemsEvent>(FamilyItemsEvent.ToggleCategory(FamilyItemCategory.HYGIENE)), events)
+    }
+
+    @Test
     fun `exemplen i den tomma listan öppnar ett ifyllt formulär (FAM-4)`() {
         val opened = mutableListOf<FamilyItemExample>()
         rule.setContent { ReseApoteketTheme { FamilyItemsContent(ListUiState.Empty, {}, {}, onAddExample = { opened += it }) } }
         rule.onNodeWithText("Solkräm").performClick()
+        rule.onNodeWithText("Tandkräm").performClick()
         rule.onNodeWithText("Febertermometer").performClick()
-        assertEquals(listOf(FamilyItemExample.SUNSCREEN, FamilyItemExample.THERMOMETER), opened)
+        assertEquals(listOf(FamilyItemExample.SUNSCREEN, FamilyItemExample.TOOTHPASTE, FamilyItemExample.THERMOMETER), opened)
+        rule.onNodeWithText("Krämer & salvor").assertDoesNotExist()
     }
 
     @Test
@@ -126,5 +151,21 @@ class FamilyItemScreensTest {
     @Test
     fun `skärmdumpar - listan`() {
         captureLightAndDark("FamilyItemsScreen_innehall") { FamilyItemsContent(ListUiState.Content(list.toImmutableList()), {}, {}) }
+        captureLightAndDark("FamilyItemsScreen_hopfalld") {
+            FamilyItemsContent(ListUiState.Content(list.toImmutableList()), {}, {}, collapsed = setOf(FamilyItemCategory.CREAM, FamilyItemCategory.OTHER))
+        }
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h900dp-xxhdpi")
+    fun `skärmdump - listan på 360 dp`() {
+        captureLightAndDark("FamilyItemsScreen_w360") { FamilyItemsContent(ListUiState.Content(list.toImmutableList()), {}, {}) }
+    }
+
+    @Test
+    @Config(qualifiers = "w390dp-h1400dp-xxhdpi")
+    fun `skärmdump - ny sak i Hygien`() {
+        val new = FamilyItem("ny", category = FamilyItemCategory.HYGIENE, rule = QuantityRule.Fixed(1))
+        captureLightAndDark("FamilyItemEditScreen_ny_hygien") { FamilyItemEditContent(true, EditorUiState(new), preview(new), EditorEvents.None, {}, {}) }
     }
 }

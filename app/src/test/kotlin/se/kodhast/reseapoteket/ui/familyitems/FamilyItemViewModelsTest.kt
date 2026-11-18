@@ -22,6 +22,7 @@ import se.kodhast.reseapoteket.data.repository.DefaultFamilyItemRepository
 import se.kodhast.reseapoteket.data.repository.DefaultPersonRepository
 import se.kodhast.reseapoteket.testing.MainDispatcherRule
 import se.kodhast.reseapoteket.testing.StubHouseholds
+import se.kodhast.reseapoteket.ui.common.ListSession
 import se.kodhast.reseapoteket.ui.common.TravelDayChange
 import se.kodhast.ui.common.ListUiState
 import se.kodhast.ui.components.ArchiveEvent
@@ -38,7 +39,9 @@ class FamilyItemViewModelsTest {
     private val persons = DefaultPersonRepository(collections)
     private val household = MutableStateFlow<Household?>(Household("h1", marginDays = 2))
 
-    private fun editor(itemId: String? = null, example: FamilyItemExample? = null, name: String = "") = FamilyItemEditViewModel(itemId, example, name, items, persons, StubHouseholds(household))
+    private val session = ListSession()
+
+    private fun editor(itemId: String? = null, example: FamilyItemExample? = null, name: String = "", category: FamilyItemCategory? = null) = FamilyItemEditViewModel(itemId, example, name, category, items, persons, StubHouseholds(household))
 
     private val sunscreen = FamilyItem("f1", "Solkräm", FamilyItemCategory.CREAM, ItemUnit.TUB, QuantityRule.PerDays(1, 7), "Faktor 50", sortOrder = 2)
 
@@ -46,22 +49,22 @@ class FamilyItemViewModelsTest {
 
     @Test
     fun `listan grupperas i kategoriernas ordning, och arkiverade visas sist i sin kategori (FAM-1)`() = runTest {
-        items.upsert(FamilyItem("t", "Febertermometer", FamilyItemCategory.TOOL))
-        items.upsert(FamilyItem("p", "Plåster", FamilyItemCategory.PLASTER))
+        items.upsert(FamilyItem("t", "Febertermometer", FamilyItemCategory.OTHER))
+        items.upsert(FamilyItem("p", "Tandkräm", FamilyItemCategory.HYGIENE))
         items.upsert(sunscreen)
         items.upsert(FamilyItem("h", "Hydrokortison", FamilyItemCategory.CREAM, archived = true))
-        val vm = FamilyItemsViewModel(items)
+        val vm = FamilyItemsViewModel(items, session)
         vm.state.test {
-            assertEquals(listOf("Solkräm", "Plåster", "Febertermometer"), expectMostRecentItem().names())
+            assertEquals(listOf("Solkräm", "Tandkräm", "Febertermometer"), expectMostRecentItem().names())
             vm.archive.onEvent(ArchiveEvent.ToggleArchived)
-            assertEquals(listOf("Solkräm", "Hydrokortison", "Plåster", "Febertermometer"), expectMostRecentItem().names())
+            assertEquals(listOf("Solkräm", "Hydrokortison", "Tandkräm", "Febertermometer"), expectMostRecentItem().names())
         }
     }
 
     @Test
     fun `svep arkiverar och Ångra återställer (FAM-2)`() = runTest {
         items.upsert(sunscreen)
-        val vm = FamilyItemsViewModel(items)
+        val vm = FamilyItemsViewModel(items, session)
         vm.state.test {
             vm.archive.onEvent(ArchiveEvent.Archive("f1", "Solkräm"))
             assertEquals(ListUiState.Empty, expectMostRecentItem())
@@ -87,6 +90,33 @@ class FamilyItemViewModelsTest {
         }
         val saved = items.getAll().getOrThrow().single { it.id != "f1" }
         assertEquals(FamilyItem(saved.id, "Myggmedel", rule = QuantityRule.PerTraveller(1), notes = "Spray", sortOrder = 3), saved)
+    }
+
+    @Test
+    fun `plus i en kategori börjar i den kategorin utan att räknas som en ändring (FAM-1, FAM-2)`() = runTest {
+        val vm = editor(category = FamilyItemCategory.HYGIENE)
+        assertEquals(FamilyItemCategory.HYGIENE, vm.state.value.value.category)
+        assertFalse(vm.state.value.isDirty, "bakåt utan att skriva något frågar inget")
+        assertEquals(FamilyItemCategory.OTHER, editor().state.value.value.category, "flikradens plus: Övrigt som förut")
+    }
+
+    @Test
+    fun `exemplen har sina kategorier (FAM-4)`() {
+        assertEquals(
+            listOf(FamilyItemCategory.CREAM, FamilyItemCategory.HYGIENE, FamilyItemCategory.OTHER),
+            FamilyItemExample.entries.map { it.category }
+        )
+    }
+
+    @Test
+    fun `hopfällda kategorier står kvar under appsessionen och börjar om med en ny session (FAM-1)`() = runTest {
+        val first = FamilyItemsViewModel(items, session)
+        first.onEvent(FamilyItemsEvent.ToggleCategory(FamilyItemCategory.HYGIENE))
+        assertEquals(setOf(FamilyItemCategory.HYGIENE), FamilyItemsViewModel(items, session).collapsed.value)
+        first.onEvent(FamilyItemsEvent.ToggleCategory(FamilyItemCategory.HYGIENE))
+        assertEquals(emptySet(), first.collapsed.value)
+        first.onEvent(FamilyItemsEvent.ToggleCategory(FamilyItemCategory.CREAM))
+        assertEquals(emptySet(), FamilyItemsViewModel(items, ListSession()).collapsed.value, "omstart – allt utfällt")
     }
 
     @Test

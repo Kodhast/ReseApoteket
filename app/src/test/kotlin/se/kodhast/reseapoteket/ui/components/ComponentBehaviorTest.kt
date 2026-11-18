@@ -68,7 +68,6 @@ import se.kodhast.ui.components.EmojiPicker
 import se.kodhast.ui.components.ExampleChips
 import se.kodhast.ui.components.InfoPill
 import se.kodhast.ui.components.ItemRow
-import se.kodhast.ui.components.LocalTopBarStatus
 import se.kodhast.ui.components.QuantityStepper
 import se.kodhast.ui.components.Suggestion
 import se.kodhast.ui.components.SuggestionField
@@ -354,25 +353,5 @@ class ComponentBehaviorTest {
         val actions = rule.onNodeWithText("Solkräm").fetchSemanticsNode().config[SemanticsActions.CustomActions]
         actions.single { it.label == "Arkivera" }.action()
         assertEquals(1, hidden)
-    }
-
-    @Test
-    fun `toppraden visar synkindikatorn bara när ändringar väntar (NFR-6)`() {
-        var indicator by mutableStateOf(SyncIndicator())
-        var clicks = 0
-        show {
-            CompositionLocalProvider(LocalTopBarStatus provides indicator.topBarStatus()) {
-                AppTopBar("Resor") { AppIconButton(R.drawable.ic_more_vert, "Fler val", {}) }
-            }
-        }
-        rule.onNodeWithContentDescription("Ändringar väntar på att synkas").assertDoesNotExist()
-        indicator = SyncIndicator(pending = true) { clicks++ }
-        rule.onNodeWithContentDescription("Ändringar väntar på att synkas")
-            .assert(SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite))
-            .performClick()
-        assertEquals(1, clicks)
-        rule.onNodeWithContentDescription("Fler val").assertIsDisplayed()
-        indicator = SyncIndicator()
-        rule.onNodeWithContentDescription("Ändringar väntar på att synkas").assertDoesNotExist()
     }
 }

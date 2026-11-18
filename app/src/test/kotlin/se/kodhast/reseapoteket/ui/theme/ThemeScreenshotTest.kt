@@ -12,16 +12,22 @@ import se.kodhast.reseapoteket.ui.auth.AuthGate
 import se.kodhast.reseapoteket.ui.auth.AuthUiState
 import se.kodhast.reseapoteket.ui.trips.TripsContent
 import se.kodhast.ui.common.ListUiState
+import se.kodhast.ui.components.AccountAvatar
 
 @RunWith(RobolectricTestRunner::class)
 class ThemeScreenshotTest {
 
-    /** Hela startskärmen efter inloggning: Resor utan resor, med verktygsraden (NAV-2). */
+    /** Hela startskärmen efter inloggning: Resor utan resor, med sidhuvudets avatar och verktygsraden med plusknappen (NAV-2, NAV-4–6). */
     @Test
     fun `startskärmen i ljust och mörkt tema`() {
         captureLightAndDark("AppRoot_start") {
             AppRootContent(AuthUiState(AuthGate.Ready), {}) {
-                AppNavHost(AppBackStack(), { key -> NavEntry(key) { TripsContent(ListUiState.Empty, {}, {}, {}) } })
+                AppNavHost(
+                    AppBackStack(),
+                    { key -> NavEntry(key) { TripsContent(ListUiState.Empty, {}, {}) } },
+                    onAdd = {},
+                    account = { AccountAvatar("Anna Berg", onClick = {}, online = true) }
+                )
             }
         }
     }

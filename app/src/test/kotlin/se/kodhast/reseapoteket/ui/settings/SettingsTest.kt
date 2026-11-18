@@ -44,6 +44,7 @@ import se.kodhast.reseapoteket.data.export.ExportFiles
 import se.kodhast.reseapoteket.data.export.HouseholdExport
 import se.kodhast.reseapoteket.testing.FakeDataStore
 import se.kodhast.reseapoteket.testing.FakeMedicines
+import se.kodhast.reseapoteket.testing.FakeProfilePhotoCache
 import se.kodhast.reseapoteket.testing.MainDispatcherRule
 import se.kodhast.reseapoteket.testing.StubHouseholds
 import se.kodhast.reseapoteket.testing.captureLightAndDark
@@ -66,6 +67,7 @@ class SettingsTest {
     private val anna = AuthUser("uid-anna", "Anna Svensson", "anna.svensson@gmail.com")
     private val households = StubHouseholds(MutableStateFlow(svensson))
     private val auth = FakeAuthRepository().apply { authState.value = anna }
+    private val photos = FakeProfilePhotoCache()
     private val settings = SettingsStore(FakeDataStore())
     private var exported: Result<String> = Result.success("""{"documents":[]}""")
     private val saved = mutableListOf<String>()
@@ -79,7 +81,7 @@ class SettingsTest {
         override suspend fun cleanUp(now: Instant, maxAge: Duration) = Unit
     }
 
-    private fun viewModel() = SettingsViewModel(settings, households, auth, export, files, FixedClock(), TimeZone.UTC, FakeMedicines())
+    private fun viewModel() = SettingsViewModel(settings, households, auth, export, files, FixedClock(), TimeZone.UTC, photos, FakeMedicines())
 
     private val state = SettingsUiState(svensson, anna, ThemeMode.System, moveCheckedLast = true)
 
@@ -126,7 +128,7 @@ class SettingsTest {
         val slow = object : HouseholdExport {
             override suspend fun export() = done.await()
         }
-        val vm = SettingsViewModel(settings, households, auth, slow, files, FixedClock(), TimeZone.UTC, FakeMedicines())
+        val vm = SettingsViewModel(settings, households, auth, slow, files, FixedClock(), TimeZone.UTC, photos, FakeMedicines())
         vm.state.test {
             awaitItem()
             vm.onEvent(SettingsEvent.Export)
@@ -155,6 +157,21 @@ class SettingsTest {
             assertNull(after.error)
         }
         assertEquals(2, auth.signOutCalls)
+        assertEquals(1, photos.clears, "fotot tas bort bara efter en lyckad utloggning (AUTH-4)")
+    }
+
+    @Test
+    fun `ett fel när fotot tas bort stoppar inte utloggningen (AUTH-5)`() = runTest {
+        photos.next = Result.failure(IllegalStateException("disk"))
+        val vm = viewModel()
+        vm.state.test {
+            awaitItem()
+            vm.onEvent(SettingsEvent.SignOut)
+            val after = expectMostRecentItem()
+            assertNull(after.account)
+            assertNull(after.error)
+        }
+        assertEquals(1, photos.clears)
     }
 
     @Test

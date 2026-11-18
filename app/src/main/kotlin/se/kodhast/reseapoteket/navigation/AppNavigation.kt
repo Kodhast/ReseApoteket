@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.entryProvider
 import se.kodhast.reseapoteket.BuildConfig
+import se.kodhast.reseapoteket.data.auth.AuthUser
 import se.kodhast.reseapoteket.ui.components.ComponentGallery
 import se.kodhast.reseapoteket.ui.familyitems.FamilyItemEditScreen
 import se.kodhast.reseapoteket.ui.familyitems.FamilyItemEditViewModel
@@ -35,11 +36,17 @@ import se.kodhast.reseapoteket.ui.sync.SyncViewModel
 import se.kodhast.reseapoteket.ui.trips.TripEditScreen
 import se.kodhast.reseapoteket.ui.trips.TripEditViewModel
 import se.kodhast.reseapoteket.ui.trips.TripsScreen
+import se.kodhast.ui.components.AccountAvatar
 
-/** Appens innehåll efter inloggning: fyra flikar med egna back stackar, synkläget (NFR-6) och resan en påminnelse öppnar. */
+/**
+ * Appens innehåll efter inloggning: tre flikar med egna back stackar, synkläget i sidhuvudets prickar (NFR-6), avataren
+ * med anslutningspluppen som öppnar Inställningar (NAV-5), plusknappens meny (NAV-6) och resan en påminnelse öppnar.
+ * [account] är den inloggade (namn, e-post och foto i avataren).
+ */
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
+    account: AuthUser? = null,
     openTrip: String? = null,
     onTripOpened: () -> Unit = {},
     syncViewModel: SyncViewModel = hiltViewModel()
@@ -50,7 +57,21 @@ fun AppNavigation(
     val tabOwner = checkNotNull(LocalViewModelStoreOwner.current) { "AppNavigation kräver en ViewModelStoreOwner" }
     val entries = remember(backStack, tabOwner) { appEntries(backStack, tabOwner) }
     OpenTripEffect(backStack, openTrip, onTripOpened)
-    AppNavHost(backStack, entries, modifier, onExit = { activity?.finish() }, sync = sync, onSyncEvent = syncViewModel::onEvent)
+    AppNavHost(
+        backStack,
+        entries,
+        modifier,
+        onExit = { activity?.finish() },
+        sync = sync,
+        onSyncEvent = syncViewModel::onEvent,
+        onAdd = { choice -> backStack.push(choice.key) },
+        // Samma lambda tills kontot eller anslutningen ändras, så att flikarnas sidhuvud inte ritas om i onödan.
+        account = remember(account, sync.online, backStack) {
+            {
+                AccountAvatar(account?.name ?: account?.email, onClick = { backStack.push(SettingsKey) }, online = sync.online, photoUrl = account?.photoUrl)
+            }
+        }
+    )
 }
 
 /** En påminnelse öppnar resans packlista i fliken Resor (PÅM-7); [onOpened] släpper begäran. */
@@ -74,25 +95,25 @@ fun OpenTripEffect(backStack: AppBackStack, tripId: String?, onOpened: () -> Uni
 fun appEntries(backStack: AppBackStack, tabOwner: ViewModelStoreOwner): (AppKey) -> NavEntry<AppKey> = // Varje nyckel har sin skärm (AppKey är förseglad); en saknad är ett programfel.
     entryProvider(fallback = { key -> error("Ingen skärm för $key") }) {
         entry<TripsKey> {
-            TripsScreen(onAdd = { backStack.push(TripEditKey()) }, onOpen = { backStack.push(PackingListKey(it)) }, viewModel = hiltViewModel(tabOwner))
+            TripsScreen(onOpen = { backStack.push(PackingListKey(it)) }, viewModel = hiltViewModel(tabOwner))
         }
         entry<PersonsKey> {
-            PersonsScreen(onAdd = { backStack.push(PersonEditKey()) }, onOpen = { backStack.push(PersonDetailKey(it)) }, viewModel = hiltViewModel(tabOwner))
+            PersonsScreen(onOpen = { backStack.push(PersonDetailKey(it)) }, viewModel = hiltViewModel(tabOwner))
         }
         entry<FamilyItemsKey> {
             FamilyItemsScreen(
-                onAdd = { backStack.push(FamilyItemEditKey()) },
                 onAddExample = { backStack.push(FamilyItemEditKey(example = it)) },
                 onOpen = { backStack.push(FamilyItemEditKey(it)) },
                 viewModel = hiltViewModel(tabOwner)
             )
         }
-        entry<SettingsKey> {
+        entry<SettingsKey> { key ->
             SettingsScreen(
+                onBack = { backStack.popIfTop(key) },
                 onEditHousehold = { backStack.push(HouseholdEditKey) },
                 onOpenGallery = if (BuildConfig.DEBUG) ({ backStack.push(ComponentGalleryKey) }) else null,
-                viewModel = hiltViewModel(tabOwner),
-                remindersViewModel = hiltViewModel(tabOwner)
+                viewModel = hiltViewModel(),
+                remindersViewModel = hiltViewModel()
             )
         }
         entry<PersonDetailKey> { key ->

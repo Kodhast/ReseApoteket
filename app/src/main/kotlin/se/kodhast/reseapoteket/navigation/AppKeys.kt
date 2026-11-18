@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import se.kodhast.reseapoteket.core.model.RegimenKind
 import se.kodhast.reseapoteket.ui.familyitems.FamilyItemExample
 
-/** Alla skärmar i appen (NAV-1–3). Sparas med kotlinx.serialization, så nycklarna överlever processdöd. */
+/** Alla skärmar i appen (NAV-1–6). Sparas med kotlinx.serialization, så nycklarna överlever processdöd. */
 @Serializable
 sealed interface AppKey : NavKey
 
@@ -21,9 +21,6 @@ data object PersonsKey : TopLevelKey
 
 @Serializable
 data object FamilyItemsKey : TopLevelKey
-
-@Serializable
-data object SettingsKey : TopLevelKey
 
 @Serializable
 data class PersonDetailKey(val personId: String) : AppKey
@@ -45,6 +42,10 @@ data class TripEditKey(val tripId: String? = null) : AppKey
 @Serializable
 data class PackingListKey(val tripId: String) : AppKey
 
+/** Inställningar – en underskärm som avataren i sidhuvudet öppnar (NAV-5). */
+@Serializable
+data object SettingsKey : AppKey
+
 /** Det aktiva hushållets namn – från Inställningar (SET-2). */
 @Serializable
 data object HouseholdEditKey : AppKey
@@ -54,4 +55,4 @@ data object HouseholdEditKey : AppKey
 data object ComponentGalleryKey : AppKey
 
 /** Flikarna i verktygsradens ordning; appen startar på den första (NAV-2). */
-val TOP_LEVEL: List<TopLevelKey> = listOf(TripsKey, PersonsKey, FamilyItemsKey, SettingsKey)
+val TOP_LEVEL: List<TopLevelKey> = listOf(TripsKey, PersonsKey, FamilyItemsKey)

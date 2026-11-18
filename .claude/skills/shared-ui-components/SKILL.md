@@ -40,8 +40,11 @@ komponent, komponentnamnet i backticks först i kolumn två.
 | Gruppetikett över kort | `GroupLabel` *(android-ui)* | versal liten text, läses som rubrik |
 | Formulärfält med etikett (val, väljare, dosering) | `LabeledGroup` *(android-ui)* | `GroupLabel` ovanför innehållet, valfri `helper` under och fältfel (`error`, `FieldError`) |
 | Fel under ett fält eller i en panel | `FieldError` *(android-ui)* | Felfärg, läses som fel; ett skrivfel i ett bottom sheet visas via `AppBottomSheet(error)` |
-| Skärmrubrik | `AppTopBar` *(android-ui)* | Expressive flexibel toppbar, `size`-parameter; före `actions` står appens synkindikator (`InfoPill` med moln, `SyncIndicator.topBarStatus()` satt som `LocalTopBarStatus`) när ändringar väntar (NFR-6) |
-| Toppnivånavigering | `AppFloatingToolbar` *(android-ui)* | Expressive flytande verktygsrad; `LocalBottomClearance` ger plats under den |
+| Flikens sidhuvud | `AppHeader` *(android-ui)* | sätts av `EntityListScreen` i flikens rot: appens ikon och namn (`LocalAppIdentity`), rubriken med Kodhästs prickar som hoppar när ändringar väntar (`LocalTopBarSyncing` från `AppNavHost`, NFR-6) och kontots avatar (`LocalTopBarAccount`, NAV-4) |
+| Skärmrubrik på undersida | `AppTopBar` *(android-ui)* | Expressive flexibel toppbar, `size`-parameter, bakåtpil med `onBack` (t.ex. Inställningar) |
+| Kontots avatar | `AccountAvatar` *(android-ui)* | profilfoto (`photoUrl`, Coil, cache på enheten) över initialerna, grön prick med `online` (`NetworkStatus`), öppnar Inställningar (NAV-5); utan `onClick` bara en bild (kontokortet, SET-4) |
+| Hopfällbart sektionskort | `AppCard` + `SectionFoldout` *(android-ui)* | rubriken (`SectionHeader`: ikonruta, titel, antal) växlar kortet; `trailing` = en tonad `AppIconButton` med plus som inte växlar (PER-4) |
+| Toppnivånavigering | `AppFloatingToolbar` *(android-ui)* | Expressive flytande verktygsrad; `LocalBottomClearance` ger plats under den; plusknappen är en `ToolbarAction` med meny (FAB-menyn, `AddChoice`, NAV-6) |
 | Textfält | `AppTextField` *(android-ui)* | M3 textfält med fel/hjälptext; flerradigt växer med texten upp till `maxLines` |
 | Textfält med förslag (läkemedelslistan, REC-6) | `SuggestionField` *(android-ui)* | `AppTextField` + kort med en `ItemRow` per `Suggestion` (matchningen färgmarkerad via `titleHighlight`) och valfri källrad; antalet läses upp; anroparen bestämmer vad ett val fyller i |
 | Etikett/pill | `InfoPill` *(android-ui)* | `AppTheme.shapes.pill`; `icon` före texten, `onClick` gör den till en knapp med 48 dp tryckyta |
@@ -123,7 +126,7 @@ android-ui `ui-testing` (`runListScreenContract`, `runEditScreenContract`, `runD
 | Firestore-instans | `FirestoreModule` (Hilt) i `data/firestore/` |
 | Aktivt hushåll | `HouseholdSession` i `data/household/` (`HouseholdScope`) |
 | Påminnelser (plan, genomgång, notiser, schemaläggning) | `ReminderPlanner` i `:core`; `reminders/` i appen (`ReminderSource`, `ReminderRunner`, `ReminderNotifier`, `ReminderScheduler`) – skill `firestore-data-layer` för läsningen |
-| Synkläge | `SyncStatus` (`syncing`, `lastWriteError`) i `data/common/`; för UI:t `SyncViewModel` (`ui/sync/`) → `AppNavHost` (indikatorn via `LocalTopBarStatus`, nekad skrivning som meddelande ovanför verktygsraden) |
+| Synkläge | `SyncStatus` (`syncing`, `lastWriteError`) i `data/common/`; för UI:t `SyncViewModel` (`ui/sync/`) → `AppNavHost` (prickarna i flikens `AppHeader` via `LocalTopBarSyncing`, nekad skrivning som meddelande ovanför verktygsraden) |
 | Läs- och skrivregler för dokument | `prepareForWrite`, `readDocument`, `sortForList` i `data/common/DocumentRules.kt` och `writeBlocker` i `HouseholdScope.kt` – används av både `FirestoreCollection` och `FakeCollection` |
 | Inställningar | `SettingsStore` (DataStore) |
 | Hushållets namn och marginaldagar | `HouseholdRepository.update(household, fields)` med `HouseholdCodec.NAME`/`MARGIN_DAYS` – aldrig hela hushållet |

@@ -39,7 +39,7 @@ class AppBackStackTest {
     @Test
     fun `tillbaka i roten av en annan flik går till Resor, i Resors rot lämnar appen`() {
         val stack = AppBackStack()
-        stack.select(SettingsKey)
+        stack.select(FamilyItemsKey)
         assertTrue(stack.pop())
         assertEquals(TripsKey, stack.currentTab)
         assertFalse(stack.pop())
@@ -84,6 +84,30 @@ class AppBackStackTest {
 
         assertEquals(listOf<AppKey>(TripsKey), restored.entries)
         assertEquals(TripsKey, restored.currentTab)
+    }
+
+    @Test
+    fun `ett läge från när Inställningar var en flik ger startskärmen (NAV-1)`() {
+        val pkg = "se.kodhast.reseapoteket.navigation"
+        val saved = """{"current":{"type":"$pkg.SettingsKey"},"stacks":[[{"type":"$pkg.TripsKey"}],[{"type":"$pkg.PersonsKey"}],""" +
+            """[{"type":"$pkg.FamilyItemsKey"}],[{"type":"$pkg.SettingsKey"}]]}"""
+
+        val restored = AppBackStack.restore(saved)
+
+        assertEquals(listOf<AppKey>(TripsKey), restored.entries)
+        assertEquals(TripsKey, restored.currentTab)
+    }
+
+    @Test
+    fun `Inställningar öppnas ovanpå fliken och tillbaka går till den (NAV-5)`() {
+        val stack = AppBackStack()
+        stack.select(PersonsKey)
+        stack.push(SettingsKey)
+        assertEquals(listOf(TripsKey, PersonsKey, SettingsKey), stack.entries)
+        assertFalse(stack.atTopLevel)
+        stack.popIfTop(SettingsKey)
+        assertEquals(listOf(TripsKey, PersonsKey), stack.entries)
+        assertEquals(PersonsKey, stack.currentTab)
     }
 
     @Test

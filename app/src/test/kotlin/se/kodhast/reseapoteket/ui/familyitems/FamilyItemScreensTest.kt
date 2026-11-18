@@ -69,7 +69,7 @@ class FamilyItemScreensTest {
 
     @Test
     fun `listan visar kategorier, regeltext och typ, och pausade nedtonade (FAM-1, FAM-3)`() {
-        rule.setContent { ReseApoteketTheme { FamilyItemsContent(ListUiState.Content(list.toImmutableList()), {}, {}, {}) } }
+        rule.setContent { ReseApoteketTheme { FamilyItemsContent(ListUiState.Content(list.toImmutableList()), {}, {}) } }
         rule.onNodeWithText("Krämer & salvor").assertIsDisplayed()
         rule.onNodeWithText("1 tub per 7 dagar").assertIsDisplayed()
         rule.onNodeWithText("1 per resenär").assertIsDisplayed()
@@ -80,7 +80,7 @@ class FamilyItemScreensTest {
     @Test
     fun `exemplen i den tomma listan öppnar ett ifyllt formulär (FAM-4)`() {
         val opened = mutableListOf<FamilyItemExample>()
-        rule.setContent { ReseApoteketTheme { FamilyItemsContent(ListUiState.Empty, {}, {}, {}, onAddExample = { opened += it }) } }
+        rule.setContent { ReseApoteketTheme { FamilyItemsContent(ListUiState.Empty, {}, {}, onAddExample = { opened += it }) } }
         rule.onNodeWithText("Solkräm").performClick()
         rule.onNodeWithText("Febertermometer").performClick()
         assertEquals(listOf(FamilyItemExample.SUNSCREEN, FamilyItemExample.THERMOMETER), opened)
@@ -125,6 +125,6 @@ class FamilyItemScreensTest {
 
     @Test
     fun `skärmdumpar - listan`() {
-        captureLightAndDark("FamilyItemsScreen_innehall") { FamilyItemsContent(ListUiState.Content(list.toImmutableList()), {}, {}, {}) }
+        captureLightAndDark("FamilyItemsScreen_innehall") { FamilyItemsContent(ListUiState.Content(list.toImmutableList()), {}, {}) }
     }
 }

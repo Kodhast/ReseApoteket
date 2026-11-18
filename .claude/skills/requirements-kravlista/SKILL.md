@@ -24,7 +24,7 @@ KRAVLISTA.md består av numrerade avsnitt med tabeller `| ID | Krav |`. Varje kr
 | `PER` | Personer |
 | `REC` | Recept (mediciner) |
 | `KOS` | Kosttillskott |
-| `FAM` | Familjeartiklar |
+| `FAM` | Gemensamt (familjeartiklar) |
 | `RES` | Resa |
 | `BER` | Beräkning (packförslag) |
 | `PAK` | Packlista |

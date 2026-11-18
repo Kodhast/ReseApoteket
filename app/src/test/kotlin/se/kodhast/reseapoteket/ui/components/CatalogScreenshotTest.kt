@@ -51,7 +51,6 @@ import se.kodhast.ui.components.IconButtonVariant
 import se.kodhast.ui.components.InfoPill
 import se.kodhast.ui.components.ItemRow
 import se.kodhast.ui.components.LabeledGroup
-import se.kodhast.ui.components.LocalTopBarStatus
 import se.kodhast.ui.components.PausableRow
 import se.kodhast.ui.components.QuantityStepper
 import se.kodhast.ui.components.SectionHeader
@@ -59,6 +58,7 @@ import se.kodhast.ui.components.Suggestion
 import se.kodhast.ui.components.SuggestionField
 import se.kodhast.ui.components.SwitchRow
 import se.kodhast.ui.components.TimeField
+import se.kodhast.ui.components.ToolbarAction
 import se.kodhast.ui.components.ToolbarItem
 import se.kodhast.ui.components.TopBarSize
 import se.kodhast.ui.components.asSplitMenu
@@ -178,7 +178,7 @@ class CatalogScreenshotTest {
             }
         }
         captureLightAndDark("InfoPill_ikon_klickbar") {
-            Sheet { InfoPill("Väntar på synk", tone = Tone.Blue, icon = R.drawable.ic_cloud_upload, onClick = {}) }
+            Sheet { InfoPill("Räkna om", tone = Tone.Blue, icon = R.drawable.ic_refresh, onClick = {}) }
         }
         captureLightAndDark("PersonAvatar_farger") {
             Sheet {
@@ -358,25 +358,17 @@ class CatalogScreenshotTest {
                 AppTopBar("Solkräm", size = TopBarSize.Small, onBack = {}) { AppButton("Spara", {}, compact = true) }
             }
         }
-        captureLightAndDark("AppTopBar_synk") {
-            CompositionLocalProvider(LocalTopBarStatus provides SyncIndicator(pending = true).topBarStatus()) {
-                Column(Modifier.background(MaterialTheme.colorScheme.background)) {
-                    AppTopBar("Resor") { AppMenu(emptyList()) }
-                    AppTopBar("Gran Canaria", size = TopBarSize.Small, onBack = {}) { AppIconButton(R.drawable.ic_edit, "Redigera", {}) }
-                }
-            }
-        }
         captureLightAndDark("AppFloatingToolbar_resor") {
             Box(Modifier.background(MaterialTheme.colorScheme.background).padding(Spacing.l)) {
                 AppFloatingToolbar(
                     listOf(
                         ToolbarItem("Resor", R.drawable.ic_luggage),
                         ToolbarItem("Personer", R.drawable.ic_person),
-                        ToolbarItem("Familjeartiklar", R.drawable.ic_family_items),
-                        ToolbarItem("Inställningar", R.drawable.ic_settings)
+                        ToolbarItem("Gemensamt", R.drawable.ic_family_items)
                     ),
                     selectedIndex = 0,
-                    onSelect = {}
+                    onSelect = {},
+                    action = ToolbarAction("Lägg till", R.drawable.ic_add, emptyList())
                 )
             }
         }

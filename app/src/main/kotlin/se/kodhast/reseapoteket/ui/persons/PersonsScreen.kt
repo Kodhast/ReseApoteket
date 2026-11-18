@@ -26,7 +26,6 @@ import se.kodhast.reseapoteket.ui.theme.AppColors
 import se.kodhast.ui.common.ListEvent
 import se.kodhast.ui.common.ListLoader
 import se.kodhast.ui.common.ListUiState
-import se.kodhast.ui.components.AddAction
 import se.kodhast.ui.components.ArchiveActions
 import se.kodhast.ui.components.EmptyContent
 import se.kodhast.ui.components.EntityListScreen
@@ -69,18 +68,17 @@ class PersonsViewModel @Inject constructor(
     }
 }
 
-/** Fliken Personer (PER-1, PER-3). */
+/** Fliken Personer (PER-1, PER-3). En ny person läggs till med plusknappen i flikraden (NAV-6). */
 @Composable
-fun PersonsScreen(onAdd: () -> Unit, onOpen: (String) -> Unit, viewModel: PersonsViewModel = hiltViewModel()) {
+fun PersonsScreen(onOpen: (String) -> Unit, viewModel: PersonsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    PersonsContent(state, viewModel::onEvent, onAdd, onOpen, archive = viewModel.archive.collectAsListArchive())
+    PersonsContent(state, viewModel::onEvent, onOpen, archive = viewModel.archive.collectAsListArchive())
 }
 
 @Composable
 fun PersonsContent(
     state: ListUiState<PersonListItem>,
     onEvent: (PersonsEvent) -> Unit,
-    onAdd: () -> Unit,
     onOpen: (String) -> Unit,
     modifier: Modifier = Modifier,
     archive: ListArchive = ListArchive()
@@ -93,7 +91,8 @@ fun PersonsContent(
             title = stringResource(R.string.persons_empty_title),
             message = stringResource(R.string.persons_empty_message)
         ),
-        add = AddAction(stringResource(R.string.persons_add), onAdd),
+        // Ny läggs till med plusknappen i flikraden (NAV-6).
+        add = null,
         key = { it.person.id },
         modifier = modifier,
         onRetry = { onEvent(PersonsEvent.List(ListEvent.Retry)) },

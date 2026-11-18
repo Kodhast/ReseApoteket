@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Appikonen "Resväskan" (NFR-19) i Kodhäst-sidhuvudet (NAV-4): samma motiv och färger som startikonen
+     (ic_launcher_foreground på ic_launcher_background), men som vanlig vektor – sidhuvudet kan inte rita en
+     adaptiv ikon. Startikonens synliga del (72 × 72 i mitten av 108) i en rundad ruta. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="72"
+    android:viewportHeight="72">
+    <path
+        android:pathData="M16,0h40a16,16 0 0,1 16,16v40a16,16 0 0,1 -16,16h-40a16,16 0 0,1 -16,-16v-40a16,16 0 0,1 16,-16z"
+        android:fillColor="@color/ic_launcher_background" />
+    <group
+        android:translateX="-18"
+        android:translateY="-18">
+        <group
+            android:pivotX="54"
+            android:pivotY="56"
+            android:scaleX="0.82"
+            android:scaleY="0.82"
+            android:translateX="2">
+            <path
+                android:pathData="M44,41 V33 A5,5 0 0 1 49,28 H59 A5,5 0 0 1 64,33 V41"
+                android:strokeColor="@color/ic_launcher_symbol"
+                android:strokeWidth="4"
+                android:strokeLineCap="round" />
+            <path
+                android:fillColor="@color/ic_launcher_symbol"
+                android:fillType="evenOdd"
+                android:pathData="M38,39 H70 A9,9 0 0 1 79,48 V70 A9,9 0 0 1 70,79 H38 A9,9 0 0 1 29,70 V48 A9,9 0 0 1 38,39 Z M50,47 H58 V55 H66 V63 H58 V71 H50 V63 H42 V55 H50 Z" />
+            <path
+                android:fillColor="@color/ic_launcher_symbol"
+                android:pathData="M35.5,83 A3.5,3.5 0 1 0 42.5,83 A3.5,3.5 0 1 0 35.5,83 Z M65.5,83 A3.5,3.5 0 1 0 72.5,83 A3.5,3.5 0 1 0 65.5,83 Z" />
+        </group>
+        <path
+            android:fillColor="@color/ic_launcher_symbol"
+            android:pathData="M30,35 A2.5,2.5 0 1 0 35,35 A2.5,2.5 0 1 0 30,35 Z M38,35 A2.5,2.5 0 1 0 43,35 A2.5,2.5 0 1 0 38,35 Z" />
+    </group>
+</vector>

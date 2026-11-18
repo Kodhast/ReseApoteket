@@ -112,7 +112,7 @@ class TripScreensTest {
         val archived = Trip("t2", "Rom", LocalDate(2025, 4, 10), 5, listOf("anna"), archived = true)
         rule.setContent {
             ReseApoteketTheme {
-                TripsContent(ListUiState.Content(persistentListOf(TripListItem(trip, people), TripListItem(archived, people.take(1)))), {}, {}, { opened += it }, archive = ListArchive(showing = true) { events += it })
+                TripsContent(ListUiState.Content(persistentListOf(TripListItem(trip, people), TripListItem(archived, people.take(1)))), {}, { opened += it }, archive = ListArchive(showing = true) { events += it })
             }
         }
         val archiveAction = SemanticsMatcher("har Arkivera") { node -> node.config.getOrNull(SemanticsActions.CustomActions).orEmpty().any { it.label == "Arkivera" } }
@@ -167,6 +167,6 @@ class TripScreensTest {
             TripListItem(Trip("t4", "Göteborg", LocalDate(2026, 5, 15), 2, listOf("anna"), TripStatus.DONE), people.take(1), PackingProgress(6, 6)),
             TripListItem(Trip("t5", "Rom", LocalDate(2025, 4, 10), 5, listOf("anna", "erik"), TripStatus.DONE, archived = true), people.take(2), PackingProgress(9, 10))
         )
-        captureLightAndDark("TripsScreen_innehall") { TripsContent(ListUiState.Content(list.toImmutableList()), {}, {}, {}, archive = ListArchive(showing = true)) }
+        captureLightAndDark("TripsScreen_innehall") { TripsContent(ListUiState.Content(list.toImmutableList()), {}, {}, archive = ListArchive(showing = true)) }
     }
 }

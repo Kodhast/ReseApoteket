@@ -14,30 +14,28 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import kotlinx.coroutines.launch
 import se.kodhast.reseapoteket.R
-import se.kodhast.reseapoteket.ui.components.SyncIndicator
-import se.kodhast.reseapoteket.ui.components.topBarStatus
 import se.kodhast.reseapoteket.ui.sync.SyncEvent
 import se.kodhast.reseapoteket.ui.sync.SyncUiState
 import se.kodhast.ui.components.AppFloatingToolbar
+import se.kodhast.ui.components.AppMenuItem
 import se.kodhast.ui.components.AppSnackbarHost
 import se.kodhast.ui.components.ErrorSnackbar
 import se.kodhast.ui.components.FloatingToolbarClearance
 import se.kodhast.ui.components.LocalBottomClearance
-import se.kodhast.ui.components.LocalTopBarStatus
+import se.kodhast.ui.components.LocalTopBarAccount
+import se.kodhast.ui.components.LocalTopBarSyncing
+import se.kodhast.ui.components.ToolbarAction
 import se.kodhast.ui.components.ToolbarItem
 import se.kodhast.ui.theme.Spacing
 
@@ -45,8 +43,9 @@ import se.kodhast.ui.theme.Spacing
  * Navigationsramen: `NavDisplay` med [Transitions] och den flytande verktygsraden, som bara
  * syns i en fliks rot. Skärmarna kommer från [entryProvider] (`appEntries` i appen); flikarnas
  * ViewModels hör till aktiviteten (se `appEntries`), så att de också överlever flikbyten.
- * [sync] ger synkindikatorn i varje skärms toppbar och meddelandet om en nekad skrivning
- * (NFR-6), i appens gemensamma meddelandeyta ovanför verktygsraden.
+ * [sync] får prickarna i flikarnas sidhuvud att hoppa (NFR-6, NFR-22) och ger meddelandet om en
+ * nekad skrivning, i appens gemensamma meddelandeyta ovanför verktygsraden. [onAdd] är plusknappens
+ * meny (NAV-6) och [account] avataren i sidhuvudet (NAV-5).
  */
 @Composable
 fun AppNavHost(
@@ -55,24 +54,18 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     onExit: () -> Unit = {},
     sync: SyncUiState = SyncUiState(),
-    onSyncEvent: (SyncEvent) -> Unit = {}
+    onSyncEvent: (SyncEvent) -> Unit = {},
+    onAdd: ((AddChoice) -> Unit)? = null,
+    account: @Composable () -> Unit = {}
 ) {
     val toolbar = toolbarItems()
+    val addLabel = stringResource(R.string.add)
+    val action = onAdd?.let { ToolbarAction(addLabel, R.drawable.ic_add, addMenu(it)) }
     val clearance = if (backStack.atTopLevel) FloatingToolbarClearance else 0.dp
     val messages = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    val resources = LocalResources.current
-    val syncStatus = remember(sync.pending, resources) {
-        SyncIndicator(sync.pending) {
-            // Ett meddelande som redan visas (t.ex. en nekad skrivning) får stå kvar; upprepade tryck köar inget.
-            if (messages.currentSnackbarData == null) {
-                scope.launch { messages.showSnackbar(resources.getString(R.string.sync_pending_explained)) }
-            }
-        }.topBarStatus()
-    }
     ErrorSnackbar(sync.writeError, messages, R.string.sync_write_rejected, SnackbarDuration.Long) { onSyncEvent(SyncEvent.WriteErrorShown) }
     Box(modifier.fillMaxSize()) {
-        CompositionLocalProvider(LocalBottomClearance provides clearance, LocalTopBarStatus provides syncStatus) {
+        CompositionLocalProvider(LocalBottomClearance provides clearance, LocalTopBarSyncing provides sync.pending, LocalTopBarAccount provides account) {
             NavDisplay(
                 backStack = backStack.entries,
                 onBack = { if (!backStack.pop()) onExit() },
@@ -95,7 +88,8 @@ fun AppNavHost(
             AppFloatingToolbar(
                 items = toolbar,
                 selectedIndex = TOP_LEVEL.indexOf(backStack.currentTab),
-                onSelect = { backStack.select(TOP_LEVEL[it]) }
+                onSelect = { backStack.select(TOP_LEVEL[it]) },
+                action = action
             )
         }
         AppSnackbarHost(messages, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = clearance))
@@ -126,10 +120,13 @@ private const val TAB_ROOT = "flikrot:"
 
 private fun NavEntry<AppKey>.asTabRootIf(key: AppKey): NavEntry<AppKey> = if (key is TopLevelKey) NavEntry(key, contentKey = TAB_ROOT + key, metadata = metadata) { Content() } else this
 
+/** Plusknappens meny (NAV-6): de tre valen i flikarnas ordning, med flikarnas ikoner, som android-ui:s FAB-meny. */
+@Composable
+private fun addMenu(onPick: (AddChoice) -> Unit): List<AppMenuItem> = AddChoice.entries.map { choice -> AppMenuItem(stringResource(choice.label), { onPick(choice) }, icon = choice.icon) }
+
 @Composable
 private fun toolbarItems(): List<ToolbarItem> = listOf(
     ToolbarItem(stringResource(R.string.tab_trips), R.drawable.ic_luggage),
     ToolbarItem(stringResource(R.string.tab_persons), R.drawable.ic_person),
-    ToolbarItem(stringResource(R.string.tab_family_items), R.drawable.ic_family_items),
-    ToolbarItem(stringResource(R.string.tab_settings), R.drawable.ic_settings)
+    ToolbarItem(stringResource(R.string.tab_family_items), R.drawable.ic_family_items)
 )

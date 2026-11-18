@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import se.kodhast.reseapoteket.core.schema.Schema
 import se.kodhast.reseapoteket.data.auth.AuthRepository
 import se.kodhast.reseapoteket.data.auth.AuthUser
+import se.kodhast.reseapoteket.data.auth.ProfileCheckUseCase
 import se.kodhast.reseapoteket.data.common.DataError
 import se.kodhast.reseapoteket.data.common.HouseholdVersion
 import se.kodhast.reseapoteket.data.common.dataError
@@ -34,7 +35,9 @@ data class AuthUiState(
     val gate: AuthGate = AuthGate.Loading,
     /** Inloggning eller val av hushåll pågår. */
     val busy: Boolean = false,
-    val error: DataError? = null
+    val error: DataError? = null,
+    /** Den inloggade – namn, e-post och foto i avataren (NAV-5); `null` utloggad. */
+    val account: AuthUser? = null
 )
 
 sealed interface AuthEvent {
@@ -48,7 +51,8 @@ sealed interface AuthEvent {
 class AuthViewModel @Inject constructor(
     private val auth: AuthRepository,
     private val session: HouseholdSession,
-    private val ensureHousehold: EnsureHouseholdUseCase
+    private val ensureHousehold: EnsureHouseholdUseCase,
+    private val profileCheck: ProfileCheckUseCase
 ) : ViewModel() {
 
     private val user: StateFlow<AuthUser?> = auth.authState.stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -61,11 +65,13 @@ class AuthViewModel @Inject constructor(
     private val gate = combine(auth.authState, session.selection, session.schemaVersion, ::gateOf)
 
     val state: StateFlow<AuthUiState> =
-        combine(gate, signingIn, ensuring, error) { gate, signingIn, ensuring, error ->
-            AuthUiState(gate, busy = signingIn || ensuring, error = error)
+        combine(gate, signingIn, ensuring, error, user) { gate, signingIn, ensuring, error, user ->
+            AuthUiState(gate, busy = signingIn || ensuring, error = error, account = user)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), AuthUiState())
 
     init {
+        // Profilen (fotot) hämtas om när appen är ansluten, en gång per inloggad användare (AUTH-5).
+        viewModelScope.launch { profileCheck() }
         // Utloggad (även om sessionen försvunnit utifrån) = inget valt hushåll, så att nästa
         // användare på enheten aldrig hamnar i den förras hushåll – och ett pågående val avbryts.
         viewModelScope.launch {

@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.engine.DoseScheduleFormatter
@@ -136,14 +137,15 @@ sealed interface PackingListEvent {
 
     data object CancelRecount : PackingListEvent
 
-    /** "Lägg till" – en egen rad (PAK-4). */
-    data object Add : PackingListEvent
+    /** Plus i sektionens rubrik – en egen rad i [section] (PAK-4). */
+    data class Add(val section: PackingSection) : PackingListEvent
 
     data object CloseAdd : PackingListEvent
 
-    data class AddName(val name: String) : PackingListEvent
+    /** Fäll ihop eller ut en sektion; `null` är "Dolda" (PAK-1). */
+    data class ToggleGroup(val group: PackingGroup?) : PackingListEvent
 
-    data class AddSection(val section: PackingSection) : PackingListEvent
+    data class AddName(val name: String) : PackingListEvent
 
     data class AddPerson(val personId: String) : PackingListEvent
 
@@ -179,7 +181,8 @@ class PackingListViewModel @AssistedInject constructor(
     packing: PackingRepository,
     settings: SettingsStore,
     private val tripPacking: TripPacking,
-    private val clock: Clock
+    private val clock: Clock,
+    private val session: PackingListSession
 ) : ViewModel() {
 
     @AssistedFactory
@@ -189,8 +192,14 @@ class PackingListViewModel @AssistedInject constructor(
 
     private val collection = packing.forTrip(tripId)
 
-    /** Svep döljer en rad och kan ångras – samma mekanik som arkivering i listorna (NFR-3). */
-    val hiding = ArchiveActions(viewModelScope, AppErrors, ::setHidden, R.string.hidden_format)
+    /**
+     * Svep döljer en rad och kan ångras – samma mekanik som arkivering i listorna (NFR-3). "Visa dolda"
+     * är dess växel, med läget i [session] så att valet står kvar under appsessionen (PAK-4).
+     */
+    val hiding = ArchiveActions(viewModelScope, AppErrors, ::setHidden, R.string.hidden_format, session.showHidden)
+
+    /** Hopfällda sektioner under appsessionen; `null` är "Dolda" (PAK-1). */
+    val collapsed: StateFlow<Set<PackingGroup?>> = session.collapsed.asStateFlow()
 
     /** Resan som den senast lästs – [Read.trip] `null` om den inte finns; `null` innan den lästs eller vid läsfel. */
     private val tripRead: StateFlow<Read?> = trips.observe(tripId).map { Read(it) }.withFallback(null).stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -221,6 +230,14 @@ class PackingListViewModel @AssistedInject constructor(
         combine(loader.state, tripRead) { list, read ->
             if (read != null && read.trip == null) missingTrip else list
         }.stateIn(viewModelScope, SharingStarted.Eagerly, ListUiState.Loading)
+
+    /** Listan som den visas: dolda rader bara när "Visa dolda" är valt (PAK-4). */
+    val shown: StateFlow<ListUiState<PackingRow>> = combine(state, session.showHidden) { list, showHidden ->
+        if (showHidden || list !is ListUiState.Content) list else ListUiState.Content(list.items.filterNot { it.item.hidden }.toImmutableList())
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, ListUiState.Loading)
+
+    /** Antalet dolda rader – "Visa dolda (N)" syns bara när det finns några (PAK-4). */
+    val hiddenCount: StateFlow<Int> = state.map { list -> currentRows(list).count { it.item.hidden } }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     val header: StateFlow<PackingHeader?> = combine(trip, state, people) { trip, list, all ->
         trip?.let {
@@ -343,16 +360,18 @@ class PackingListViewModel @AssistedInject constructor(
 
             PackingListEvent.Recount -> recount()
 
-            PackingListEvent.Add -> openSheet { _adding.value = true }
+            is PackingListEvent.Add -> openSheet {
+                addEditor.load(newManualItem(event.section))
+                addMode.value = AddMode.ONE
+                _adding.value = true
+            }
 
             PackingListEvent.CloseAdd -> openSheet(::closeAdd)
 
+            is PackingListEvent.ToggleGroup -> session.collapsed.update { if (event.group in it) it - event.group else it + event.group }
+
             // Ett gammalt fel står inte kvar medan raden ändras.
             is PackingListEvent.AddName -> editNew(ManualItemValidator.NAME) { it.copy(name = event.name) }
-
-            is PackingListEvent.AddSection -> editNew {
-                it.copy(section = event.section, personId = it.personId.takeIf { event.section != PackingSection.FAMILY })
-            }
 
             is PackingListEvent.AddPerson -> editNew(ManualItemValidator.PERSON) { it.copy(personId = event.personId) }
 
@@ -362,7 +381,8 @@ class PackingListViewModel @AssistedInject constructor(
 
             PackingListEvent.AddSave -> addSave()
 
-            is PackingListEvent.AddModeChange -> openSheet { addMode.value = event.mode }
+            // En lista hamnar alltid under Övrigt, så den finns bara där (PAK-7).
+            is PackingListEvent.AddModeChange -> if (event.mode == AddMode.ONE || addEditor.state.value.value.section == PackingSection.FAMILY) openSheet { addMode.value = event.mode }
 
             is PackingListEvent.AddListText -> openSheet { listText.value = event.text }
 
@@ -386,6 +406,8 @@ class PackingListViewModel @AssistedInject constructor(
     private fun addSave() {
         _sheetError.value = null
         changedHere = true
+        // En ihopfälld sektion fälls ut, så att den nya raden syns.
+        expand(PackingList.group(addEditor.state.value.value))
         viewModelScope.launch {
             addEditor.save { item -> collection.upsertPlaced(item.copy(name = item.name.trim()), isNew = true) { copy(sortOrder = it) } }
         }
@@ -417,12 +439,15 @@ class PackingListViewModel @AssistedInject constructor(
             val error = collection.batch(items).uiErrorOrNull(AppErrors)
             listSaving.value = false
             if (error != null) return@launch report(error)
+            expand(PackingGroup.FAMILY)
             closeAdd()
             val count = items.size
             val request = UndoRequest(items.first().id, count.toString(), if (count == 1) R.string.packing_added_one else R.string.packing_added_other)
             hiding.offerUndo(request) { collection.batch(emptyList(), items.map { it.id }) }
         }
     }
+
+    private fun expand(group: PackingGroup) = session.collapsed.update { it - group }
 
     /** Pricka av med tidpunkt (PAK-2). */
     private fun check(id: String, checked: Boolean) {
@@ -468,9 +493,9 @@ class PackingListViewModel @AssistedInject constructor(
         if (editing.value != null || _adding.value) _sheetError.value = error else hiding.report(error)
     }
 
-    private fun newManualItem() = PackingItem(
+    private fun newManualItem(section: PackingSection = PackingSection.FAMILY) = PackingItem(
         id = collection.newId(),
-        section = PackingSection.FAMILY,
+        section = section,
         sourceType = PackingSource.MANUAL,
         unit = ItemUnit.ST,
         suggestedQuantity = 1,

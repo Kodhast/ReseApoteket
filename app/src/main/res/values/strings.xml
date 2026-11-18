@@ -265,7 +265,9 @@
     <string name="packing_other">Övrigt</string>
     <string name="packing_hidden">Dolda</string>
     <string name="packing_empty_title">Inget att packa än</string>
-    <string name="packing_empty_message">Lägg till det ni vill ta med, eller räkna om listan från recepten och det gemensamma.</string>
+    <string name="packing_empty_message">Lägg till med plus i en sektion, eller räkna om listan från recepten och det gemensamma.</string>
+    <string name="packing_show_hidden_format">Visa dolda (%d)</string>
+    <string name="packing_hide_hidden">Göm dolda</string>
     <string name="packing_recount">Räkna om</string>
     <string name="packing_recount_message">Föreslagna mängder räknas om från recepten och det gemensamma; avprickat och egna rader behålls.</string>
     <string name="packing_hide_checked">Dölj packade</string>
@@ -277,9 +279,8 @@
     <string name="packing_suggestion">Förslag</string>
     <string name="packing_reset_format">Återställ till förslag (%d)</string>
     <string name="packing_done">Klar</string>
-    <string name="packing_add_title">Lägg till i packlistan</string>
+    <string name="packing_add_to_format">Lägg till i %s</string>
     <string name="packing_what">Vad?</string>
-    <string name="packing_where">Var?</string>
     <string name="packing_who">Vem?</string>
     <string name="packing_how_many">Hur många?</string>
     <string name="packing_person_required">Välj vem det är till</string>
@@ -287,7 +288,7 @@
     <string name="packing_add_list">Lista</string>
     <string name="packing_list_field">En sak per rad</string>
     <string name="packing_list_helper">Ett tal sist på raden blir antalet, t.ex. ”Solkräm 2”.</string>
-    <string name="packing_list_preview">Läggs till under Övrigt</string>
+    <string name="packing_list_preview">Läggs till</string>
     <string name="packing_list_exists">finns redan</string>
     <string name="packing_list_too_long">för lång</string>
     <plurals name="packing_list_add">

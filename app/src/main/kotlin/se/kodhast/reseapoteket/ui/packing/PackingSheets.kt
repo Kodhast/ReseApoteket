@@ -63,8 +63,9 @@ internal fun QuantitySheet(row: PackingRow, onEvent: (PackingListEvent) -> Unit,
 }
 
 /**
- * Lägg till (PAK-4, PAK-7): en egen rad – vad, var, vem (för mediciner och kosttillskott) och hur
- * många – eller en inklistrad lista som hamnar under Övrigt ([list]).
+ * Lägg till i en sektion (PAK-4, PAK-7), öppnat från plus i sektionens rubrik: en egen rad – vad, vem
+ * (för mediciner och kosttillskott) och hur många. Sektionen står i raden och frågas aldrig. Bara i
+ * Övrigt kan man välja en inklistrad lista i stället ([list]).
  */
 @Composable
 internal fun AddItemSheet(
@@ -74,23 +75,27 @@ internal fun AddItemSheet(
     error: UiError? = null,
     list: AddListState = AddListState()
 ) {
+    val section = state.value.section
+    val mode = if (section == PackingSection.FAMILY) list.mode else AddMode.ONE
     AppBottomSheet(
-        stringResource(R.string.packing_add_title),
+        stringResource(R.string.packing_add_to_format, sectionName(section)),
         onDismiss = { onEvent(PackingListEvent.CloseAdd) },
         error = error,
         footer = {
-            when (list.mode) {
+            when (mode) {
                 AddMode.ONE -> AppButton(stringResource(R.string.add), { onEvent(PackingListEvent.AddSave) }, Modifier.fillMaxWidth(), enabled = state.canSave, loading = state.saving)
                 AddMode.LIST -> AddListButton(list, onEvent)
             }
         }
     ) {
-        AppSegmentedChoice(
-            listOf(stringResource(R.string.packing_add_one), stringResource(R.string.packing_add_list)),
-            selectedIndex = list.mode.ordinal,
-            onSelect = { onEvent(PackingListEvent.AddModeChange(AddMode.entries[it])) }
-        )
-        when (list.mode) {
+        if (section == PackingSection.FAMILY) {
+            AppSegmentedChoice(
+                listOf(stringResource(R.string.packing_add_one), stringResource(R.string.packing_add_list)),
+                selectedIndex = mode.ordinal,
+                onSelect = { onEvent(PackingListEvent.AddModeChange(AddMode.entries[it])) }
+            )
+        }
+        when (mode) {
             AddMode.ONE -> AddOneContent(state, travellers, onEvent)
             AddMode.LIST -> AddListContent(list, onEvent)
         }
@@ -107,13 +112,6 @@ private fun AddOneContent(state: EditorUiState<PackingItem>, travellers: List<Pe
         stringResource(R.string.packing_what),
         error = state.errorFor(ManualItemValidator.NAME)?.let { stringResource(it) }
     )
-    LabeledGroup(stringResource(R.string.packing_where)) {
-        AppSegmentedChoice(
-            listOf(stringResource(R.string.packing_medicines), stringResource(R.string.packing_supplements), stringResource(R.string.packing_other)),
-            selectedIndex = item.section.ordinal,
-            onSelect = { onEvent(PackingListEvent.AddSection(PackingSection.entries[it])) }
-        )
-    }
     if (item.section != PackingSection.FAMILY) {
         LabeledGroup(stringResource(R.string.packing_who), error = state.errorFor(ManualItemValidator.PERSON)?.let { stringResource(it) }) {
             ChipRow {
@@ -159,6 +157,16 @@ private fun AddListButton(list: AddListState, onEvent: (PackingListEvent) -> Uni
         loading = list.saving
     )
 }
+
+/** Sektionens namn, som i packlistans rubriker. */
+@Composable
+internal fun sectionName(section: PackingSection): String = stringResource(
+    when (section) {
+        PackingSection.MEDICINE -> R.string.packing_medicines
+        PackingSection.SUPPLEMENT -> R.string.packing_supplements
+        PackingSection.FAMILY -> R.string.packing_other
+    }
+)
 
 /** Så många rader visar listans fält; en längre lista scrollar i fältet (#100). */
 private const val LIST_MAX_LINES = 8

@@ -64,9 +64,10 @@ class PackingListViewModelTest {
     private val packing = DefaultPackingRepository(collections)
     private val tripPacking = TripPacking(trips, persons, regimens, familyItems, StubHouseholds(MutableStateFlow(Household("h1", marginDays = 2))), packing)
     private val settings = SettingsStore(FakeDataStore())
+    private val session = PackingListSession()
     private val kreta = Trip("t1", "Kreta", LocalDate(2026, 10, 2), 7, listOf("anna", "erik"))
 
-    private fun viewModel() = PackingListViewModel("t1", trips, persons, regimens, packing, settings, tripPacking, FixedClock())
+    private fun viewModel() = PackingListViewModel("t1", trips, persons, regimens, packing, settings, tripPacking, FixedClock(), session)
 
     /** Anna med Levaxin (dagligen) och Erik med Alvedon (vid behov), solkräm, och listan framräknad. */
     private suspend fun seed() {
@@ -130,7 +131,7 @@ class PackingListViewModelTest {
             assertTrue(awaitItem())
             assertEquals(TripStatus.PACKED, trips.get("t1").getOrThrow()!!.status, "den sista oavprickade dold – allt packat")
         }
-        vm.onEvent(PackingListEvent.Add)
+        vm.onEvent(PackingListEvent.Add(PackingSection.FAMILY))
         vm.onEvent(PackingListEvent.AddName("Laddare"))
         vm.onEvent(PackingListEvent.AddSave)
         assertEquals(TripStatus.PLANNING, trips.get("t1").getOrThrow()!!.status, "en ny rad är inte packad")
@@ -182,7 +183,7 @@ class PackingListViewModelTest {
     fun `ett skrivfel visas i den öppna panelen, annars i listan, och försvinner när man ändrar`() = runTest {
         seed()
         val blocked = DefaultPackingRepository(FakeCollectionFactory(collections.store, TestHouseholdScope(version = Schema.CURRENT_VERSION + 1)))
-        val vm = PackingListViewModel("t1", trips, persons, regimens, blocked, settings, tripPacking, FixedClock())
+        val vm = PackingListViewModel("t1", trips, persons, regimens, blocked, settings, tripPacking, FixedClock(), session)
         vm.onEvent(PackingListEvent.Check(vm.row("Levaxin").item.id, true))
         assertEquals(DataError.UpdateRequired, vm.hiding.error.value?.cause)
         assertNull(vm.sheetError.value)
@@ -193,7 +194,7 @@ class PackingListViewModelTest {
         vm.onEvent(PackingListEvent.CloseQuantity)
         assertNull(vm.sheetError.value)
 
-        vm.onEvent(PackingListEvent.Add)
+        vm.onEvent(PackingListEvent.Add(PackingSection.FAMILY))
         vm.onEvent(PackingListEvent.AddName("Laddare"))
         vm.onEvent(PackingListEvent.AddSave)
         assertEquals(DataError.UpdateRequired, vm.sheetError.value?.cause)
@@ -253,10 +254,10 @@ class PackingListViewModelTest {
     fun `en egen rad läggs till, en medicin kräver en person (PAK-4)`() = runTest {
         seed()
         val vm = viewModel()
-        vm.onEvent(PackingListEvent.Add)
+        vm.onEvent(PackingListEvent.Add(PackingSection.MEDICINE))
         assertTrue(vm.adding.value)
+        assertEquals(PackingSection.MEDICINE, vm.addEditor.state.value.value.section, "plus i Mediciner – arket frågar inte var")
         vm.onEvent(PackingListEvent.AddName("Nässpray"))
-        vm.onEvent(PackingListEvent.AddSection(PackingSection.MEDICINE))
         vm.onEvent(PackingListEvent.AddSave)
         assertEquals(R.string.packing_person_required, vm.addEditor.state.value.errorFor(ManualItemValidator.PERSON))
         assertTrue(vm.adding.value)
@@ -275,7 +276,7 @@ class PackingListViewModelTest {
     fun `en inklistrad lista läggs sist under Övrigt i en skrivning och kan ångras (PAK-7)`() = runTest {
         seed()
         val vm = viewModel()
-        vm.onEvent(PackingListEvent.Add)
+        vm.onEvent(PackingListEvent.Add(PackingSection.FAMILY))
         vm.onEvent(PackingListEvent.AddModeChange(AddMode.LIST))
         vm.onEvent(PackingListEvent.AddListText("solkräm 2\nLaddare\n- Badkläder x2\nladdare\n"))
         val list = vm.addList.value
@@ -307,7 +308,7 @@ class PackingListViewModelTest {
         val solkram = vm.row("Solkräm").item
         vm.hiding.onEvent(ArchiveEvent.Archive(solkram.id, solkram.name))
         assertTrue(stored(solkram.id).hidden)
-        vm.onEvent(PackingListEvent.Add)
+        vm.onEvent(PackingListEvent.Add(PackingSection.FAMILY))
         vm.onEvent(PackingListEvent.AddModeChange(AddMode.LIST))
         vm.onEvent(PackingListEvent.AddListText("Solkräm\nLevaxin"))
         assertEquals(listOf(PastedLine("Solkräm", 1, PastedStatus.EXISTS), PastedLine("Levaxin", 1, PastedStatus.ADD)), vm.addList.value.lines)
@@ -317,8 +318,8 @@ class PackingListViewModelTest {
     fun `en lista utan något att lägga till sparas inte, och ett skrivfel står i panelen med texten kvar (PAK-7)`() = runTest {
         seed()
         val blocked = DefaultPackingRepository(FakeCollectionFactory(collections.store, TestHouseholdScope(version = Schema.CURRENT_VERSION + 1)))
-        val vm = PackingListViewModel("t1", trips, persons, regimens, blocked, settings, tripPacking, FixedClock())
-        vm.onEvent(PackingListEvent.Add)
+        val vm = PackingListViewModel("t1", trips, persons, regimens, blocked, settings, tripPacking, FixedClock(), session)
+        vm.onEvent(PackingListEvent.Add(PackingSection.FAMILY))
         vm.onEvent(PackingListEvent.AddModeChange(AddMode.LIST))
         vm.onEvent(PackingListEvent.AddListText("Solkräm"))
         assertFalse(vm.addList.value.canSave, "allt finns redan")
@@ -355,10 +356,76 @@ class PackingListViewModelTest {
     }
 
     @Test
+    fun `Lista finns bara i Övrigt, och en lista som lagts till fäller ut Övrigt (PAK-7)`() = runTest {
+        seed()
+        val vm = viewModel()
+        vm.onEvent(PackingListEvent.Add(PackingSection.SUPPLEMENT))
+        vm.onEvent(PackingListEvent.AddModeChange(AddMode.LIST))
+        assertEquals(AddMode.ONE, vm.addList.value.mode, "ingen lista i Kosttillskott")
+        vm.onEvent(PackingListEvent.CloseAdd)
+
+        vm.onEvent(PackingListEvent.ToggleGroup(PackingGroup.FAMILY))
+        assertEquals(setOf<PackingGroup?>(PackingGroup.FAMILY), vm.collapsed.value)
+        vm.onEvent(PackingListEvent.Add(PackingSection.FAMILY))
+        vm.onEvent(PackingListEvent.AddModeChange(AddMode.LIST))
+        vm.onEvent(PackingListEvent.AddListText("Laddare"))
+        vm.onEvent(PackingListEvent.AddListSave)
+        assertEquals(emptySet(), vm.collapsed.value, "Övrigt fälls ut så att raderna syns")
+    }
+
+    @Test
+    fun `en egen rad i en hopfälld sektion fäller ut den`() = runTest {
+        seed()
+        val vm = viewModel()
+        vm.onEvent(PackingListEvent.ToggleGroup(PackingGroup.MEDICINE))
+        vm.onEvent(PackingListEvent.ToggleGroup(PackingGroup.SUPPLEMENT))
+        vm.onEvent(PackingListEvent.Add(PackingSection.MEDICINE))
+        vm.onEvent(PackingListEvent.AddName("Nässpray"))
+        vm.onEvent(PackingListEvent.AddPerson("erik"))
+        vm.onEvent(PackingListEvent.AddSave)
+        assertEquals(PackingSection.MEDICINE, vm.row("Nässpray").item.section)
+        assertEquals(setOf<PackingGroup?>(PackingGroup.SUPPLEMENT), vm.collapsed.value)
+    }
+
+    @Test
+    fun `dolda syns bara när Visa dolda är valt, och antalet dolda räknas (PAK-4)`() = runTest {
+        seed()
+        val vm = viewModel()
+        val solkram = vm.row("Solkräm").item
+        vm.hiding.onEvent(ArchiveEvent.Archive(solkram.id, solkram.name))
+        assertEquals(1, vm.hiddenCount.value)
+        val shown = { (vm.shown.value as ListUiState.Content).items.map { it.item.name } }
+        assertFalse("Solkräm" in shown())
+        vm.hiding.onEvent(ArchiveEvent.ToggleArchived)
+        assertTrue("Solkräm" in shown())
+        vm.hiding.onEvent(ArchiveEvent.ToggleArchived)
+        assertFalse("Solkräm" in shown())
+    }
+
+    @Test
+    fun `ihopfällt läge och Visa dolda står kvar under appsessionen och börjar om med en ny session`() = runTest {
+        seed()
+        val first = viewModel()
+        first.onEvent(PackingListEvent.ToggleGroup(PackingGroup.MEDICINE))
+        first.onEvent(PackingListEvent.ToggleGroup(null))
+        first.hiding.onEvent(ArchiveEvent.ToggleArchived)
+
+        val again = viewModel()
+        assertEquals(setOf(PackingGroup.MEDICINE, null), again.collapsed.value, "samma session – samma läge")
+        assertTrue(again.hiding.showingArchived.value)
+        again.onEvent(PackingListEvent.ToggleGroup(PackingGroup.MEDICINE))
+        assertEquals(setOf<PackingGroup?>(null), again.collapsed.value)
+
+        val restarted = PackingListViewModel("t1", trips, persons, regimens, packing, settings, tripPacking, FixedClock(), PackingListSession())
+        assertEquals(emptySet(), restarted.collapsed.value, "omstart – allt utfällt")
+        assertFalse(restarted.hiding.showingArchived.value, "omstart – dolda gömda")
+    }
+
+    @Test
     fun `en egen rad som packas på resedagen hamnar sist i På resedagen med egen räknare (PAK-6)`() = runTest {
         seed()
         val vm = viewModel()
-        vm.onEvent(PackingListEvent.Add)
+        vm.onEvent(PackingListEvent.Add(PackingSection.FAMILY))
         vm.onEvent(PackingListEvent.AddName("Laddare"))
         vm.onEvent(PackingListEvent.AddTravelDay(TravelDayChange(true, LocalTime(8, 30))))
         vm.onEvent(PackingListEvent.AddSave)
@@ -369,7 +436,7 @@ class PackingListViewModelTest {
 
     @Test
     fun `en resa som inte finns visar finns inte längre och går inte att lägga till under (#88)`() = runTest {
-        val vm = PackingListViewModel("okand", trips, persons, regimens, packing, settings, tripPacking, FixedClock())
+        val vm = PackingListViewModel("okand", trips, persons, regimens, packing, settings, tripPacking, FixedClock(), session)
         assertEquals(DataError.NotFound, (vm.state.value as ListUiState.Error).error.cause)
         seed()
         val open = viewModel()

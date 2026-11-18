@@ -33,7 +33,6 @@ import se.kodhast.ui.common.EditorUiState
 import se.kodhast.ui.common.ListEvent
 import se.kodhast.ui.common.ListUiState
 import se.kodhast.ui.common.UiError
-import se.kodhast.ui.components.AddAction
 import se.kodhast.ui.components.AppButton
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppIconButton
@@ -42,8 +41,11 @@ import se.kodhast.ui.components.ButtonVariant
 import se.kodhast.ui.components.CheckRow
 import se.kodhast.ui.components.Confetti
 import se.kodhast.ui.components.ConfirmDialog
+import se.kodhast.ui.components.EmptyAction
 import se.kodhast.ui.components.EmptyContent
 import se.kodhast.ui.components.EntityListScreen
+import se.kodhast.ui.components.GroupAction
+import se.kodhast.ui.components.GroupFold
 import se.kodhast.ui.components.InfoPill
 import se.kodhast.ui.components.ItemRow
 import se.kodhast.ui.components.ListArchive
@@ -57,7 +59,9 @@ import se.kodhast.ui.theme.Tone
 /** Packlistan för en resa (PAK-1–7); pennan öppnar resans formulär (RES-1). */
 @Composable
 fun PackingListScreen(onBack: () -> Unit, onEditTrip: () -> Unit, viewModel: PackingListViewModel) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.shown.collectAsStateWithLifecycle()
+    val collapsed by viewModel.collapsed.collectAsStateWithLifecycle()
+    val hiddenCount by viewModel.hiddenCount.collectAsStateWithLifecycle()
     val header by viewModel.header.collectAsStateWithLifecycle()
     val editing by viewModel.editing.collectAsStateWithLifecycle()
     val adding by viewModel.adding.collectAsStateWithLifecycle()
@@ -72,7 +76,9 @@ fun PackingListScreen(onBack: () -> Unit, onEditTrip: () -> Unit, viewModel: Pac
         onEvent = viewModel::onEvent,
         onBack = onBack,
         onEditTrip = onEditTrip,
-        archive = viewModel.hiding.collectAsListArchive(showToggle = false),
+        archive = viewModel.hiding.collectAsListArchive(),
+        collapsed = collapsed,
+        hiddenCount = hiddenCount,
         editing = editing,
         adding = addState.takeIf { adding },
         addList = addList,
@@ -91,6 +97,8 @@ fun PackingListContent(
     onEditTrip: () -> Unit,
     modifier: Modifier = Modifier,
     archive: ListArchive = ListArchive(showToggle = false),
+    collapsed: Set<PackingGroup?> = emptySet(),
+    hiddenCount: Int = 0,
     editing: PackingRow? = null,
     adding: EditorUiState<PackingItem>? = null,
     addList: AddListState = AddListState(),
@@ -98,7 +106,8 @@ fun PackingListContent(
     celebrate: Boolean = false,
     sheetError: UiError? = null
 ) {
-    val groups = packingGroups(header?.groups.orEmpty())
+    val groups = packingGroups(header?.groups.orEmpty(), collapsed, onEvent)
+    val sections = remember(groups) { listOf(PackingGroup.MEDICINE, PackingGroup.SUPPLEMENT, PackingGroup.FAMILY).map(groups::getValue) }
     val progress = header?.progress ?: PackingProgress.NONE
     var confetti by remember { mutableStateOf(false) }
     val event by rememberUpdatedState(onEvent)
@@ -115,20 +124,30 @@ fun PackingListContent(
             empty = EmptyContent(
                 icon = R.drawable.ic_luggage,
                 title = stringResource(R.string.packing_empty_title),
-                message = stringResource(R.string.packing_empty_message)
+                message = stringResource(R.string.packing_empty_message),
+                actions = listOf(EmptyAction(stringResource(R.string.packing_recount), { onEvent(PackingListEvent.AskRecount) }, R.drawable.ic_refresh))
             ),
-            add = AddAction(
-                stringResource(R.string.add),
-                { onEvent(PackingListEvent.Add) },
-                menu = listOf(
-                    AppMenuItem(stringResource(R.string.packing_recount), { onEvent(PackingListEvent.AskRecount) }, R.drawable.ic_refresh),
-                    AppMenuItem(stringResource(R.string.packing_hide_checked), { onEvent(PackingListEvent.HideChecked) }, R.drawable.ic_visibility_off)
-                )
-            ),
+            add = null,
             key = { it.item.id },
             onRetry = { onEvent(PackingListEvent.List(ListEvent.Retry)) },
             group = { row -> groups.getValue(if (row.item.hidden) null else PackingList.group(row.item)) },
-            archive = archive,
+            // Visa dolda (N)/Göm dolda står i ⋮ bara när något är dolt eller visas (PAK-4).
+            archive = archive.copy(
+                showToggle = hiddenCount > 0 || archive.showing,
+                showLabel = stringResource(R.string.packing_show_hidden_format, hiddenCount),
+                hideLabel = stringResource(R.string.packing_hide_hidden),
+                toggleIcon = R.drawable.ic_visibility_off
+            ),
+            groups = sections,
+            // Utan resa (inte läst än, eller finns inte) finns inget att räkna om eller dölja.
+            menu = if (header == null) {
+                emptyList()
+            } else {
+                listOf(
+                    AppMenuItem(stringResource(R.string.packing_recount), { onEvent(PackingListEvent.AskRecount) }, R.drawable.ic_refresh),
+                    AppMenuItem(stringResource(R.string.packing_hide_checked), { onEvent(PackingListEvent.HideChecked) }, R.drawable.ic_visibility_off)
+                )
+            },
             subtitle = header?.let { subtitle(it) },
             onBack = onBack,
             actions = {
@@ -172,17 +191,24 @@ private fun subtitle(header: PackingHeader): String {
 }
 
 /**
- * Rubrik per grupp med packat/totalt; "På resedagen" efter Övrigt och "Dolda" (`null`) sist och
- * hopfälld (PAK-1, PAK-4, PAK-6).
+ * Rubrik per grupp med packat/totalt, hopfällbar med läget från appsessionen ([collapsed]); plus i
+ * rubriken på Mediciner, Kosttillskott och Övrigt. "På resedagen" efter Övrigt och "Dolda" (`null`)
+ * sist (PAK-1, PAK-4, PAK-6).
  */
 @Composable
-private fun packingGroups(progress: Map<PackingGroup, PackingProgress>): Map<PackingGroup?, ListGroup> {
-    fun count(group: PackingGroup) = progress[group]?.let { "${it.packed} / ${it.total}" }
-    val medicines = ListGroup(stringResource(R.string.packing_medicines), R.drawable.ic_medication, Tone.Primary, count(PackingGroup.MEDICINE))
-    val supplements = ListGroup(stringResource(R.string.packing_supplements), R.drawable.ic_eco, Tone.Green, count(PackingGroup.SUPPLEMENT))
-    val other = ListGroup(stringResource(R.string.packing_other), R.drawable.ic_box, Tone.Blue, count(PackingGroup.FAMILY), columns = 2)
-    val travelDay = ListGroup(stringResource(R.string.packing_travel_day), R.drawable.ic_sun, Tone.Primary, count(PackingGroup.TRAVEL_DAY))
-    val hidden = ListGroup(stringResource(R.string.packing_hidden), R.drawable.ic_visibility_off, Tone.Primary, collapsible = true)
+private fun packingGroups(progress: Map<PackingGroup, PackingProgress>, collapsed: Set<PackingGroup?>, onEvent: (PackingListEvent) -> Unit): Map<PackingGroup?, ListGroup> {
+    val event by rememberUpdatedState(onEvent)
+    val emptyText = stringResource(R.string.empty_generic)
+    fun count(group: PackingGroup) = (progress[group] ?: PackingProgress.NONE).let { "${it.packed} / ${it.total}" }
+    fun fold(group: PackingGroup?) = GroupFold(group !in collapsed) { event(PackingListEvent.ToggleGroup(group)) }
+
+    @Composable
+    fun add(section: PackingSection) = GroupAction(R.drawable.ic_add, stringResource(R.string.packing_add_to_format, sectionName(section))) { event(PackingListEvent.Add(section)) }
+    val medicines = ListGroup(stringResource(R.string.packing_medicines), R.drawable.ic_medication, Tone.Primary, count(PackingGroup.MEDICINE), action = add(PackingSection.MEDICINE), fold = fold(PackingGroup.MEDICINE), emptyText = emptyText)
+    val supplements = ListGroup(stringResource(R.string.packing_supplements), R.drawable.ic_eco, Tone.Green, count(PackingGroup.SUPPLEMENT), action = add(PackingSection.SUPPLEMENT), fold = fold(PackingGroup.SUPPLEMENT), emptyText = emptyText)
+    val other = ListGroup(stringResource(R.string.packing_other), R.drawable.ic_box, Tone.Blue, count(PackingGroup.FAMILY), columns = 2, action = add(PackingSection.FAMILY), fold = fold(PackingGroup.FAMILY), emptyText = emptyText)
+    val travelDay = ListGroup(stringResource(R.string.packing_travel_day), R.drawable.ic_sun, Tone.Primary, count(PackingGroup.TRAVEL_DAY), fold = fold(PackingGroup.TRAVEL_DAY))
+    val hidden = ListGroup(stringResource(R.string.packing_hidden), R.drawable.ic_visibility_off, Tone.Primary, fold = fold(null))
     return remember(medicines, supplements, other, travelDay, hidden) {
         mapOf(
             PackingGroup.MEDICINE to medicines,

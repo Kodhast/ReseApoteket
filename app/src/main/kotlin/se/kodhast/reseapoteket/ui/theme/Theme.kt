@@ -35,11 +35,13 @@ private val ReseApoteketBrandStyle = AppBrandStyle(
  * [AppColors], och [AppTypeScale] (skill `ui-style`); formerna är bibliotekets (22 dp-kort, 3.0.0). Ingen dynamic color.
  * Ljust, mörkt eller system väljs i Inställningar; `MainActivity` räknar ut [darkTheme]. Kodhäst-delarna
  * slås på här, en gång för hela appen ([ReseApoteketBrandStyle]), och djupet ([AppColors.lightDepth], NFR-23). Appens
- * identitet (`LocalAppIdentity`: ikonen och namnet) ger flikarna Kodhäst-sidhuvudet (NAV-4).
+ * identitet (`LocalAppIdentity`: ikonen, namnet och [appVersion]) ger flikarna Kodhäst-sidhuvudet (NAV-4). [appVersion] sätter
+ * bara `MainActivity`, så att skärmdumparna inte bär något riktigt versionsnummer.
  */
 @Composable
 fun ReseApoteketTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    appVersion: String? = null,
     content: @Composable () -> Unit
 ) {
     AppTheme(
@@ -50,7 +52,7 @@ fun ReseApoteketTheme(
     ) {
         CompositionLocalProvider(
             LocalAppBrandStyle provides ReseApoteketBrandStyle,
-            LocalAppIdentity provides AppIdentity(R.drawable.ic_app_header, stringResource(R.string.app_name)),
+            LocalAppIdentity provides AppIdentity(R.drawable.ic_app_header, stringResource(R.string.app_name), appVersion),
             content = content
         )
     }

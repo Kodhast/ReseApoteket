@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
             // Resedagens morgon visas där något packas på resedagen (PAK-6).
             val morning by remember { settings.reminderSettings.map { it[ReminderKind.TRAVEL_DAY].time } }
                 .collectAsStateWithLifecycle(initialValue = LocalTravelDayMorning.current)
-            ReseApoteketTheme(darkTheme = dark) {
+            ReseApoteketTheme(darkTheme = dark, appVersion = BuildConfig.VERSION_NAME) {
                 CompositionLocalProvider(LocalTravelDayMorning provides morning) {
                     AppRoot(openTrip = trip, onTripOpened = { openTrip.value = null })
                 }

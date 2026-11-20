@@ -33,7 +33,9 @@ private fun String.toScreamingSnake() = replace(Regex("([a-z])([A-Z])"), "$1_$2"
 
 android {
     namespace = "se.kodhast.reseapoteket"
-    compileSdk = 37
+    compileSdk {
+        version = release(37) { minorApiLevel = 1 }
+    }
 
     defaultConfig {
         // Appens id står kvar efter bytet till se.kodhast.reseapoteket: telefonerna uppdaterar samma

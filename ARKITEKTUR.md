@@ -287,26 +287,25 @@ nedan – faller det efter en versionsuppdatering har ett API bytt namn. Skills 
 Använd inget API som inte står här – lägg till det här och i `VerifiedApisTest` i samma PR
 som det börjar användas.
 
-**Material 3 Expressive kräver 1.5.0.** I den stabila `material3:1.4.0` (Compose BOM
-2026.09.00) är alla Expressive-API:er `internal`. Därför pinnas `material3` till
-`1.5.0-beta01` i `libs.versions.toml` (övriga Compose-artefakter följer BOM:en). Byts till
-stabil 1.5.0 när den släpps. I beta01 är de flesta Expressive-API:er stabila; de som fortfarande
+**Material 3 Expressive kräver 1.5.0.** I den äldre stabila `material3:1.4.0` är alla Expressive-API:er
+`internal`. Därför pinnas `material3` till `1.5.0` (första stabila med Expressive) i `libs.versions.toml`
+(övriga Compose-artefakter följer BOM:en 2026.11.01). I 1.5.0 är de flesta Expressive-API:er stabila; de som fortfarande
 kräver `@OptIn(ExperimentalMaterial3ExpressiveApi::class)` är markerade experimentella nedan.
 Opt-in får bara stå i `ui/theme` och `ui/components` (och i tester) – kontrolleras av scopet
 `[expressive]` i `ui-forbidden.txt`.
 
 | Behov | API (paket.Klass / funktion) | Artefakt:version | Stabil/experimentell | Verifierad |
 |---|---|---|---|---|
-| Expressive-tema | `androidx.compose.material3.MaterialExpressiveTheme` | `material3:1.5.0-beta01` | stabil | 2026-10-19 |
-| Expressive-rörelse | `androidx.compose.material3.MotionScheme.expressive()` | `material3:1.5.0-beta01` | stabil | 2026-10-19 |
-| Färgscheman | `androidx.compose.material3.lightColorScheme(…)` / `darkColorScheme(…)` med appens palett i `AppColors` – ingen dynamic color, så Expressives standardschema används inte | `material3:1.5.0-beta01` | stabil | 2026-10-19 |
-| Vågig linjär progress | `androidx.compose.material3.LinearWavyProgressIndicator(progress = { … })` | `material3:1.5.0-beta01` | stabil | 2026-10-19 |
-| Split-knapp | `androidx.compose.material3.SplitButtonLayout` + `SplitButtonDefaults.LeadingButton` / `TrailingButton(checked, onCheckedChange)` | `material3:1.5.0-beta01` | stabil | 2026-10-19 |
-| Knappgrupp | `androidx.compose.material3.ButtonGroup(overflowIndicator) { clickableItem(…) }` | `material3:1.5.0-beta01` | stabil | 2026-10-19 |
-| Flytande verktygsrad | `androidx.compose.material3.HorizontalFloatingToolbar(expanded, colors = FloatingToolbarDefaults.standardFloatingToolbarColors(toolbarContainerColor, toolbarContentColor))` | `material3:1.5.0-beta01` | stabil | 2026-10-19 |
-| Laddningsindikator | `androidx.compose.material3.LoadingIndicator()` | `material3:1.5.0-beta01` | experimentell | 2026-10-19 |
-| Flexibel toppbar | `androidx.compose.material3.LargeFlexibleTopAppBar(title)` | `material3:1.5.0-beta01` | stabil | 2026-10-19 |
-| Formmorf för kryss | `androidx.graphics.shapes.Morph(start, end)` med `androidx.compose.material3.MaterialShapes` (`Circle` → `Cookie9Sided` i `CheckRow`) och `Morph.toPath(progress)` | `graphics-shapes:1.0.1` (via material3), `material3:1.5.0-beta01` | experimentell | 2026-10-19 |
+| Expressive-tema | `androidx.compose.material3.MaterialExpressiveTheme` | `material3:1.5.0` | stabil | 2026-10-19 |
+| Expressive-rörelse | `androidx.compose.material3.MotionScheme.expressive()` | `material3:1.5.0` | stabil | 2026-10-19 |
+| Färgscheman | `androidx.compose.material3.lightColorScheme(…)` / `darkColorScheme(…)` med appens palett i `AppColors` – ingen dynamic color, så Expressives standardschema används inte | `material3:1.5.0` | stabil | 2026-10-19 |
+| Vågig linjär progress | `androidx.compose.material3.LinearWavyProgressIndicator(progress = { … })` | `material3:1.5.0` | stabil | 2026-10-19 |
+| Split-knapp | `androidx.compose.material3.SplitButtonLayout` + `SplitButtonDefaults.LeadingButton` / `TrailingButton(checked, onCheckedChange)` | `material3:1.5.0` | stabil | 2026-10-19 |
+| Knappgrupp | `androidx.compose.material3.ButtonGroup(overflowIndicator) { clickableItem(…) }` | `material3:1.5.0` | stabil | 2026-10-19 |
+| Flytande verktygsrad | `androidx.compose.material3.HorizontalFloatingToolbar(expanded, colors = FloatingToolbarDefaults.standardFloatingToolbarColors(toolbarContainerColor, toolbarContentColor))` | `material3:1.5.0` | stabil | 2026-10-19 |
+| Laddningsindikator | `androidx.compose.material3.LoadingIndicator()` | `material3:1.5.0` | experimentell | 2026-10-19 |
+| Flexibel toppbar | `androidx.compose.material3.LargeFlexibleTopAppBar(title)` | `material3:1.5.0` | stabil | 2026-10-19 |
+| Formmorf för kryss | `androidx.graphics.shapes.Morph(start, end)` med `androidx.compose.material3.MaterialShapes` (`Circle` → `Cookie9Sided` i `CheckRow`) och `Morph.toPath(progress)` | `graphics-shapes:1.0.1` (via material3), `material3:1.5.0` | experimentell | 2026-10-19 |
 | Navigation-nyckel | `androidx.navigation3.runtime.NavKey` + `@Serializable` | `navigation3-runtime:1.2.0` | stabil | 2026-09-30 |
 | Back stack | `androidx.navigation3.runtime.rememberNavBackStack(vararg NavKey)` | `navigation3-runtime:1.2.0` | stabil | 2026-09-30 |
 | Navigationsvisning | `androidx.navigation3.ui.NavDisplay(backStack, onBack, entryDecorators, entryProvider)` | `navigation3-ui:1.2.0` | stabil | 2026-09-30 |
@@ -324,12 +323,12 @@ Beslutad och uppmätt i #11.
 | Vad | Värde | Kommentar |
 |---|---|---|
 | minSdk / targetSdk | 30 / 36 | `app/build.gradle.kts` |
-| compileSdk | **37** | Compose BOM 2026.09.00 (även stabila `material-ripple`/`foundation`) kräver 37 i AAR-metadata; issuets 36 räckte inte |
+| compileSdk | **37** | Compose BOM 2026.11.01 (även stabila `material-ripple`/`foundation`) kräver 37 i AAR-metadata; issuets 36 räckte inte |
 | Gradle | 9.8.0 | wrapper |
 | AGP | 9.4.1 | inbyggt Kotlin-stöd och nya DSL:en – `org.jetbrains.kotlin.android` används inte |
 | Kotlin | 2.4.20 | versionen styrs av `kotlin-jvm`-pluginen i rotens `plugins {}` |
 | KSP / Hilt | 2.3.12 / 2.60.1 | KAPT används inte |
-| Compose BOM | 2026.09.00 | `material3` pinnad separat, se [Verifierade API:er](#verifierade-apier) |
+| Compose BOM | 2026.11.01 | `material3` pinnad separat, se [Verifierade API:er](#verifierade-apier) |
 | Java | 17 | `sourceCompatibility`/`targetCompatibility` och Kotlins `jvmTarget`; ingen toolchain, så en nyare JDK (t.ex. 21) fungerar för att bygga |
 | Robolectric / Roborazzi / Konsist | 4.17 / 1.76.0 / 0.17.3 | Robolectric-SDK och skärmmått i `app/src/test/resources/robolectric.properties` |
 | PMD (CPD) | 7.28.0 | se `cpdCheck` nedan |

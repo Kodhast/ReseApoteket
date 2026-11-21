@@ -1,13 +1,16 @@
 package se.kodhast.reseapoteket.ui.persons
 
+import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -22,6 +25,7 @@ import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.model.Person
 import se.kodhast.reseapoteket.core.model.Regimen
 import se.kodhast.reseapoteket.core.model.RegimenKind
+import se.kodhast.reseapoteket.core.model.displayName
 import se.kodhast.reseapoteket.core.model.listed
 import se.kodhast.reseapoteket.data.common.AppErrors
 import se.kodhast.reseapoteket.data.repository.PersonRepository
@@ -39,10 +43,13 @@ import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
 import se.kodhast.ui.components.AppIconButton
 import se.kodhast.ui.components.AppMenuItem
+import se.kodhast.ui.components.DeleteAction
+import se.kodhast.ui.components.DeleteConfirmDialog
 import se.kodhast.ui.components.DetailHeader
 import se.kodhast.ui.components.EntityDetailScreen
 import se.kodhast.ui.components.IconButtonVariant
 import se.kodhast.ui.components.SectionFoldout
+import se.kodhast.ui.components.SwipeToDelete
 import se.kodhast.ui.theme.AppTheme
 
 /** En person med sina recept och kosttillskott, utan arkiverade (PER-4). */
@@ -53,6 +60,9 @@ sealed interface PersonDetailEvent {
 
     data class SetArchived(val archived: Boolean) : PersonDetailEvent
 
+    /** Radera ett recept eller kosttillskott efter bekräftelse (svep på raden, REC-5). */
+    data class DeleteRegimen(val regimen: Regimen) : PersonDetailEvent
+
     data object ErrorShown : PersonDetailEvent
 }
 
@@ -60,7 +70,7 @@ sealed interface PersonDetailEvent {
 class PersonDetailViewModel @AssistedInject constructor(
     @Assisted private val personId: String,
     private val persons: PersonRepository,
-    regimens: RegimenRepository
+    private val regimens: RegimenRepository
 ) : ViewModel() {
 
     @AssistedFactory
@@ -81,13 +91,14 @@ class PersonDetailViewModel @AssistedInject constructor(
 
     private val failures = WriteFailures(viewModelScope, AppErrors)
 
-    /** Ett misslyckat arkivera/återställ, tills skärmen visat det. */
+    /** Ett misslyckat arkivera/återställ eller radera, tills skärmen visat det. */
     val error: StateFlow<UiError?> = failures.failure
 
     fun onEvent(event: PersonDetailEvent) {
         when (event) {
             PersonDetailEvent.Retry -> loader.retry()
             is PersonDetailEvent.SetArchived -> failures.write { persons.setArchived(personId, event.archived) }
+            is PersonDetailEvent.DeleteRegimen -> failures.write { regimens.forPerson(personId).delete(event.regimen.id) }
             PersonDetailEvent.ErrorShown -> failures.clear()
         }
     }
@@ -140,19 +151,22 @@ fun PersonDetailContent(
         onErrorShown = { onEvent(PersonDetailEvent.ErrorShown) },
         leading = { PersonAvatar(it.person.emoji, AppColors.person(it.person.colorHex), size = AvatarSize.Large) }
     ) { detail ->
-        RegimenSection(RegimenKindConfig.of(RegimenKind.MEDICINE), detail.medicines, { onAddRegimen(RegimenKind.MEDICINE) }, onOpenRegimen)
-        RegimenSection(RegimenKindConfig.of(RegimenKind.SUPPLEMENT), detail.supplements, { onAddRegimen(RegimenKind.SUPPLEMENT) }, onOpenRegimen)
+        val delete = { regimen: Regimen -> onEvent(PersonDetailEvent.DeleteRegimen(regimen)) }
+        RegimenSection(RegimenKindConfig.of(RegimenKind.MEDICINE), detail.medicines, { onAddRegimen(RegimenKind.MEDICINE) }, onOpenRegimen, delete)
+        RegimenSection(RegimenKindConfig.of(RegimenKind.SUPPLEMENT), detail.supplements, { onAddRegimen(RegimenKind.SUPPLEMENT) }, onOpenRegimen, delete)
     }
 }
 
 /**
  * Recept eller kosttillskott i ett hopfällbart kort (PER-4, REC-3, REC-5): rubriken med antal fäller ut och ihop, och den
  * runda plusknappen i rubriken lägger till utan att fälla – TalkBack "Lägg till recept"/"Lägg till kosttillskott".
- * Utfällt när detaljen öppnas; läget sparas medan skärmen lever.
+ * Utfällt när detaljen öppnas; läget sparas medan skärmen lever. Svep åt vänster på en rad begär radering (REC-5,
+ * android-ui #118): raden fjädrar tillbaka och samma dialog som formulärets Radera frågar.
  */
 @Composable
-private fun RegimenSection(config: RegimenKindConfig, regimens: List<Regimen>, onAdd: () -> Unit, onOpen: (Regimen) -> Unit) {
+private fun RegimenSection(config: RegimenKindConfig, regimens: List<Regimen>, onAdd: () -> Unit, onOpen: (Regimen) -> Unit, onDelete: (Regimen) -> Unit) {
     var expanded by rememberSaveable { mutableStateOf(true) }
+    var deleting by remember { mutableStateOf<Regimen?>(null) }
     AppCard {
         SectionFoldout(
             stringResource(config.title),
@@ -166,8 +180,15 @@ private fun RegimenSection(config: RegimenKindConfig, regimens: List<Regimen>, o
         ) {
             regimens.forEachIndexed { index, regimen ->
                 if (index > 0) AppDivider()
-                RegimenRow(regimen, onClick = { onOpen(regimen) })
+                SwipeToDelete({ deleting = regimen }, shape = AppTheme.shapes.row) {
+                    // Ogenomskinlig, så att svepets bakgrund bara syns där raden dragits undan.
+                    RegimenRow(regimen, onClick = { onOpen(regimen) }, Modifier.clip(AppTheme.shapes.row).background(AppTheme.extendedColors.card))
+                }
             }
         }
+    }
+    deleting?.let { regimen ->
+        val action = DeleteAction(stringResource(R.string.delete_title_format, regimen.displayName), stringResource(config.editor.deleteMessage)) { onDelete(regimen) }
+        DeleteConfirmDialog(action, onDismiss = { deleting = null })
     }
 }

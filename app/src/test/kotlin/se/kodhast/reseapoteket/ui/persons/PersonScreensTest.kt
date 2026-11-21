@@ -2,6 +2,8 @@ package se.kodhast.reseapoteket.ui.persons
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -145,6 +147,25 @@ class PersonScreensTest {
         rule.onNodeWithText("Vid behov").assertIsDisplayed()
         rule.onNodeWithText("Pausat").assertIsDisplayed()
         rule.onNodeWithText("Pausat – räknas inte med").assertIsDisplayed()
+    }
+
+    @Test
+    fun `svep åt vänster på en receptrad frågar först och raderar efter bekräftelse (REC-5)`() {
+        val events = mutableListOf<PersonDetailEvent>()
+        val opened = mutableListOf<String>()
+        rule.setContent { ReseApoteketTheme { PersonDetailContent(DetailUiState.Content(detail), { events += it }, {}, {}, {}, { opened += it.id }) } }
+        rule.onNodeWithText("Enalapril", substring = true).performTouchInput { swipeLeft() }
+        rule.waitForIdle()
+        rule.onNodeWithText("Receptet tas bort för gott. Det går inte att ångra.").assertIsDisplayed()
+        assertEquals(emptyList(), events, "svepet raderar inget utan bekräftelse")
+        rule.onNodeWithText("Avbryt").performClick()
+        assertEquals(emptyList(), events)
+
+        rule.onNodeWithText("Enalapril", substring = true).performTouchInput { swipeLeft() }
+        rule.waitForIdle()
+        rule.onAllNodesWithText("Radera").onLast().performClick()
+        assertEquals(listOf<PersonDetailEvent>(PersonDetailEvent.DeleteRegimen(detail.medicines[1])), events)
+        assertEquals(emptyList(), opened, "svepet öppnar inte receptet")
     }
 
     @Test

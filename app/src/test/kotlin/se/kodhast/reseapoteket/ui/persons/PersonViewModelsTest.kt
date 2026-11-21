@@ -143,6 +143,24 @@ class PersonViewModelsTest {
     }
 
     @Test
+    fun `persondetaljen raderar ett recept för gott, och ett misslyckat raderande visas som fel (REC-5, NFR-5)`() = runTest {
+        persons.upsert(Person("anna", "Anna"))
+        val levaxin = Regimen("r1", RegimenKind.MEDICINE, "Levaxin")
+        regimens.forPerson("anna").upsert(levaxin)
+        regimens.forPerson("anna").upsert(Regimen("s1", RegimenKind.SUPPLEMENT, "D-vitamin"))
+        val vm = PersonDetailViewModel("anna", persons, regimens)
+        vm.state.test {
+            vm.onEvent(PersonDetailEvent.DeleteRegimen(levaxin))
+            val detail = (expectMostRecentItem() as DetailUiState.Content).value
+            assertEquals(emptyList(), detail.medicines)
+            assertEquals(listOf("D-vitamin"), detail.supplements.map { it.name })
+        }
+        scope.setVersion(Schema.CURRENT_VERSION + 1) // nyare data än appen: skrivskyddat
+        vm.onEvent(PersonDetailEvent.DeleteRegimen(Regimen("s1", RegimenKind.SUPPLEMENT, "D-vitamin")))
+        assertEquals(DataError.UpdateRequired, vm.error.value?.cause)
+    }
+
+    @Test
     fun `persondetaljen för en person som inte finns är ett fel`() = runTest {
         PersonDetailViewModel("borta", persons, regimens).state.test {
             assertEquals(DataError.NotFound, (expectMostRecentItem() as DetailUiState.Error).error.cause)

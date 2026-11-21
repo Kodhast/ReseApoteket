@@ -8,14 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.core.model.QuantityRule
-import se.kodhast.ui.components.ChoiceChips
+import se.kodhast.ui.components.AppSegmentedChoice
 import se.kodhast.ui.components.FieldError
 import se.kodhast.ui.components.QuantityStepper
+import se.kodhast.ui.components.SegmentWidth
 import se.kodhast.ui.components.UnknownValueNotice
 import se.kodhast.ui.theme.Spacing
 
 /**
- * Mängdregel för en familjeartikel: Fast antal · Per resenär · Per N dagar och dess antal.
+ * Mängdregel för en familjeartikel: Fast antal · Per resenär · Per N dagar (segmentval) och dess antal.
  * [unitName] som i [DoseScheduleRow]; en okänd regel visas som meddelande (BCK-5).
  * [error] (från formulärets validering) visas under fälten.
  */
@@ -32,11 +33,12 @@ fun QuantityRuleRow(
             UnknownValueNotice()
             return@Column
         }
-        ChoiceChips(
-            options = RuleKind.entries,
-            selected = RuleKind.entries.first { it.matches(rule) },
-            onSelect = { onChange(it.switch(rule)) },
-            label = { stringResource(it.label) }
+        // Segment efter textens bredd: lika breda klipper "Per N dagar" på telefonen (android-ui #98).
+        AppSegmentedChoice(
+            options = RuleKind.entries.map { stringResource(it.label) },
+            selectedIndex = RuleKind.entries.indexOfFirst { it.matches(rule) },
+            onSelect = { onChange(RuleKind.entries[it].switch(rule)) },
+            segmentWidth = SegmentWidth.FitText
         )
         when (rule) {
             is QuantityRule.Fixed ->

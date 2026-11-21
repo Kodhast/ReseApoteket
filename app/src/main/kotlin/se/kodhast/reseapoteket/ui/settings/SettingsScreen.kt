@@ -67,14 +67,13 @@ import se.kodhast.ui.components.SwitchRow
 import se.kodhast.ui.components.rememberNotificationAccess
 
 /** Kortet där en åtgärd gjordes – ett fel visas där (NFR-5). */
-enum class SettingsSection { Household, Account, Data }
+enum class SettingsSection { Household, Data }
 
 data class SettingsError(val section: SettingsSection, val error: DataError)
 
 @Immutable
 data class SettingsUiState(
     val household: Household? = null,
-    val account: AuthUser? = null,
     val themeMode: ThemeMode = ThemeMode.System,
     val moveCheckedLast: Boolean = true,
     val exporting: Boolean = false,
@@ -89,9 +88,6 @@ sealed interface SettingsEvent {
     data class SetMoveCheckedLast(val on: Boolean) : SettingsEvent
 
     data class SetMarginDays(val days: Int) : SettingsEvent
-
-    /** Efter bekräftelsen (SET-4). */
-    data object SignOut : SettingsEvent
 
     data object Export : SettingsEvent
 
@@ -110,18 +106,11 @@ data class ShareExport(val uri: String)
 class SettingsViewModel @Inject constructor(
     private val settings: SettingsStore,
     private val households: HouseholdRepository,
-    private val auth: AuthRepository,
     private val export: HouseholdExport,
     private val files: ExportFiles,
     private val clock: Clock,
-    private val timeZone: TimeZone,
-    private val photos: ProfilePhotoCache,
-    medicines: MedicineRepository
+    private val timeZone: TimeZone
 ) : ViewModel() {
-
-    /** Datumet för den inbyggda läkemedelslistan (REC-6), eller `null` om den saknas. */
-    val medicinesUpdated: StateFlow<LocalDate?> = flow { emit(medicines.catalog().updated) }
-        .stateIn(viewModelScope, screenSharing(forgetWhenStopped = false), null)
 
     private val action = MutableStateFlow(Action())
 
@@ -129,12 +118,11 @@ class SettingsViewModel @Inject constructor(
     // +/− räknar redan från det nya värdet – och en ändring från en annan enhet syns som den är.
     val state: StateFlow<SettingsUiState> = combine(
         households.current.withFallback(null),
-        auth.authState.withFallback(null),
         settings.themeMode,
         settings.moveCheckedLast.withFallback(true),
         action
-    ) { household, account, theme, checkedLast, action ->
-        SettingsUiState(household, account, theme, checkedLast, action.exporting, action.error, action.share)
+    ) { household, theme, checkedLast, action ->
+        SettingsUiState(household, theme, checkedLast, action.exporting, action.error, action.share)
     }.stateIn(viewModelScope, screenSharing(forgetWhenStopped = false), SettingsUiState())
 
     fun onEvent(event: SettingsEvent) {
@@ -144,10 +132,6 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetMoveCheckedLast -> viewModelScope.launch { settings.setMoveCheckedLast(event.on) }
 
             is SettingsEvent.SetMarginDays -> setMarginDays(event.days)
-
-            // Profilfotot är ingen data som väntar på servern: det tas bort efter en lyckad utloggning (AUTH-4, AUTH-5);
-            // ett fel där är inget för användaren.
-            SettingsEvent.SignOut -> run(SettingsSection.Account) { auth.signOut().onSuccess { photos.clear() } }
 
             SettingsEvent.Export -> exportHousehold()
 
@@ -191,12 +175,10 @@ class SettingsViewModel @Inject constructor(
 fun SettingsScreen(
     onBack: () -> Unit,
     onEditHousehold: () -> Unit,
-    onOpenGallery: (() -> Unit)?,
     viewModel: SettingsViewModel = hiltViewModel(),
     remindersViewModel: RemindersViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val medicinesUpdated by viewModel.medicinesUpdated.collectAsStateWithLifecycle()
     val reminders by remindersViewModel.state.collectAsStateWithLifecycle()
     val access = rememberNotificationAccess()
     val context = LocalContext.current
@@ -211,7 +193,7 @@ fun SettingsScreen(
             viewModel.onEvent(SettingsEvent.ShareShown)
         }
     }
-    SettingsContent(state, viewModel::onEvent, BuildConfig.VERSION_NAME, onEditHousehold, onOpenGallery, onBack = onBack, medicinesUpdated = medicinesUpdated) {
+    SettingsContent(state, viewModel::onEvent, BuildConfig.VERSION_NAME, onEditHousehold, onBack = onBack) {
         RemindersCard(reminders, remindersViewModel::onEvent, access.allowed, access.ask, access.openSettings)
     }
 }
@@ -231,10 +213,8 @@ private fun openShare(share: ShareExport, context: Context, chooserTitle: String
 private val THEME_OPTIONS = listOf(ThemeMode.Light to R.string.theme_light, ThemeMode.Dark to R.string.theme_dark, ThemeMode.System to R.string.theme_system)
 
 /**
- * Kontot står först (NAV-5).
- * @param onOpenGallery "Komponenter" – bara i debug-bygget, annars `null`.
+ * Hushållet står först; konto, Om och galleriet ligger i avatarmenyn (NAV-5).
  * @param onBack tillbakapilen i toppraden – tillbaka till fliken avataren trycktes på (NAV-5).
- * @param medicinesUpdated datumet för den inbyggda läkemedelslistan (REC-6), under Om.
  * @param reminders kortet Påminnelser (PÅM-1), efter Packlista.
  */
 @Composable
@@ -243,23 +223,11 @@ fun SettingsContent(
     onEvent: (SettingsEvent) -> Unit,
     versionName: String,
     onEditHousehold: () -> Unit,
-    onOpenGallery: (() -> Unit)?,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
-    medicinesUpdated: LocalDate? = null,
     reminders: (@Composable () -> Unit)? = null
 ) {
-    val uriHandler = LocalUriHandler.current
-    val sourceUrl = stringResource(R.string.settings_source_url)
     SettingsPage(stringResource(R.string.tab_settings), modifier, onBack) {
-        GroupLabel(stringResource(R.string.settings_account))
-        SettingsCard(error = state.errorIn(SettingsSection.Account)) {
-            state.account?.let { account ->
-                AccountRow(account.name, account.email, account.photoUrl)
-                AppDivider()
-            }
-            SignOutRow(stringResource(R.string.app_name), onSignOut = { onEvent(SettingsEvent.SignOut) })
-        }
         state.household?.let { household ->
             GroupLabel(stringResource(R.string.settings_household))
             SettingsCard(error = state.errorIn(SettingsSection.Household)) {
@@ -327,29 +295,6 @@ fun SettingsContent(
                 onClick = { onEvent(SettingsEvent.Export) }.takeUnless { state.exporting },
                 navigates = true
             )
-        }
-        GroupLabel(stringResource(R.string.settings_about))
-        AboutCard(stringResource(R.string.app_name), versionName) {
-            medicinesUpdated?.let {
-                AppDivider()
-                ItemRow(stringResource(R.string.settings_medicines), subtitle = stringResource(R.string.settings_medicines_note, DateFormat.display(it)))
-            }
-            AppDivider()
-            ItemRow(
-                title = stringResource(R.string.settings_source),
-                subtitle = stringResource(R.string.settings_source_note),
-                onClick = { uriHandler.openUri(sourceUrl) },
-                navigates = true
-            )
-            if (onOpenGallery != null) {
-                AppDivider()
-                ItemRow(
-                    title = stringResource(R.string.settings_components),
-                    subtitle = stringResource(R.string.settings_components_note),
-                    onClick = onOpenGallery,
-                    navigates = true
-                )
-            }
         }
     }
 }

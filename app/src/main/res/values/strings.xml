@@ -296,11 +296,9 @@
     <string name="theme_light">Ljust</string>
     <string name="theme_dark">Mörkt</string>
     <string name="theme_system">System</string>
-    <string name="settings_about">Om</string>
+    <string name="about_title">Om ReseApoteket</string>
     <string name="settings_medicines">Läkemedelslista</string>
     <string name="settings_medicines_note">Läkemedelsverket, %1$s · CC BY 4.0</string>
-    <string name="settings_components">Komponenter</string>
-    <string name="settings_components_note">Bara i debug-bygget</string>
     <string name="settings_household">Hushåll</string>
     <string name="settings_household_name">Hushållets namn</string>
     <string name="settings_margin_days">Marginaldagar</string>
@@ -308,7 +306,6 @@
     <string name="settings_packing">Packlista</string>
     <string name="settings_move_checked_last">Flytta avprickade sist</string>
     <string name="settings_move_checked_last_note">Packade rader hamnar sist hos varje person</string>
-    <string name="settings_account">Konto</string>
     <string name="settings_data">Data &amp; backup</string>
     <string name="settings_sync_title">Sparas i molnet</string>
     <string name="settings_sync_note">Allt synkas med Firestore och fungerar offline. En krypterad backup kan tas vid behov.</string>

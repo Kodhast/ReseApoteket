@@ -192,7 +192,7 @@ class RemindersTest {
         onNodeWithText("Dags att packa").clickWithoutRipple()
     }) {
         Box(Modifier.background(MaterialTheme.colorScheme.background)) {
-            SettingsContent(SettingsUiState(), {}, "0.4.0", {}, onOpenGallery = null) { RemindersCard(state, {}, true, {}, {}) }
+            SettingsContent(SettingsUiState(), {}, "0.4.0", {}) { RemindersCard(state, {}, true, {}, {}) }
         }
     }
 }

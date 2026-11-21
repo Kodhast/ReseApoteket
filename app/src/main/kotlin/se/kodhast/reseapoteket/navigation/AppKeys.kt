@@ -54,7 +54,11 @@ data object SettingsKey : AppKey
 @Serializable
 data object HouseholdEditKey : AppKey
 
-/** Komponentgalleriet – nås bara från Inställningar i debug-bygget. */
+/** Om appen – från avatarmenyn (NAV-5, SET-6). */
+@Serializable
+data object AboutKey : AppKey
+
+/** Komponentgalleriet – nås bara från avatarmenyn i debug-bygget. */
 @Serializable
 data object ComponentGalleryKey : AppKey
 

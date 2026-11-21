@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.entryProvider
 import se.kodhast.reseapoteket.BuildConfig
+import se.kodhast.reseapoteket.R
 import se.kodhast.reseapoteket.data.auth.AuthUser
 import se.kodhast.reseapoteket.ui.components.ComponentGallery
 import se.kodhast.reseapoteket.ui.familyitems.FamilyItemEditScreen
@@ -29,6 +30,8 @@ import se.kodhast.reseapoteket.ui.persons.PersonsScreen
 import se.kodhast.reseapoteket.ui.regimens.RegimenEditScreen
 import se.kodhast.reseapoteket.ui.regimens.RegimenEditViewModel
 import se.kodhast.reseapoteket.ui.regimens.RegimenKindConfig
+import se.kodhast.reseapoteket.ui.settings.AboutScreen
+import se.kodhast.reseapoteket.ui.settings.AccountViewModel
 import se.kodhast.reseapoteket.ui.settings.HouseholdEditScreen
 import se.kodhast.reseapoteket.ui.settings.SettingsScreen
 import se.kodhast.reseapoteket.ui.sync.SyncEvent
@@ -36,11 +39,12 @@ import se.kodhast.reseapoteket.ui.sync.SyncViewModel
 import se.kodhast.reseapoteket.ui.trips.TripEditScreen
 import se.kodhast.reseapoteket.ui.trips.TripEditViewModel
 import se.kodhast.reseapoteket.ui.trips.TripsScreen
-import se.kodhast.ui.components.AccountAvatar
+import se.kodhast.ui.components.AccountInfo
+import se.kodhast.ui.components.AccountMenuAvatar
 
 /**
  * Appens innehåll efter inloggning: tre flikar med egna back stackar, synkläget i sidhuvudets prickar (NFR-6), avataren
- * med anslutningspluppen som öppnar Inställningar (NAV-5), plusknappens meny (NAV-6) och resan en påminnelse öppnar.
+ * med anslutningspluppen och menyn under sig (NAV-5), plusknappens meny (NAV-6) och resan en påminnelse öppnar.
  * [account] är den inloggade (namn, e-post och foto i avataren).
  */
 @Composable
@@ -49,9 +53,13 @@ fun AppNavigation(
     account: AuthUser? = null,
     openTrip: String? = null,
     onTripOpened: () -> Unit = {},
-    syncViewModel: SyncViewModel = hiltViewModel()
+    syncViewModel: SyncViewModel = hiltViewModel(),
+    accountViewModel: AccountViewModel = hiltViewModel()
 ) {
-    val sync by syncViewModel.state.collectAsStateWithLifecycle()
+    val syncState by syncViewModel.state.collectAsStateWithLifecycle()
+    val signOutError by accountViewModel.error.collectAsStateWithLifecycle()
+    // Ett fel från utloggningen visas som snackbar bredvid synkens skrivfel.
+    val sync = remember(syncState, signOutError) { signOutError?.let { syncState.copy(writeError = syncState.writeError ?: it) } ?: syncState }
     val backStack = rememberAppBackStack()
     val tabOwner = checkNotNull(LocalViewModelStoreOwner.current) { "AppNavigation kräver en ViewModelStoreOwner" }
     val entries = remember(backStack, tabOwner) { appEntries(backStack, tabOwner) }
@@ -61,12 +69,24 @@ fun AppNavigation(
         entries,
         modifier,
         sync = sync,
-        onSyncErrorShown = { syncViewModel.onEvent(SyncEvent.WriteErrorShown) },
+        onSyncErrorShown = {
+            syncViewModel.onEvent(SyncEvent.WriteErrorShown)
+            accountViewModel.onErrorShown()
+        },
         onAdd = { choice -> backStack.push(choice.key) },
         // Samma lambda tills kontot eller anslutningen ändras, så att flikarnas sidhuvud inte ritas om i onödan.
         account = remember(account, sync.online, backStack) {
             {
-                AccountAvatar(account?.name ?: account?.email, onClick = { backStack.push(SettingsKey) }, online = sync.online, photoUrl = account?.photoUrl)
+                AccountMenuAvatar(
+                    account?.let { AccountInfo(it.name, it.email, it.photoUrl) },
+                    stringResource(R.string.app_name),
+                    onOpenSettings = { backStack.push(SettingsKey) },
+                    onOpenAbout = { backStack.push(AboutKey) },
+                    onSignIn = null,
+                    onSignOut = accountViewModel::signOut,
+                    online = sync.online,
+                    onOpenGallery = if (BuildConfig.DEBUG) ({ backStack.push(ComponentGalleryKey) }) else null
+                )
             }
         }
     )
@@ -110,11 +130,11 @@ fun appEntries(backStack: AppBackStack, tabOwner: ViewModelStoreOwner): (AppKey)
             SettingsScreen(
                 onBack = { backStack.popIfTop(key) },
                 onEditHousehold = { backStack.push(HouseholdEditKey) },
-                onOpenGallery = if (BuildConfig.DEBUG) ({ backStack.push(ComponentGalleryKey) }) else null,
                 viewModel = hiltViewModel(),
                 remindersViewModel = hiltViewModel()
             )
         }
+        entry<AboutKey> { key -> AboutScreen(onBack = { backStack.popIfTop(key) }) }
         entry<PersonDetailKey> { key ->
             PersonDetailScreen(
                 onBack = { backStack.popIfTop(key) },

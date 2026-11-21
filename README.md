@@ -26,17 +26,17 @@ Kraven med ID:n står i [KRAVLISTA.md](KRAVLISTA.md); här är översikten.
 - "Uppdatera appen" om hushållets data sparats av en nyare appversion (HUS-3).
 - Krypterad backup på begäran och återställning med `tools/db` (BCK).
 - Databasåtkomst från en Claude-session, bara läsning (TP-8).
-- Tre flikar – Resor, Personer och Gemensamt – i en flytande verktygsrad med plusknapp för ny resa, person eller gemensam sak; Kodhästs sidhuvud med kontots avatar (profilfoto och anslutningsprick), som öppnar Inställningar (NAV).
+- Tre flikar – Resor, Personer och Gemensamt – i en flytande verktygsrad med plusknapp för ny resa, person eller gemensam sak; Kodhästs sidhuvud med kontots avatar (profilfoto och anslutningsprick) som fäller ut kontomenyn: konto, Inställningar, Om ReseApoteket och Logga ut (NAV).
 - Designsystemet: Material 3 Expressive med egen palett och Nunito, ljust, mörkt eller system (SET-1).
 - Personer med recept och kosttillskott: dosering, förhandsvisning av vad som ska packas, pausade recept och snabbval (PER, REC, KOS).
 - Nytt recept föreslår läkemedel ur Läkemedelsverkets lista medan man skriver och fyller i namn, styrka, form och enhet – listan är inbyggd och sökningen sker på telefonen (REC-6–7).
 - Gemensamt: familjeartiklar på hushållsnivå, t.ex. solkräm och plåster, med mängdregler och exempel att börja från (FAM).
 - Resor: skapa en resa som räknar fram packlistan från resans längd och vilka som åker med, och räkna om när resan ändras (RES).
 - Packlistan: pricka av per sektion och person, ändra mängd, lägg till egna rader – en i taget eller en hel inklistrad lista under Övrigt (PAK-7) – dölj med svep och ångra, och konfetti när allt är packat (PAK).
-- Inställningar: hushållets namn och marginaldagar, "Flytta avprickade sist", tema, konto med utloggning, och export av hushållet som JSON i samma format som backupen (SET).
+- Inställningar: hushållets namn och marginaldagar, "Flytta avprickade sist", tema, och export av hushållet som JSON i samma format som backupen (SET).
 - Påminnelser inför resan: ingen packlista än, dags att packa, dagen före och resedagens morgon – för de personer telefonen valt, med egna tider (PÅM).
 - Packas på resedagen: det som används till sista morgonen samlas sist i packlistan och påminns om på resedagens morgon eller vid en egen tid (PAK-6).
-- Komponentkatalogen och ramarna för listor och redigering; i debug-bygget visar Inställningar → Komponenter alla delar.
+- Komponentkatalogen och ramarna för listor och redigering; i debug-bygget visar kontomenyn → Komponentgalleri alla delar.
 
 ## Kom igång (Android Studio)
 
@@ -246,3 +246,4 @@ Versionen och raden nedan höjs och skrivs i funktions-PR:en; releasen görs via
 | 0.13.1 | Intern: komponentgalleriet (debug) är bibliotekets `ComponentGallery` från android-ui 1.18.0 med ReseApotekets egna sektioner – personerna, doseringen och packningen – efter bibliotekets (#177, del 6). Ingen ändring för användaren. |
 | 0.14.0 | **Samma utseende som Dagboken** (#184, android-ui 3.0.0): anteckningsfältet för recept och familjeartiklar är ett hopfällt kort; veckodagarna visas som "tors" (var "tor"); korthörnen är 22 dp (var 28); kalenderns valda dag, plusknappen och dess meny, flikar, segment, bottenark, pills och reglage har djup och krymper när de trycks; plusmenyns Stäng-knapp är blå. Intern: doserings- och mängdreglernas typer är `ChoiceChips`, stegarna `QuantityStepper`, förhandsvisningen `ValueTile`, Inställningarna bibliotekets sida och kort. |
 | 0.15.0 | Versionen står litet efter appnamnet i flikarnas sidhuvud (NAV-4), som i de andra Kodhäst-apparna (android-ui #95). android-ui 3.0.0 → 3.3.0. |
+| 0.16.0 | **Kontomenyn under avataren** (android-ui 3.8.0, samma i alla Kodhäst-appar): konto, Inställningar, Om ReseApoteket och Logga ut i en meny som fälls ut under avataren; Komponentgalleriet i debug-bygget. Inställningarna har inte längre kontokortet, Om-kortet eller Komponenter – Om är en egen vy (NAV-5, SET-4, SET-6). Oskärpa bakom dialoger och i sidhuvudet är på som standard i biblioteket. android-ui 3.3.0 → 3.8.0. |

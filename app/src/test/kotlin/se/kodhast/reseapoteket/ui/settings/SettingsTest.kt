@@ -5,12 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -19,14 +16,11 @@ import app.cash.turbine.test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Instant
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import org.junit.Rule
 import org.junit.Test
@@ -36,24 +30,18 @@ import org.robolectric.annotation.Config
 import se.kodhast.reseapoteket.core.model.Household
 import se.kodhast.reseapoteket.core.schema.HouseholdCodec
 import se.kodhast.reseapoteket.data.FixedClock
-import se.kodhast.reseapoteket.data.auth.AuthUser
 import se.kodhast.reseapoteket.data.common.DataError
 import se.kodhast.reseapoteket.data.datastore.SettingsStore
 import se.kodhast.reseapoteket.data.datastore.ThemeMode
 import se.kodhast.reseapoteket.data.export.ExportFiles
 import se.kodhast.reseapoteket.data.export.HouseholdExport
 import se.kodhast.reseapoteket.testing.FakeDataStore
-import se.kodhast.reseapoteket.testing.FakeMedicines
-import se.kodhast.reseapoteket.testing.FakeProfilePhotoCache
 import se.kodhast.reseapoteket.testing.MainDispatcherRule
 import se.kodhast.reseapoteket.testing.StubHouseholds
 import se.kodhast.reseapoteket.testing.captureLightAndDark
-import se.kodhast.reseapoteket.testing.captureScreenLightAndDark
-import se.kodhast.reseapoteket.testing.clickWithoutRipple
-import se.kodhast.reseapoteket.ui.auth.FakeAuthRepository
 import se.kodhast.reseapoteket.ui.theme.ReseApoteketTheme
 
-/** Inställningar (SET-1–6): hushåll, packlista, tema, konto, data & backup och om. */
+/** Inställningar (SET-1–3, SET-5, SET-7): hushåll, packlista, tema, påminnelser och data & backup. Konto och Om: [AccountViewModelTest], [AboutTest]. */
 @RunWith(RobolectricTestRunner::class)
 class SettingsTest {
 
@@ -64,10 +52,7 @@ class SettingsTest {
     val main = MainDispatcherRule()
 
     private val svensson = Household("h1", "Familjen Svensson", listOf("uid-anna"), marginDays = 2, schemaVersion = 2)
-    private val anna = AuthUser("uid-anna", "Anna Svensson", "anna.svensson@gmail.com")
     private val households = StubHouseholds(MutableStateFlow(svensson))
-    private val auth = FakeAuthRepository().apply { authState.value = anna }
-    private val photos = FakeProfilePhotoCache()
     private val settings = SettingsStore(FakeDataStore())
     private var exported: Result<String> = Result.success("""{"documents":[]}""")
     private val saved = mutableListOf<String>()
@@ -81,12 +66,12 @@ class SettingsTest {
         override suspend fun cleanUp(now: Instant, maxAge: Duration) = Unit
     }
 
-    private fun viewModel() = SettingsViewModel(settings, households, auth, export, files, FixedClock(), TimeZone.UTC, photos, FakeMedicines())
+    private fun viewModel() = SettingsViewModel(settings, households, export, files, FixedClock(), TimeZone.UTC)
 
-    private val state = SettingsUiState(svensson, anna, ThemeMode.System, moveCheckedLast = true)
+    private val state = SettingsUiState(svensson, ThemeMode.System, moveCheckedLast = true)
 
-    private fun show(state: SettingsUiState, onEvent: (SettingsEvent) -> Unit = {}, onEditHousehold: () -> Unit = {}, onOpenGallery: (() -> Unit)? = null) {
-        rule.setContent { ReseApoteketTheme { SettingsContent(state, onEvent, "0.1.0", onEditHousehold, onOpenGallery) } }
+    private fun show(state: SettingsUiState, onEvent: (SettingsEvent) -> Unit = {}, onEditHousehold: () -> Unit = {}) {
+        rule.setContent { ReseApoteketTheme { SettingsContent(state, onEvent, "0.1.0", onEditHousehold) } }
     }
 
     private fun scrollTo(text: String) = rule.onNode(hasScrollAction()).performScrollToNode(hasText(text))
@@ -128,50 +113,18 @@ class SettingsTest {
         val slow = object : HouseholdExport {
             override suspend fun export() = done.await()
         }
-        val vm = SettingsViewModel(settings, households, auth, slow, files, FixedClock(), TimeZone.UTC, photos, FakeMedicines())
+        val vm = SettingsViewModel(settings, households, slow, files, FixedClock(), TimeZone.UTC)
         vm.state.test {
             awaitItem()
             vm.onEvent(SettingsEvent.Export)
             assertEquals(true, expectMostRecentItem().exporting)
-            auth.nextSignOut = Result.failure(DataError.Offline)
-            vm.onEvent(SettingsEvent.SignOut)
+            households.nextUpdate = Result.failure(DataError.Offline)
+            vm.onEvent(SettingsEvent.SetMarginDays(1))
             done.complete(Result.success("{}"))
             val after = expectMostRecentItem()
             assertFalse(after.exporting)
-            assertEquals(SettingsError(SettingsSection.Account, DataError.Offline), after.error)
+            assertEquals(SettingsError(SettingsSection.Household, DataError.Offline), after.error)
         }
-    }
-
-    @Test
-    fun `utloggning loggar ut, ett fel visas i kontokortet (SET-4)`() = runTest {
-        val vm = viewModel()
-        vm.state.test {
-            awaitItem()
-            auth.nextSignOut = Result.failure(DataError.Offline)
-            vm.onEvent(SettingsEvent.SignOut)
-            assertEquals(SettingsError(SettingsSection.Account, DataError.Offline), expectMostRecentItem().error)
-            auth.nextSignOut = Result.success(Unit)
-            vm.onEvent(SettingsEvent.SignOut)
-            val after = expectMostRecentItem()
-            assertNull(after.account)
-            assertNull(after.error)
-        }
-        assertEquals(2, auth.signOutCalls)
-        assertEquals(1, photos.clears, "fotot tas bort bara efter en lyckad utloggning (AUTH-4)")
-    }
-
-    @Test
-    fun `ett fel när fotot tas bort stoppar inte utloggningen (AUTH-5)`() = runTest {
-        photos.next = Result.failure(IllegalStateException("disk"))
-        val vm = viewModel()
-        vm.state.test {
-            awaitItem()
-            vm.onEvent(SettingsEvent.SignOut)
-            val after = expectMostRecentItem()
-            assertNull(after.account)
-            assertNull(after.error)
-        }
-        assertEquals(1, photos.clears)
     }
 
     @Test
@@ -205,7 +158,7 @@ class SettingsTest {
     }
 
     @Test
-    fun `raderna skickar sina händelser och Logga ut frågar först (SET-2, SET-4, SET-5)`() {
+    fun `raderna skickar sina händelser och (SET-2, SET-5)`() {
         val events = mutableListOf<SettingsEvent>()
         var edits = 0
         show(state, { events += it }, onEditHousehold = { edits++ })
@@ -213,19 +166,10 @@ class SettingsTest {
         assertEquals(1, edits)
         rule.onNodeWithContentDescription("Öka Marginaldagar").performClick()
         rule.onNodeWithText("Mörkt").performClick()
-        scrollTo("Logga ut")
-        rule.onNodeWithText("Anna Svensson").assertIsDisplayed()
-        rule.onNodeWithText("anna.svensson@gmail.com").assertIsDisplayed()
-        rule.onNodeWithText("Logga ut").performClick()
-        rule.onNodeWithText("Logga ut?").assertIsDisplayed()
-        rule.onNodeWithText("Avbryt").performClick()
-        assertEquals(listOf(SettingsEvent.SetMarginDays(3), SettingsEvent.SetTheme(ThemeMode.Dark)), events, "Avbryt loggar inte ut")
-        rule.onNodeWithText("Logga ut").performClick()
-        rule.onAllNodesWithText("Logga ut").onLast().performClick()
         scrollTo("Exportera som JSON")
         rule.onNodeWithText("Exportera som JSON").performClick()
         assertEquals(
-            listOf(SettingsEvent.SetMarginDays(3), SettingsEvent.SetTheme(ThemeMode.Dark), SettingsEvent.SignOut, SettingsEvent.Export),
+            listOf(SettingsEvent.SetMarginDays(3), SettingsEvent.SetTheme(ThemeMode.Dark), SettingsEvent.Export),
             events
         )
     }
@@ -240,42 +184,8 @@ class SettingsTest {
     }
 
     @Test
-    fun `komponentgalleriet nås bara i debug (SET-6)`() {
-        var opened = 0
-        show(state, onOpenGallery = { opened++ })
-        scrollTo("Komponenter")
-        rule.onNodeWithText("Komponenter").performClick()
-        assertEquals(1, opened)
-    }
-
-    @Test
-    fun `signaturen En kodhäst-app står under versionen i Om (SET-6)`() {
-        show(state)
-        scrollTo("En kodhäst-app")
-        val version = rule.onNodeWithText("Version 0.1.0", useUnmergedTree = true).assertIsDisplayed().getUnclippedBoundsInRoot()
-        val signature = rule.onNodeWithText("En kodhäst-app", useUnmergedTree = true).assertIsDisplayed().getUnclippedBoundsInRoot()
-        assertTrue(signature.top >= version.bottom)
-    }
-
-    @Test
-    fun `läkemedelslistans datum och källa står under Om (REC-6)`() = runTest {
-        assertEquals(LocalDate(2026, 10, 4), viewModel().medicinesUpdated.first { it != null })
-        rule.setContent { ReseApoteketTheme { SettingsContent(state, {}, "0.1.0", {}, null, medicinesUpdated = LocalDate(2026, 10, 4)) } }
-        scrollTo("Läkemedelsverket, sön 4 okt 2026 · CC BY 4.0")
-        rule.onNodeWithText("Läkemedelsverket, sön 4 okt 2026 · CC BY 4.0").assertIsDisplayed()
-    }
-
-    @Test
     @Config(qualifiers = "w390dp-h1500dp-xxhdpi")
     fun `Inställningar - standard`() = captureLightAndDark("SettingsScreen_standard") {
-        Box(Modifier.background(MaterialTheme.colorScheme.background)) { SettingsContent(state, {}, "0.1.0", {}, onOpenGallery = {}) }
-    }
-
-    @Test
-    fun `Inställningar - logga ut`() = rule.captureScreenLightAndDark("SettingsScreen_logga_ut", open = {
-        scrollTo("Logga ut")
-        onNodeWithText("Logga ut").clickWithoutRipple()
-    }) {
-        Box(Modifier.background(MaterialTheme.colorScheme.background)) { SettingsContent(state, {}, "0.1.0", {}, onOpenGallery = null) }
+        Box(Modifier.background(MaterialTheme.colorScheme.background)) { SettingsContent(state, {}, "0.1.0", {}) }
     }
 }

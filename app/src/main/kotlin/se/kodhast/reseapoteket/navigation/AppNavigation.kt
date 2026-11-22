@@ -1,6 +1,7 @@
 package se.kodhast.reseapoteket.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -39,8 +40,12 @@ import se.kodhast.reseapoteket.ui.sync.SyncViewModel
 import se.kodhast.reseapoteket.ui.trips.TripEditScreen
 import se.kodhast.reseapoteket.ui.trips.TripEditViewModel
 import se.kodhast.reseapoteket.ui.trips.TripsScreen
+import se.kodhast.ui.common.UpdateChecker
 import se.kodhast.ui.components.AccountInfo
 import se.kodhast.ui.components.AccountMenuAvatar
+import se.kodhast.ui.components.AppUpdateNotice
+import se.kodhast.ui.components.LocalAppUpdate
+import se.kodhast.ui.components.rememberAppUpdate
 
 /**
  * Appens innehåll efter inloggning: tre flikar med egna back stackar, synkläget i sidhuvudets prickar (NFR-6), avataren
@@ -64,32 +69,38 @@ fun AppNavigation(
     val tabOwner = checkNotNull(LocalViewModelStoreOwner.current) { "AppNavigation kräver en ViewModelStoreOwner" }
     val entries = remember(backStack, tabOwner) { appEntries(backStack, tabOwner) }
     OpenTripEffect(backStack, openTrip, onTripOpened)
-    AppNavHost(
-        backStack,
-        entries,
-        modifier,
-        sync = sync,
-        onSyncErrorShown = {
-            syncViewModel.onEvent(SyncEvent.WriteErrorShown)
-            accountViewModel.onErrorShown()
-        },
-        onAdd = { choice -> backStack.push(choice.key) },
-        // Samma lambda tills kontot eller anslutningen ändras, så att flikarnas sidhuvud inte ritas om i onödan.
-        account = remember(account, sync.online, backStack) {
-            {
-                AccountMenuAvatar(
-                    account?.let { AccountInfo(it.name, it.email, it.photoUrl) },
-                    stringResource(R.string.app_name),
-                    onOpenSettings = { backStack.push(SettingsKey) },
-                    onOpenAbout = { backStack.push(AboutKey) },
-                    onSignIn = null,
-                    onSignOut = accountViewModel::signOut,
-                    online = sync.online,
-                    onOpenGallery = if (BuildConfig.DEBUG) ({ backStack.push(ComponentGalleryKey) }) else null
-                )
+    // Ny version (NAV-7): releasebygget frågar GitHub; pricken i sidhuvudet och Om-raden öppnar Om, där Hämta finns.
+    val checker = remember { if (BuildConfig.DEBUG) null else UpdateChecker("Kodhast", "ReseApoteket", BuildConfig.VERSION_NAME) }
+    val update by rememberAppUpdate(checker)
+    val notice = remember(update, backStack) { update?.let { AppUpdateNotice(it) { backStack.push(AboutKey) } } }
+    CompositionLocalProvider(LocalAppUpdate provides notice) {
+        AppNavHost(
+            backStack,
+            entries,
+            modifier,
+            sync = sync,
+            onSyncErrorShown = {
+                syncViewModel.onEvent(SyncEvent.WriteErrorShown)
+                accountViewModel.onErrorShown()
+            },
+            onAdd = { choice -> backStack.push(choice.key) },
+            // Samma lambda tills kontot eller anslutningen ändras, så att flikarnas sidhuvud inte ritas om i onödan.
+            account = remember(account, sync.online, backStack) {
+                {
+                    AccountMenuAvatar(
+                        account?.let { AccountInfo(it.name, it.email, it.photoUrl) },
+                        stringResource(R.string.app_name),
+                        onOpenSettings = { backStack.push(SettingsKey) },
+                        onOpenAbout = { backStack.push(AboutKey) },
+                        onSignIn = null,
+                        onSignOut = accountViewModel::signOut,
+                        online = sync.online,
+                        onOpenGallery = if (BuildConfig.DEBUG) ({ backStack.push(ComponentGalleryKey) }) else null
+                    )
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 /** En påminnelse öppnar resans packlista i fliken Resor (PÅM-7); [onOpened] släpper begäran. */

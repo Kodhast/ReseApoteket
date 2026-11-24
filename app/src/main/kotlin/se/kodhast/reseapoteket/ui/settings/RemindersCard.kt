@@ -26,6 +26,7 @@ import se.kodhast.ui.components.AppBottomSheet
 import se.kodhast.ui.components.AppButton
 import se.kodhast.ui.components.AppCard
 import se.kodhast.ui.components.AppDivider
+import se.kodhast.ui.components.ButtonVariant
 import se.kodhast.ui.components.ChipRow
 import se.kodhast.ui.components.ItemRow
 import se.kodhast.ui.components.LabeledGroup
@@ -144,7 +145,7 @@ private fun ReminderSheet(kind: ReminderKind, state: RemindersUiState, onChange:
     AppBottomSheet(
         stringResource(kind.title()),
         onDismiss = onClose,
-        footer = { AppButton(stringResource(R.string.done), onClose, Modifier.fillMaxWidth()) },
+        footer = { AppButton(stringResource(R.string.done), onClose, Modifier.fillMaxWidth(), variant = ButtonVariant.Primary) },
         subtitle = stringResource(kind.note())
     ) {
         SwitchRow(stringResource(kind.title()), setting.enabled, { onChange(setting.copy(enabled = it)) })

@@ -89,7 +89,7 @@ class CatalogScreenshotTest {
         captureLightAndDark("AppButton_destruktiv_och_kompakt") {
             Sheet {
                 AppButton("Radera", {}, variant = ButtonVariant.Destructive)
-                AppButton("Spara", {}, compact = true)
+                AppButton("Spara", {}, compact = true, variant = ButtonVariant.Primary)
             }
         }
         captureLightAndDark("AppIconButton_varianter") {
@@ -349,7 +349,7 @@ class CatalogScreenshotTest {
         captureLightAndDark("AppTopBar_storlekar") {
             Column(Modifier.background(MaterialTheme.colorScheme.background)) {
                 AppTopBar("Resor") { AppMenu(emptyList()) }
-                AppTopBar("Solkräm", size = TopBarSize.Small, onBack = {}) { AppButton("Spara", {}, compact = true) }
+                AppTopBar("Solkräm", size = TopBarSize.Small, onBack = {}) { AppButton("Spara", {}, compact = true, variant = ButtonVariant.Primary) }
             }
         }
         captureLightAndDark("AppFloatingToolbar_resor") {

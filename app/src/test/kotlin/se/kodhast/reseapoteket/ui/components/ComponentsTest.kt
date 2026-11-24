@@ -43,11 +43,11 @@ class ComponentsTest {
             Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(Spacing.l),
             verticalArrangement = Arrangement.spacedBy(Spacing.m)
         ) {
-            AppButton("Logga in med Google", {}, Modifier.fillMaxWidth(), icon = UiR.drawable.ic_login)
-            AppButton("Loggar in …", {}, Modifier.fillMaxWidth(), loading = true)
+            AppButton("Logga in med Google", {}, Modifier.fillMaxWidth(), icon = UiR.drawable.ic_login, variant = ButtonVariant.Primary)
+            AppButton("Loggar in …", {}, Modifier.fillMaxWidth(), loading = true, variant = ButtonVariant.Primary)
             AppButton("Lägg till", {}, variant = ButtonVariant.Secondary)
             AppButton("Avbryt", {}, variant = ButtonVariant.Text)
-            AppButton("Spara", {}, enabled = false)
+            AppButton("Spara", {}, enabled = false, variant = ButtonVariant.Primary)
         }
     }
 
@@ -87,7 +87,7 @@ class ComponentsTest {
                 icon = R.drawable.ic_luggage,
                 title = "Inga resor än",
                 message = "Lägg till en resa så räknar appen ut vad ni ska packa.",
-                action = { AppButton("Lägg till resa", {}, Modifier.fillMaxWidth()) }
+                action = { AppButton("Lägg till resa", {}, Modifier.fillMaxWidth(), variant = ButtonVariant.Primary) }
             )
         }
     }
@@ -101,7 +101,7 @@ class ComponentsTest {
                 message = "Installera den senaste versionen för att fortsätta.",
                 note = "Ingenting ändras förrän appen är uppdaterad.",
                 fullScreen = true,
-                action = { AppButton("Hämta senaste versionen", {}, Modifier.fillMaxWidth()) }
+                action = { AppButton("Hämta senaste versionen", {}, Modifier.fillMaxWidth(), variant = ButtonVariant.Primary) }
             )
         }
     }

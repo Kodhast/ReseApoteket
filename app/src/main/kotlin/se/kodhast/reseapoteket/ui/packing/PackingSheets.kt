@@ -46,7 +46,7 @@ internal fun QuantitySheet(row: PackingRow, onEvent: (PackingListEvent) -> Unit,
         item.name,
         onDismiss = { onEvent(PackingListEvent.CloseQuantity) },
         error = error,
-        footer = { AppButton(stringResource(R.string.packing_done), { onEvent(PackingListEvent.CloseQuantity) }, Modifier.fillMaxWidth()) },
+        footer = { AppButton(stringResource(R.string.packing_done), { onEvent(PackingListEvent.CloseQuantity) }, Modifier.fillMaxWidth(), variant = ButtonVariant.Primary) },
         subtitle = listOfNotNull(row.person?.name, row.schedule).takeIf { it.isNotEmpty() }?.joinToString(" · ")
     ) {
         QuantityStepper(item.quantity, { onEvent(PackingListEvent.Quantity(it)) }, UnitNames.name(item.quantity, item.unit))
@@ -81,7 +81,7 @@ internal fun AddItemSheet(
         error = error,
         footer = {
             when (mode) {
-                AddMode.ONE -> AppButton(stringResource(R.string.add), { onEvent(PackingListEvent.AddSave) }, Modifier.fillMaxWidth(), enabled = state.canSave, loading = state.saving)
+                AddMode.ONE -> AppButton(stringResource(R.string.add), { onEvent(PackingListEvent.AddSave) }, Modifier.fillMaxWidth(), enabled = state.canSave, loading = state.saving, variant = ButtonVariant.Primary)
                 AddMode.LIST -> AddListButton(list, onEvent)
             }
         }
@@ -152,7 +152,8 @@ private fun AddListButton(list: AddListState, onEvent: (PackingListEvent) -> Uni
         { onEvent(PackingListEvent.AddListSave) },
         Modifier.fillMaxWidth(),
         enabled = list.canSave,
-        loading = list.saving
+        loading = list.saving,
+        variant = ButtonVariant.Primary
     )
 }
 

@@ -57,6 +57,8 @@ färg som bär text ska klara 4,5:1 mot sin bakgrund – räkna efter vid ny nya
   ikonrutan i ett tomt tillstånd 40 dp (`iconTile`).
 - `Spacing`: `xs 4 · s 8 · m 12 · l 16 · xl 24 · xxl 32` dp – enda tillåtna avstånden.
 - Tryckytor minst 48 dp.
+- **Komposition** – luftens nivåer, en primär handling per vy, fokuspunkt, hierarki och få val: skill
+  `android:designregler` (D-1–D-10, enda källan).
 
 ## Rörelse
 

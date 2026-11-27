@@ -123,8 +123,6 @@ object AppColors {
             Tone.Blue to ToneColors(Color(0xFFE2EFF6), Color(0xFF1F4C66))
         ),
         accents = PERSON_HEX.map(::parse),
-        // Anslutningspluppen på avataren (NAV-5) i den gröna tonens text.
-        online = Color(0xFF3F5A1C),
         // Framstegsraden när allt är packat (PAK-5, android-ui AppProgress): grönt, utan kontur.
         progressDone = ProgressDoneColors(Color(0xFF5E8A2E))
     )
@@ -159,7 +157,6 @@ object AppColors {
             Tone.Blue to ToneColors(Color(0xFF1D3A4B), Color(0xFFC6E5F7))
         ),
         accents = PERSON_HEX.map(::parse),
-        online = Color(0xFFD2EDB0),
         progressDone = ProgressDoneColors(Color(0xFFB5D98C))
     )
 
